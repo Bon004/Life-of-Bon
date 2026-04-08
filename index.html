@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StoryForge — Life of Bon</title>
+
+  <!-- Inter font from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- mammoth.js: lets us read Word documents (.docx) in the browser -->
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+
+  <!-- PDF.js: lets us read PDF files in the browser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="app-header">
+    <div class="header-left">
+      <span class="app-logo">⚔️</span>
+      <h1 class="app-title">StoryForge</h1>
+      <span class="app-subtitle">Life of Bon</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-add-notes" id="openNotesModal">+ Add Notes</button>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       TAB BAR
+       ============================================================ -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="canvas">🗂 Story Canvas</button>
+    <button class="tab-btn" data-tab="writing">✍️ Writing</button>
+    <button class="tab-btn" data-tab="characters">👤 Characters</button>
+    <button class="tab-btn" data-tab="arcs">📖 Arcs & Timeline</button>
+  </nav>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="app-main">
+
+    <!-- TAB 1: STORY CANVAS -->
+    <section class="tab-panel active" id="panel-canvas">
+      <div class="canvas-columns">
+
+        <div class="canvas-col" data-type="character">
+          <div class="col-header col-character">
+            <span>👤 Characters</span>
+            <button class="btn-add-card">+ Card</button>
+          </div>
+          <div class="col-cards" id="cards-character"></div>
+        </div>
+
+        <div class="canvas-col" data-type="world">
+          <div class="col-header col-world">
+            <span>🌍 World Building</span>
+            <button class="btn-add-card">+ Card</button>
+          </div>
+          <div class="col-cards" id="cards-world"></div>
+        </div>
+
+        <div class="canvas-col" data-type="arc">
+          <div class="col-header col-arc">
+            <span>⚡ Plot & Arcs</span>
+            <button class="btn-add-card">+ Card</button>
+          </div>
+          <div class="col-cards" id="cards-arc"></div>
+        </div>
+
+        <div class="canvas-col" data-type="quote">
+          <div class="col-header col-quote">
+            <span>💬 Key Quotes</span>
+            <button class="btn-add-card">+ Card</button>
+          </div>
+          <div class="col-cards" id="cards-quote"></div>
+        </div>
+
+        <div class="canvas-col" data-type="idea">
+          <div class="col-header col-idea">
+            <span>💡 Ideas</span>
+            <button class="btn-add-card">+ Card</button>
+          </div>
+          <div class="col-cards" id="cards-idea"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: WRITING (coming next phase) -->
+    <section class="tab-panel" id="panel-writing">
+      <div class="coming-soon">
+        <span>✍️</span>
+        <h2>Writing Editor</h2>
+        <p>Coming in the next phase — chapter editor, word count, and AI writing assistant.</p>
+      </div>
+    </section>
+
+    <!-- TAB 3: CHARACTERS (coming next phase) -->
+    <section class="tab-panel" id="panel-characters">
+      <div class="coming-soon">
+        <span>👤</span>
+        <h2>Characters</h2>
+        <p>Coming in the next phase — full character profile sheets with all your story characters.</p>
+      </div>
+    </section>
+
+    <!-- TAB 4: ARCS (coming next phase) -->
+    <section class="tab-panel" id="panel-arcs">
+      <div class="coming-soon">
+        <span>📖</span>
+        <h2>Arcs & Timeline</h2>
+        <p>Coming in the next phase — your story arc timeline with events and beats.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       ADD NOTES MODAL
+       ============================================================ -->
+  <div class="modal-overlay hidden" id="notesModal">
+    <div class="modal-box">
+
+      <!-- Header row -->
+      <div class="modal-header">
+        <h3>+ Add Notes</h3>
+        <button class="modal-close" id="closeNotesModal">✕</button>
+      </div>
+
+      <!-- Mode toggle: Paste vs Upload -->
+      <div class="modal-modes">
+        <button class="mode-btn active" data-mode="paste">✍️ Paste Text</button>
+        <button class="mode-btn" data-mode="upload">📁 Upload File</button>
+      </div>
+
+      <!-- PASTE MODE -->
+      <div class="mode-panel active" id="mode-paste">
+        <textarea
+          id="pasteText"
+          placeholder="Paste your story notes here — character descriptions, world-building ideas, plot points, anything..."></textarea>
+      </div>
+
+      <!-- UPLOAD MODE -->
+      <div class="mode-panel" id="mode-upload">
+        <div class="drop-zone" id="dropZone">
+          <span class="drop-icon">📁</span>
+          <p class="drop-title">Drag & drop a file here</p>
+          <p class="drop-or">or</p>
+          <label class="btn-browse">
+            Browse Files
+            <!-- The actual file input is hidden — the label triggers it -->
+            <input type="file" id="fileInput" accept=".txt,.md,.jpg,.jpeg,.png,.heic,.docx,.pdf" hidden />
+          </label>
+          <p class="drop-types">Supports: .txt &nbsp;.md &nbsp;.jpg &nbsp;.png &nbsp;.heic &nbsp;.docx &nbsp;.pdf</p>
+        </div>
+
+        <!-- Shows after a file is selected -->
+        <div id="filePreview" class="file-preview hidden">
+          <span id="fileName" class="file-name"></span>
+          <button class="btn-clear-file" id="clearFile">✕ Remove</button>
+        </div>
+      </div>
+
+      <!-- API KEY (collapsible) -->
+      <details class="api-key-section" id="apiKeyDetails">
+        <summary>🔑 Anthropic API Key <span class="key-hint">(required — click to set)</span></summary>
+        <div class="api-key-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+          <button id="saveApiKey" class="btn-save-key">Save</button>
+        </div>
+        <p class="api-key-note">Saved only in your browser. Never shared with anyone except Anthropic directly.</p>
+      </details>
+
+      <!-- Footer with status + button -->
+      <div class="modal-footer">
+        <span id="organizeStatus" class="organize-status"></span>
+        <button class="btn-organize" id="organizeBtn">✨ Organize with AI</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

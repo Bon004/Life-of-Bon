@@ -1,0 +1,558 @@
+/* ============================================================
+   CSS VARIABLES — change a color here and it updates everywhere
+   ============================================================ */
+:root {
+  --accent:          #c2410c;  /* orange-red */
+  --accent-hover:    #9a3412;
+  --accent-light:    #fff7ed;
+  --bg:              #ffffff;
+  --surface:         #f9fafb;
+  --border:          #e5e7eb;
+  --text:            #111827;
+  --text-muted:      #6b7280;
+
+  --color-character: #3b82f6;
+  --color-world:     #22c55e;
+  --color-arc:       #a855f7;
+  --color-quote:     #f59e0b;
+  --color-idea:      #ef4444;
+}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden; /* prevents the whole page from scrolling */
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-logo   { font-size: 20px; }
+
+.app-title  {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.app-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.btn-add-notes {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-add-notes:hover { background: var(--accent-hover); }
+
+/* ============================================================
+   TAB BAR
+   ============================================================ */
+.tab-bar {
+  display: flex;
+  background: #fff;
+  border-bottom: 2px solid var(--border);
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover  { color: var(--text); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ============================================================
+   MAIN + TAB PANELS
+   ============================================================ */
+.app-main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-panel {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tab-panel.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* "Coming soon" placeholder for tabs not built yet */
+.coming-soon {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px;
+}
+.coming-soon span { font-size: 48px; }
+.coming-soon h2   { font-size: 20px; color: var(--text); }
+.coming-soon p    { font-size: 14px; max-width: 360px; }
+
+/* ============================================================
+   CANVAS — 5 columns
+   ============================================================ */
+.canvas-columns {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.canvas-col {
+  min-width: 210px;
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Colored header bar for each column */
+.col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+.col-character { background: var(--color-character); }
+.col-world     { background: var(--color-world); }
+.col-arc       { background: var(--color-arc); }
+.col-quote     { background: var(--color-quote); }
+.col-idea      { background: var(--color-idea); }
+
+.btn-add-card {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.btn-add-card:hover { background: rgba(255,255,255,0.42); }
+
+/* Area where cards stack inside a column */
+.col-cards {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Empty-column hint text */
+.col-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px 8px;
+  font-style: italic;
+}
+
+/* An individual card */
+.story-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 28px 10px 10px; /* right padding for delete button */
+  position: relative;
+  transition: box-shadow 0.15s;
+}
+.story-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  outline: none;
+  cursor: text;
+}
+.card-content {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  outline: none;
+  cursor: text;
+}
+
+/* Focused editing state */
+.card-title:focus,
+.card-content:focus {
+  background: var(--accent-light);
+  border-radius: 3px;
+  padding: 1px 3px;
+  margin: -1px -3px;
+}
+
+.card-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  padding: 2px 4px;
+  border-radius: 3px;
+  line-height: 1;
+}
+.story-card:hover .card-delete { opacity: 1; }
+.card-delete:hover { color: var(--color-idea); background: #fef2f2; }
+
+/* ============================================================
+   MODAL OVERLAY + BOX
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 16px;
+  width: 520px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; }
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.modal-close:hover { background: var(--surface); color: var(--text); }
+
+/* ============================================================
+   MODAL — MODE TOGGLE (Paste / Upload)
+   ============================================================ */
+.modal-modes {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px 0;
+}
+
+.mode-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.mode-btn:hover { border-color: var(--accent); color: var(--accent); }
+.mode-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ============================================================
+   MODAL — PASTE PANEL
+   ============================================================ */
+.mode-panel {
+  display: none;
+  padding: 16px 24px;
+}
+.mode-panel.active { display: block; }
+
+#pasteText {
+  width: 100%;
+  height: 160px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+#pasteText:focus { border-color: var(--accent); }
+
+/* ============================================================
+   MODAL — UPLOAD PANEL
+   ============================================================ */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 28px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.drop-icon  { font-size: 32px; }
+.drop-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.drop-or    { font-size: 12px; color: var(--text-muted); }
+.drop-types { font-size: 11px; color: var(--text-muted); }
+
+.btn-browse {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 4px 0;
+  transition: background 0.15s;
+}
+.btn-browse:hover { background: var(--accent-hover); }
+
+/* File selected preview */
+.file-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 10px;
+}
+.file-name { font-size: 13px; font-weight: 500; flex: 1; }
+
+.btn-clear-file {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+.btn-clear-file:hover { color: var(--color-idea); border-color: var(--color-idea); }
+
+/* ============================================================
+   MODAL — API KEY SECTION
+   ============================================================ */
+.api-key-section {
+  margin: 0 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.api-key-section summary {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--surface);
+  user-select: none;
+}
+.api-key-section summary:hover { background: #f3f4f6; }
+
+.key-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.api-key-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px 8px;
+}
+
+.api-key-row input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: monospace;
+  outline: none;
+}
+.api-key-row input:focus { border-color: var(--accent); }
+
+.btn-save-key {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.btn-save-key:hover { background: var(--accent-hover); }
+
+.api-key-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 0 14px 12px;
+}
+
+/* ============================================================
+   MODAL — FOOTER
+   ============================================================ */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 20px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.organize-status {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.btn-organize {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-organize:hover    { background: var(--accent-hover); }
+.btn-organize:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.hidden { display: none !important; }
