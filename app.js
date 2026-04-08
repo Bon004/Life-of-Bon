@@ -3,6 +3,8 @@
 // ============================================================
 
 
+import { generateId, escapeHtml, buildPrompt, buildSyncPrompt, validTypes } from './story-utils.js';
+
 // ============================================================
 // SECTION 1: CARD DATA
 // Cards are stored in the browser's localStorage as a JSON string.
@@ -50,14 +52,6 @@ function saveCards() {
 // generateId: makes a random short ID like "a3f9b2" for each card
 function generateId() {
   return Math.random().toString(36).slice(2, 8);
-}
-
-// escapeHtml: prevents any HTML tags in user's text from breaking the page
-// Example: if a user types "<b>bold</b>", this turns it into plain text
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str || '';
-  return div.innerHTML;
 }
 
 // addCard: creates a new card object and adds it to the cards array
@@ -443,24 +437,7 @@ async function organizeWithAI() {
   const existingTitles = cards.map(function(c) { return c.title.toLowerCase(); });
 
   // --- Build the prompt we'll send to Claude ---
-  const prompt =
-    'You are a story organizer for an isekai/anime story called "Life of Bon" where the main character gets reincarnated.\n\n' +
-    'Extract story elements from the content provided and return ONLY a valid JSON array.\n' +
-    'Do not add any explanation, markdown, or code fences — just the raw JSON array.\n\n' +
-    'Each item in the array must look exactly like this:\n' +
-    '{"type": "character", "title": "Name", "content": "Short description"}\n\n' +
-    'Type must be one of:\n' +
-    '- "character" → any person, being, or named character\n' +
-    '- "world"     → locations, places, world rules, magic systems\n' +
-    '- "arc"       → plot points, story events, narrative arcs\n' +
-    '- "quote"     → memorable lines or exact dialogue\n' +
-    '- "idea"      → loose ideas, themes, future plans\n\n' +
-    'Rules:\n' +
-    '- Skip anything matching these already-existing titles: ' + (existingTitles.join(', ') || 'none') + '\n' +
-    '- Maximum 15 new cards\n' +
-    '- Keep content to 1–3 sentences\n' +
-    '- If nothing relevant is found, return []\n\n' +
-    'Return only the JSON array, nothing else.';
+  const prompt = buildPrompt(existingTitles);
 
   // --- Build the message content for the API ---
   // For text: just append the notes to the prompt
@@ -708,29 +685,7 @@ async function syncStoryNotes() {
   }
 }
 
-// buildSyncPrompt: the instructions we send to Claude along with each file
-function buildSyncPrompt() {
-  const existingTitles = cards.map(function(c) { return c.title.toLowerCase(); });
-  return (
-    'You are a story organizer for an isekai/anime story called "Life of Bon" where the main character gets reincarnated.\n\n' +
-    'Extract story elements from the content provided and return ONLY a valid JSON array.\n' +
-    'Do not add any explanation, markdown, or code fences — just the raw JSON array.\n\n' +
-    'Each item must look exactly like this:\n' +
-    '{"type": "character", "title": "Name", "content": "Short description"}\n\n' +
-    'Types:\n' +
-    '- "character" → people, beings, named characters\n' +
-    '- "world"     → locations, places, world rules, magic systems\n' +
-    '- "arc"       → plot points, story events, narrative arcs\n' +
-    '- "quote"     → memorable lines or exact dialogue\n' +
-    '- "idea"      → loose ideas, themes, future plans\n\n' +
-    'Rules:\n' +
-    '- Skip anything matching these already-existing titles: ' + (existingTitles.join(', ') || 'none') + '\n' +
-    '- Maximum 15 new cards per file\n' +
-    '- Keep content to 1–3 sentences\n' +
-    '- Return [] if nothing story-relevant is found\n\n' +
-    'Return only the JSON array, nothing else.'
-  );
-}
+// buildSyncPrompt is imported from story-utils.js
 
 // extractTextFromPdfBuffer: same as readAsPdf but works on an ArrayBuffer directly
 async function extractTextFromPdfBuffer(arrayBuffer) {

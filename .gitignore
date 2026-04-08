@@ -15,3 +15,7 @@ Thumbs.db
 
 # Story notes — too large/binary for git
 story-notes/
+
+# Local development files
+node_modules/
+.claude/
