@@ -1,0 +1,17 @@
+# Environment / secrets — never commit these
+.env
+.env.local
+.env.*
+*.txt
+API KEY*
+
+# Editor folders
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Story notes — too large/binary for git
+story-notes/

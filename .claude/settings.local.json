@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv \"Light Novel/Book report.pdf\" \"story-notes/research/\")",
+      "Bash(mv \"Light Novel/Essay.pdf\" \"story-notes/research/\")",
+      "Bash(mv novel/* \"story-notes/world/\")",
+      "Bash(mv \"Light Novel\" \"story-notes/writing/\")",
+      "Bash(grep -v \".pap$\\\\|.pb$\\\\|.pbf$\\\\|.lbk$\\\\|.log$\\\\|.set$\\\\|.psd$\\\\|.papproject$\\\\|backup\")"
+    ]
+  }
+}

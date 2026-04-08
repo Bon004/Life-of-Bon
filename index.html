@@ -5,190 +5,246 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StoryForge — Life of Bon</title>
 
-  <!-- Inter font from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
 
-  <!-- mammoth.js: lets us read Word documents (.docx) in the browser -->
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
-
-  <!-- PDF.js: lets us read PDF files in the browser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ============================================================
-       HEADER
-       ============================================================ -->
+  <!-- HEADER -->
   <header class="app-header">
     <div class="header-left">
-      <span class="app-logo">⚔️</span>
-      <h1 class="app-title">StoryForge</h1>
+      <div class="app-brand">
+        <span class="app-logo">⚔️</span>
+        <h1 class="app-title">StoryForge</h1>
+      </div>
+      <span class="app-divider"></span>
       <span class="app-subtitle">Life of Bon</span>
     </div>
     <div class="header-right">
+      <button class="btn-sync-notes" id="syncNotesBtn">↻ Sync Notes</button>
       <button class="btn-add-notes" id="openNotesModal">+ Add Notes</button>
     </div>
   </header>
 
-  <!-- ============================================================
-       TAB BAR
-       ============================================================ -->
+  <!-- TAB BAR -->
   <nav class="tab-bar">
-    <button class="tab-btn active" data-tab="canvas">🗂 Story Canvas</button>
-    <button class="tab-btn" data-tab="writing">✍️ Writing</button>
-    <button class="tab-btn" data-tab="characters">👤 Characters</button>
-    <button class="tab-btn" data-tab="arcs">📖 Arcs & Timeline</button>
+    <button class="tab-btn active" data-tab="canvas">Story Canvas</button>
+    <button class="tab-btn" data-tab="writing">Writing</button>
+    <button class="tab-btn" data-tab="characters">Characters</button>
+    <button class="tab-btn" data-tab="arcs">Arcs & Timeline</button>
   </nav>
 
-  <!-- ============================================================
-       MAIN CONTENT
-       ============================================================ -->
+  <!-- MAIN -->
   <main class="app-main">
 
     <!-- TAB 1: STORY CANVAS -->
     <section class="tab-panel active" id="panel-canvas">
-      <div class="canvas-columns">
 
-        <div class="canvas-col" data-type="character">
-          <div class="col-header col-character">
-            <span>👤 Characters</span>
-            <button class="btn-add-card">+ Card</button>
-          </div>
-          <div class="col-cards" id="cards-character"></div>
+      <!-- Toolbar: view toggle -->
+      <div class="canvas-toolbar">
+        <div class="view-toggle">
+          <button class="view-btn active" id="viewBoard">Board</button>
+          <button class="view-btn" id="viewMap">Map</button>
         </div>
-
-        <div class="canvas-col" data-type="world">
-          <div class="col-header col-world">
-            <span>🌍 World Building</span>
-            <button class="btn-add-card">+ Card</button>
-          </div>
-          <div class="col-cards" id="cards-world"></div>
-        </div>
-
-        <div class="canvas-col" data-type="arc">
-          <div class="col-header col-arc">
-            <span>⚡ Plot & Arcs</span>
-            <button class="btn-add-card">+ Card</button>
-          </div>
-          <div class="col-cards" id="cards-arc"></div>
-        </div>
-
-        <div class="canvas-col" data-type="quote">
-          <div class="col-header col-quote">
-            <span>💬 Key Quotes</span>
-            <button class="btn-add-card">+ Card</button>
-          </div>
-          <div class="col-cards" id="cards-quote"></div>
-        </div>
-
-        <div class="canvas-col" data-type="idea">
-          <div class="col-header col-idea">
-            <span>💡 Ideas</span>
-            <button class="btn-add-card">+ Card</button>
-          </div>
-          <div class="col-cards" id="cards-idea"></div>
-        </div>
-
+        <span class="toolbar-hint hidden" id="mapHint">Drag cards to move · click ⊕ to connect · click ✕ on a line to remove it</span>
       </div>
+
+      <!-- Board view (columns) -->
+      <div class="board-view" id="boardView">
+        <div class="canvas-columns">
+
+          <div class="canvas-col" data-type="character">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-character)"></span>
+                <span class="col-label">Characters</span>
+                <span class="col-count" id="count-character">0</span>
+              </div>
+              <button class="btn-add-card" title="Add card">+</button>
+            </div>
+            <div class="col-cards" id="cards-character"></div>
+          </div>
+
+          <div class="canvas-col" data-type="world">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-world)"></span>
+                <span class="col-label">World Building</span>
+                <span class="col-count" id="count-world">0</span>
+              </div>
+              <button class="btn-add-card" title="Add card">+</button>
+            </div>
+            <div class="col-cards" id="cards-world"></div>
+          </div>
+
+          <div class="canvas-col" data-type="arc">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-arc)"></span>
+                <span class="col-label">Plot & Arcs</span>
+                <span class="col-count" id="count-arc">0</span>
+              </div>
+              <button class="btn-add-card" title="Add card">+</button>
+            </div>
+            <div class="col-cards" id="cards-arc"></div>
+          </div>
+
+          <div class="canvas-col" data-type="quote">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-quote)"></span>
+                <span class="col-label">Key Quotes</span>
+                <span class="col-count" id="count-quote">0</span>
+              </div>
+              <button class="btn-add-card" title="Add card">+</button>
+            </div>
+            <div class="col-cards" id="cards-quote"></div>
+          </div>
+
+          <div class="canvas-col" data-type="idea">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-idea)"></span>
+                <span class="col-label">Ideas</span>
+                <span class="col-count" id="count-idea">0</span>
+              </div>
+              <button class="btn-add-card" title="Add card">+</button>
+            </div>
+            <div class="col-cards" id="cards-idea"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Map view (free canvas) -->
+      <div class="map-view hidden" id="mapView">
+        <div class="map-inner" id="mapInner">
+          <svg class="connections-svg" id="connectionsSvg" width="3000" height="2000"></svg>
+          <!-- Map cards injected here by JS -->
+        </div>
+      </div>
+
+      <!-- Summary bar (bottom of canvas) -->
+      <div class="summary-bar">
+        <span class="summary-icon">✦</span>
+        <p class="summary-text" id="summaryText">Add notes to generate an AI overview of your story.</p>
+        <button class="btn-summary-refresh" id="refreshSummary" title="Refresh summary">↻</button>
+      </div>
+
     </section>
 
-    <!-- TAB 2: WRITING (coming next phase) -->
+    <!-- TAB 2: WRITING -->
     <section class="tab-panel" id="panel-writing">
       <div class="coming-soon">
-        <span>✍️</span>
+        <div class="coming-soon-icon">✍️</div>
         <h2>Writing Editor</h2>
-        <p>Coming in the next phase — chapter editor, word count, and AI writing assistant.</p>
+        <p>Chapter editor, word count, and AI writing assistant — coming next.</p>
       </div>
     </section>
 
-    <!-- TAB 3: CHARACTERS (coming next phase) -->
+    <!-- TAB 3: CHARACTERS -->
     <section class="tab-panel" id="panel-characters">
       <div class="coming-soon">
-        <span>👤</span>
+        <div class="coming-soon-icon">👤</div>
         <h2>Characters</h2>
-        <p>Coming in the next phase — full character profile sheets with all your story characters.</p>
+        <p>Full character profile sheets for every person in your story — coming next.</p>
       </div>
     </section>
 
-    <!-- TAB 4: ARCS (coming next phase) -->
+    <!-- TAB 4: ARCS -->
     <section class="tab-panel" id="panel-arcs">
       <div class="coming-soon">
-        <span>📖</span>
+        <div class="coming-soon-icon">📖</div>
         <h2>Arcs & Timeline</h2>
-        <p>Coming in the next phase — your story arc timeline with events and beats.</p>
+        <p>Visual story arc timeline with events and beats — coming next.</p>
       </div>
     </section>
 
   </main>
 
-  <!-- ============================================================
-       ADD NOTES MODAL
-       ============================================================ -->
+  <!-- ADD NOTES MODAL -->
   <div class="modal-overlay hidden" id="notesModal">
     <div class="modal-box">
 
-      <!-- Header row -->
       <div class="modal-header">
-        <h3>+ Add Notes</h3>
+        <div class="modal-header-left">
+          <span class="modal-icon">✨</span>
+          <h3>Add Notes</h3>
+        </div>
         <button class="modal-close" id="closeNotesModal">✕</button>
       </div>
 
-      <!-- Mode toggle: Paste vs Upload -->
       <div class="modal-modes">
-        <button class="mode-btn active" data-mode="paste">✍️ Paste Text</button>
-        <button class="mode-btn" data-mode="upload">📁 Upload File</button>
+        <button class="mode-btn active" data-mode="paste">Paste Text</button>
+        <button class="mode-btn" data-mode="upload">Upload File</button>
       </div>
 
-      <!-- PASTE MODE -->
       <div class="mode-panel active" id="mode-paste">
-        <textarea
-          id="pasteText"
-          placeholder="Paste your story notes here — character descriptions, world-building ideas, plot points, anything..."></textarea>
+        <textarea id="pasteText" placeholder="Paste your story notes here — character descriptions, world-building ideas, plot points, anything..."></textarea>
       </div>
 
-      <!-- UPLOAD MODE -->
       <div class="mode-panel" id="mode-upload">
         <div class="drop-zone" id="dropZone">
           <span class="drop-icon">📁</span>
-          <p class="drop-title">Drag & drop a file here</p>
+          <p class="drop-title">Drop a file here</p>
           <p class="drop-or">or</p>
           <label class="btn-browse">
             Browse Files
-            <!-- The actual file input is hidden — the label triggers it -->
             <input type="file" id="fileInput" accept=".txt,.md,.jpg,.jpeg,.png,.heic,.docx,.pdf" hidden />
           </label>
-          <p class="drop-types">Supports: .txt &nbsp;.md &nbsp;.jpg &nbsp;.png &nbsp;.heic &nbsp;.docx &nbsp;.pdf</p>
+          <p class="drop-types">.txt · .md · .jpg · .png · .heic · .docx · .pdf</p>
         </div>
-
-        <!-- Shows after a file is selected -->
         <div id="filePreview" class="file-preview hidden">
           <span id="fileName" class="file-name"></span>
-          <button class="btn-clear-file" id="clearFile">✕ Remove</button>
+          <button class="btn-clear-file" id="clearFile">Remove</button>
         </div>
       </div>
 
-      <!-- API KEY (collapsible) -->
       <details class="api-key-section" id="apiKeyDetails">
-        <summary>🔑 Anthropic API Key <span class="key-hint">(required — click to set)</span></summary>
+        <summary>🔑 API Key <span class="key-hint">— click to set</span></summary>
         <div class="api-key-row">
           <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
           <button id="saveApiKey" class="btn-save-key">Save</button>
         </div>
-        <p class="api-key-note">Saved only in your browser. Never shared with anyone except Anthropic directly.</p>
+        <p class="api-key-note">Stored in your browser only. Never sent anywhere except Anthropic.</p>
       </details>
 
-      <!-- Footer with status + button -->
       <div class="modal-footer">
         <span id="organizeStatus" class="organize-status"></span>
-        <button class="btn-organize" id="organizeBtn">✨ Organize with AI</button>
+        <button class="btn-organize" id="organizeBtn">Organize with AI</button>
       </div>
 
     </div>
   </div>
+
+  <!-- CLAUDE CHAT PANEL -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <span class="chat-title">✦ Claude</span>
+        <span class="chat-subtitle">Writing Assistant</span>
+      </div>
+      <button class="chat-close" id="chatClose">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg assistant">
+        <p>Hi! I'm here to help with "Life of Bon". Ask me about characters, plot, dialogue, world-building — anything.</p>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask about your story..." rows="1"></textarea>
+      <button class="chat-send" id="chatSend">↑</button>
+    </div>
+  </div>
+
+  <!-- Floating chat button -->
+  <button class="fab-chat" id="openChat">✦ Ask Claude</button>
 
   <script src="app.js"></script>
 
