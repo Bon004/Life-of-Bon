@@ -55,6 +55,17 @@ try { connections   = JSON.parse(localStorage.getItem('sf_connections') || '[]')
 // Map zoom level (0.1 = very far out, 5.0 = very zoomed in)
 var mapZoom = parseFloat(localStorage.getItem('sf_zoom') || '1.0');
 
+// Selection state for the combine-two-cards flow
+var selectedCardsForCombine = [];
+var wasDragging = false;
+
+// Track new/edited cards not yet organized on the map
+var unsyncedIds = new Set();
+try {
+  var _savedUnsynced = JSON.parse(localStorage.getItem('sf_unsynced_ids') || '[]');
+  unsyncedIds = new Set(_savedUnsynced);
+} catch(e) { unsyncedIds = new Set(); }
+
 // Color lookup for each card type
 const TYPE_COLORS = {
   character: '#3b82f6',
@@ -102,6 +113,13 @@ function buildPrompt(existingTitles) {
     '  "title"   — short name or label (max 6 words)',
     '  "content" — 1-3 sentence description',
     '',
+    'IMPORTANT: Spread cards across ALL 5 types where the material supports it:',
+    '  character = people, beings, named characters',
+    '  world     = locations, lore, magic systems, world rules',
+    '  arc       = plot beats, story events, narrative arcs',
+    '  quote     = memorable dialogue or lines',
+    '  idea      = themes, concepts, future plans',
+    '',
     skipLine,
     'Return only the JSON array, nothing else.'
   ].filter(Boolean).join('\n');
@@ -120,6 +138,13 @@ function buildSyncPrompt(existingTitles) {
     '  "title"   — short name or label (max 6 words)',
     '  "content" — 1-3 sentence description',
     '',
+    'IMPORTANT: Spread cards across ALL 5 types where the material supports it:',
+    '  character = people, beings, named characters',
+    '  world     = locations, lore, magic systems, world rules',
+    '  arc       = plot beats, story events, narrative arcs',
+    '  quote     = memorable dialogue or lines',
+    '  idea      = themes, concepts, future plans',
+    '',
     skipLine,
     '- Maximum 15 new cards per file',
     'Return only the JSON array, nothing else.'
@@ -137,6 +162,8 @@ function addCard(type, title, content) {
   };
   cards.push(card);
   saveCards();
+  unsyncedIds.add(card.id);
+  saveUnsyncedIds();
   renderCards();
 }
 
@@ -201,8 +228,13 @@ function renderCards() {
       const field = el.getAttribute('data-field');
       const card  = cards.find(function(c) { return c.id === id; });
       if (card) {
-        card[field] = el.textContent.trim();
-        saveCards();
+        var newVal = el.textContent.trim();
+        if (card[field] !== newVal) {
+          card[field] = newVal;
+          saveCards();
+          unsyncedIds.add(id);
+          saveUnsyncedIds();
+        }
       }
     });
   });
@@ -565,10 +597,16 @@ async function organizeWithAI() {
   let messageContent;
 
   if (activeMode === 'paste') {
-    messageContent = prompt + '\n\nContent to organize:\n' + pasteText;
+    var text = pasteText.length > 12000
+      ? (showToast('Note: text trimmed to ~12,000 chars for processing', 4000), pasteText.slice(0, 12000))
+      : pasteText;
+    messageContent = prompt + '\n\nContent to organize:\n' + text;
 
   } else if (fileContent.type === 'text') {
-    messageContent = prompt + '\n\nContent to organize:\n' + fileContent.text;
+    var fileText = fileContent.text.length > 12000
+      ? (showToast('Note: file trimmed to ~12,000 chars for processing', 4000), fileContent.text.slice(0, 12000))
+      : fileContent.text;
+    messageContent = prompt + '\n\nContent to organize:\n' + fileText;
 
   } else {
     // Image: Claude can see images when we send them as base64
@@ -778,6 +816,9 @@ async function syncStoryNotes() {
 
       let messageContent;
 
+      // Recompute existing titles each iteration since cards accumulate
+      var existingTitlesNow = cards.map(function(c) { return c.title.toLowerCase(); });
+
       if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'heic') {
         const base64 = await new Promise(function(resolve) {
           const reader = new FileReader();
@@ -786,23 +827,23 @@ async function syncStoryNotes() {
         });
         messageContent = [
           { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
-          { type: 'text',  text: buildSyncPrompt() + '\n\nExtract any story elements from this image.' }
+          { type: 'text',  text: buildSyncPrompt(existingTitlesNow) + '\n\nExtract any story elements from this image.' }
         ];
 
       } else if (ext === 'pdf') {
         const buffer = await file.arrayBuffer();
         const text   = await extractTextFromPdfBuffer(buffer);
-        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + text.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow) + '\n\nContent to organize:\n' + text.slice(0, 8000);
 
       } else if (ext === 'docx') {
         const buffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + result.value.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow) + '\n\nContent to organize:\n' + result.value.slice(0, 8000);
 
       } else {
         // txt / md — read directly from the File object (no fetch needed)
         const text = await file.text();
-        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + text.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow) + '\n\nContent to organize:\n' + text.slice(0, 8000);
       }
 
       btn.textContent = '✨ Organizing ' + name + '...';
@@ -918,7 +959,10 @@ document.getElementById('viewBoard').addEventListener('click', function() {
   document.getElementById('mapView').classList.add('hidden');
   document.getElementById('mapHint').classList.add('hidden');
   document.getElementById('zoomControls').classList.add('hidden');
+  document.getElementById('mapButtons').classList.add('hidden');
   cancelConnect();
+  hideCombinePanel();
+  hideMapSyncPanel();
 });
 
 document.getElementById('viewMap').addEventListener('click', function() {
@@ -929,8 +973,18 @@ document.getElementById('viewMap').addEventListener('click', function() {
   document.getElementById('boardView').classList.add('hidden');
   document.getElementById('mapHint').classList.remove('hidden');
   document.getElementById('zoomControls').classList.remove('hidden');
+  document.getElementById('mapButtons').classList.remove('hidden');
   renderMap();
-  applyZoom(mapZoom); // restore saved zoom level
+  applyZoom(mapZoom);
+  updateMapSyncBtn();
+  // Scroll so cards are nicely framed: show left buffer without starting at the edge
+  var mapView = document.getElementById('mapView');
+  mapView.scrollLeft = 280;
+  mapView.scrollTop  = 120;
+  // If there are unsynced cards, prompt the user before organizing
+  if (unsyncedIds.size > 0) {
+    showMapSyncPanel();
+  }
 });
 
 // applyZoom: scales the map canvas and updates the scroll area + label
@@ -948,8 +1002,8 @@ function applyZoom(newZoom) {
   mapInner.style.transform = 'scale(' + mapZoom + ')';
 
   // Resize the scaler wrapper so the scroll container knows the full extent
-  mapScaler.style.width  = (3000 * mapZoom) + 'px';
-  mapScaler.style.height = (2000 * mapZoom) + 'px';
+  mapScaler.style.width  = (4000 * mapZoom) + 'px';
+  mapScaler.style.height = (2500 * mapZoom) + 'px';
 
   // Update zoom label
   var label = document.getElementById('zoomLabel');
@@ -974,13 +1028,17 @@ document.getElementById('zoomLabel').addEventListener('click', function() {
   applyZoom(1.0); // click the percentage label to reset to 100%
 });
 
-// Escape cancels connection mode
+// Escape cancels connection mode and closes floating panels
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     if (connectingFrom) cancelConnect();
     closeModal();
+    hideCombinePanel();
+    hideMapSyncPanel();
   }
 });
+
+// ── 11a: RENDER & DEFAULT POSITIONS ─────────────────────────
 
 // renderMap: place all cards as free-floating nodes on the canvas
 function renderMap() {
@@ -989,20 +1047,20 @@ function renderMap() {
   // Remove old map cards (keep the SVG)
   mapInner.querySelectorAll('.map-card').forEach(function(el) { el.remove(); });
 
-  // Assign default positions for cards that don't have one yet
-  // Spread by type into columns, stacked vertically
+  // Assign default positions for cards that don't have one yet.
+  // Column offsets match autoOrganizeMap() so manual and auto layouts align.
   var typeOffsets = {
-    character: 60,  world: 300, arc: 540, quote: 780, idea: 1020
+    character: 400, world: 730, arc: 1060, quote: 1390, idea: 1720
   };
   var typeCounters = { character: 0, world: 0, arc: 0, quote: 0, idea: 0 };
 
   cards.forEach(function(card) {
     if (!cardPositions[card.id]) {
-      var col = typeOffsets[card.type] || 60;
+      var col = typeOffsets[card.type] || 400;
       var row = typeCounters[card.type] || 0;
       cardPositions[card.id] = {
         x: col + (row % 2) * 230,
-        y: 60 + Math.floor(row / 2) * 180
+        y: 200 + Math.floor(row / 2) * 180
       };
     }
     typeCounters[card.type] = (typeCounters[card.type] || 0) + 1;
@@ -1038,6 +1096,16 @@ function renderMap() {
 
     mapInner.appendChild(el);
     makeDraggable(el, card.id);
+
+    // Click on card body (not editable / buttons) — handles combine selection
+    el.addEventListener('click', (function(cardId) {
+      return function(e) {
+        if (e.target.matches('[contenteditable]') || e.target.closest('button')) return;
+        if (connectingFrom) return;
+        if (wasDragging) return;
+        handleCardSelectForCombine(cardId);
+      };
+    })(card.id));
 
     // ResizeObserver: fires whenever the card is resized by the user.
     // Saves the new dimensions so they persist after page refresh.
@@ -1092,8 +1160,7 @@ function renderMap() {
         '<button data-action="continue"  data-id="' + cardId + '">✨ Continue Story</button>' +
         '<button data-action="related"   data-id="' + cardId + '">🔗 Find Related Cards</button>' +
         (hasConnections
-          ? '<button data-action="sync"    data-id="' + cardId + '">🔀 Sync with Connected</button>' +
-            '<button data-action="combine" data-id="' + cardId + '">➕ Combine & Create New</button>'
+          ? '<button data-action="sync"    data-id="' + cardId + '">🔀 Sync with Connected</button>'
           : '') +
         '<div class="dropdown-section">Card</div>' +
         '<button data-action="delete" data-id="' + cardId + '" class="danger">✕ Delete Card</button>';
@@ -1131,7 +1198,10 @@ function renderMap() {
   });
 
   drawConnections();
+  makeMapPannable();
 }
+
+// ── 11b: CARD DRAGGING ───────────────────────────────────────
 
 // makeDraggable: lets a map card be dragged around the canvas
 function makeDraggable(el, cardId) {
@@ -1152,14 +1222,16 @@ function makeDraggable(el, cardId) {
 
     el.classList.add('dragging');
     e.preventDefault();
+    e.stopPropagation(); // prevent map pan triggering when dragging a card
 
     function onMove(e) {
       moved = true;
+      wasDragging = true;
       // Divide mouse delta by mapZoom so the card follows the cursor
       // correctly at any zoom level (e.g., at 0.5× zoom, mouse moves
       // 100px but we only want the card to move 50px in canvas space)
-      var newX = Math.max(0, startLeft + (e.clientX - startX) / mapZoom);
-      var newY = Math.max(0, startTop  + (e.clientY - startY) / mapZoom);
+      var newX = Math.max(-50, startLeft + (e.clientX - startX) / mapZoom);
+      var newY = Math.max(-50, startTop  + (e.clientY - startY) / mapZoom);
       // Preserve saved w/h when updating position
       var existing = cardPositions[cardId] || {};
       cardPositions[cardId] = { x: newX, y: newY, w: existing.w, h: existing.h };
@@ -1173,12 +1245,15 @@ function makeDraggable(el, cardId) {
       if (moved) saveCardPositions();
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      if (wasDragging) setTimeout(function() { wasDragging = false; }, 50);
     }
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   });
 }
+
+// ── 11c: CONNECT CARDS & DRAW SVG LINES ─────────────────────
 
 // startConnect: enter "connect from this card" mode
 function startConnect(fromId) {
@@ -1245,13 +1320,13 @@ function drawConnections() {
     var cy2 = y2;
     var d = 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ' ' + cx2 + ' ' + cy2 + ' ' + x2 + ' ' + y2;
 
-    // Visual line
+    // Visual line — auto-connections are lighter, manual connections more prominent
     var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', d);
-    path.setAttribute('stroke', '#94a3b8');
-    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('stroke', conn.auto ? '#2d3340' : '#94a3b8');
+    path.setAttribute('stroke-width', conn.auto ? '1' : '1.5');
     path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-dasharray', '5,4');
+    path.setAttribute('stroke-dasharray', conn.auto ? '3,7' : '5,4');
     svg.appendChild(path);
 
     // Delete button at midpoint
@@ -1323,9 +1398,8 @@ async function handleCardTabAction(action, cardId) {
     .map(function(id) { return cards.find(function(c) { return c.id === id; }); })
     .filter(Boolean);
 
-  var cardText   = card.title + ': ' + card.content;
-  var connText   = connectedCards.map(function(c) { return '- ' + c.title + ': ' + c.content; }).join('\n');
-  var storyCtx   = buildStoryContext();
+  var cardText = card.title + ': ' + card.content;
+  var connText = connectedCards.map(function(c) { return '- ' + c.title + ': ' + c.content; }).join('\n');
 
   var prompt;
   if (action === 'summarize') {
@@ -1335,85 +1409,28 @@ async function handleCardTabAction(action, cardId) {
     prompt = 'Based on this story note from "Life of Bon", suggest 2-3 specific ways the story could continue from here:\n\n' + cardText;
 
   } else if (action === 'related') {
-    prompt = 'Given this story note and the full story context below, which other elements, themes, or characters does it relate to most? Give 2-3 specific connections.\n\nNote:\n' + cardText + '\n\nFull story context:\n' + storyCtx;
+    // Use compact card list (titles + types only) instead of full content — saves ~2k tokens per tap
+    var compactCtx = cards.map(function(c) { return '[' + c.type + '] ' + c.title; }).join('\n');
+    prompt = 'Given this story note and the story card index below, which other elements, themes, or characters does it relate to most? Give 2-3 specific connections.\n\nNote:\n' + cardText + '\n\nStory cards:\n' + compactCtx;
 
   } else if (action === 'sync') {
     if (connectedCards.length === 0) {
-      openChat();
-      appendChatMsg('assistant', 'This card has no connections yet. Connect it to another card first using the ⊕ button.');
+      showToast('This card has no connections. Use ⊕ to connect cards first.');
       return;
     }
     prompt = 'These connected story notes are from "Life of Bon". Reconcile and merge them into a coherent combined description (2-4 sentences):\n\nMain card:\n' + cardText + '\n\nConnected cards:\n' + connText;
-
-  } else if (action === 'combine') {
-    if (connectedCards.length === 0) {
-      openChat();
-      appendChatMsg('assistant', 'This card has no connections yet. Connect it to another card first using the ⊕ button.');
-      return;
-    }
-    // "Combine & Create" makes a new card — send to Claude for JSON response
-    var combinePrompt = 'Combine these connected story notes into ONE new story card. Return only a JSON object with fields: "type" (one of: character, world, arc, quote, idea), "title" (max 6 words), "content" (2-3 sentences).\n\nCards to combine:\n' + cardText + '\n' + connText;
-    try {
-      var res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type':                              'application/json',
-          'x-api-key':                                 key,
-          'anthropic-version':                         '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model:      'claude-sonnet-4-5-20250929',
-          max_tokens: 300,
-          messages: [{ role: 'user', content: combinePrompt }]
-        })
-      });
-      var data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || 'API error');
-      var raw = (data.content?.[0]?.text || '').trim()
-        .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-      var newCard = JSON.parse(raw);
-      var validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
-      if (newCard && newCard.title && validTypes.includes(newCard.type)) {
-        addCard(newCard.type, newCard.title, newCard.content || '');
-        openChat();
-        appendChatMsg('assistant', '✅ Created new card: "' + newCard.title + '" (' + newCard.type + ')');
-      } else {
-        throw new Error('Unexpected response format');
-      }
-    } catch (err) {
-      openChat();
-      appendChatMsg('assistant', '❌ Could not combine cards: ' + err.message);
-    }
-    return;
   }
 
-  // For all non-combine actions: send to Claude and show result in chat
+  // Send to Claude and add result to chat without auto-opening it
+  var maxTok = { summarize: 200, continue: 300, related: 300, sync: 250 };
   try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':                              'application/json',
-        'x-api-key':                                 key,
-        'anthropic-version':                         '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model:      'claude-sonnet-4-5-20250929',
-        max_tokens: 400,
-        system:     'You are a creative writing assistant for an isekai light novel called "Life of Bon". Be specific, concise, and helpful.',
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    var responseData = await response.json();
-    if (!response.ok) throw new Error(responseData?.error?.message || 'API error');
-    var reply = (responseData.content?.[0]?.text || '').trim();
-    openChat();
+    var reply = await callClaudeForCard(key, prompt, maxTok[action] || 300);
     var label = { summarize: '📝 Summary', continue: '✨ Story Ideas', related: '🔗 Related Cards', sync: '🔀 Merged View' };
     appendChatMsg('assistant', (label[action] || 'AI') + ' for "' + card.title + '":\n\n' + reply);
+    showChatNotif();
+    showToast((label[action] || 'AI') + ' ready — open chat to view', 4500);
   } catch (err) {
-    openChat();
-    appendChatMsg('assistant', '❌ ' + err.message);
+    showToast('❌ ' + err.message);
   }
 }
 
@@ -1557,6 +1574,9 @@ function openChat() {
   chatIsOpen = true;
   document.getElementById('chatPanel').classList.add('open');
   document.getElementById('chatInput').focus();
+  // Clear notification dot when chat is opened
+  var dot = document.getElementById('chatNotifDot');
+  if (dot) dot.classList.add('hidden');
   // Show memory badge if we have a stored memory summary
   var memBadge = document.getElementById('chatMemoryBadge');
   if (memBadge) {
@@ -1597,6 +1617,9 @@ function buildStoryContext() {
   return ctx;
 }
 
+// sendChatMessage: two-call structure —
+//   Call A (conditional): if chatHistory > 20 turns, summarize oldest 10 into sf_chat_memory
+//   Call B (always): main response, injecting sf_chat_memory as system context + last 20 turns
 async function sendChatMessage() {
   var input = document.getElementById('chatInput');
   var msg   = input.value.trim();
@@ -1647,9 +1670,11 @@ async function sendChatMessage() {
         var memData = await memRes.json();
         if (memRes.ok) {
           var memSummary = (memData.content?.[0]?.text || '').trim();
-          // Append to any existing memory
+          // Append to any existing memory, then cap at 3000 chars (keep most recent)
           var existing = localStorage.getItem('sf_chat_memory') || '';
-          localStorage.setItem('sf_chat_memory', (existing ? existing + '\n' : '') + memSummary);
+          var combined = (existing ? existing + '\n' : '') + memSummary;
+          if (combined.length > 3000) combined = combined.slice(-3000);
+          localStorage.setItem('sf_chat_memory', combined);
           var memBadge = document.getElementById('chatMemoryBadge');
           if (memBadge) memBadge.style.display = '';
         }
@@ -1675,7 +1700,9 @@ async function sendChatMessage() {
         content: 'Got it! I can see your "Life of Bon" story notes. Ready to help with writing, characters, plot, dialogue — whatever you need.'
       });
     }
-    messages = messages.concat(chatHistory);
+    // Cap history sent to API at last 20 turns to control token usage
+    var trimmedHistory = chatHistory.length > 20 ? chatHistory.slice(-20) : chatHistory;
+    messages = messages.concat(trimmedHistory);
 
     var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1723,6 +1750,375 @@ function appendChatMsg(role, text, id) {
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
+
+
+// ============================================================
+// SECTION 14: NEW UTILITY & FEATURE FUNCTIONS
+// ============================================================
+
+// saveUnsyncedIds: persists unsynced card IDs to localStorage
+function saveUnsyncedIds() {
+  localStorage.setItem('sf_unsynced_ids', JSON.stringify(Array.from(unsyncedIds)));
+  updateMapSyncBtn();
+}
+
+// updateMapSyncBtn: updates the Sync Map button appearance
+function updateMapSyncBtn() {
+  var btn = document.getElementById('mapSyncBtn');
+  if (!btn) return;
+  var count = unsyncedIds.size;
+  if (count > 0) {
+    btn.innerHTML = '<span class="unsynced-dot"></span>Sync (' + count + ')';
+    btn.classList.add('has-unsynced');
+  } else {
+    btn.textContent = '⊞ Sync Map';
+    btn.classList.remove('has-unsynced');
+  }
+}
+
+// showToast: shows a brief auto-dismissing notification
+function showToast(msg, durationMs) {
+  var toast = document.createElement('div');
+  toast.className = 'sf-toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() {
+    toast.classList.add('sf-toast-fade');
+    setTimeout(function() { if (toast.parentNode) toast.remove(); }, 350);
+  }, durationMs || 3000);
+}
+
+// showChatNotif: shows the notification dot on the "Ask Claude" FAB button
+function showChatNotif() {
+  var dot = document.getElementById('chatNotifDot');
+  if (dot && !chatIsOpen) dot.classList.remove('hidden');
+}
+
+// callClaudeForCard: lightweight Claude API call for single-card actions (no system prompt)
+async function callClaudeForCard(key, prompt, maxTokens) {
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type':                              'application/json',
+      'x-api-key':                                 key,
+      'anthropic-version':                         '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model:      'claude-sonnet-4-5-20250929',
+      max_tokens: maxTokens || 300,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  var data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || 'API error (status ' + res.status + ')');
+  return (data.content?.[0]?.text || '').trim();
+}
+
+// ── 14a: MAP PANNING ─────────────────────────────────────────
+
+// makeMapPannable: enables click+drag on the empty canvas to pan the map view
+function makeMapPannable() {
+  var mapView  = document.getElementById('mapView');
+  var mapInner = document.getElementById('mapInner');
+  if (!mapInner) return;
+
+  // Remove previous listener before re-attaching (renderMap is called multiple times)
+  if (mapInner._panHandler) {
+    mapInner.removeEventListener('mousedown', mapInner._panHandler);
+  }
+
+  mapInner._panHandler = function(e) {
+    // Only fire when clicking directly on mapInner (card mousedown calls stopPropagation)
+    if (e.target !== mapInner) return;
+    if (connectingFrom) return;
+    // Clicking empty canvas also clears card selection
+    hideCombinePanel();
+
+    var startScrollLeft = mapView.scrollLeft;
+    var startScrollTop  = mapView.scrollTop;
+    var startX = e.clientX;
+    var startY = e.clientY;
+
+    mapInner.style.cursor = 'grabbing';
+    e.preventDefault();
+
+    function onMove(e) {
+      mapView.scrollLeft = startScrollLeft - (e.clientX - startX);
+      mapView.scrollTop  = startScrollTop  - (e.clientY - startY);
+    }
+    function onUp() {
+      mapInner.style.cursor = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
+
+  mapInner.addEventListener('mousedown', mapInner._panHandler);
+}
+
+// ── 14b: AUTO-ORGANIZE MAP ───────────────────────────────────
+
+// autoOrganizeMap: arranges all cards in columns by type, auto-connects within each column
+// Column math: colX = START_X + colIndex * (CARD_W + COL_GAP)
+//   e.g. character at 400, world at 730, arc at 1060, quote at 1390, idea at 1720
+function autoOrganizeMap() {
+  var TYPE_ORDER = ['character', 'world', 'arc', 'quote', 'idea'];
+  var CARD_W     = 210; // card width
+  var COL_GAP    = 120; // gap between columns (total column stride = 330px)
+  var START_X    = 400; // left offset — gives 400px of left scroll buffer
+  var START_Y    = 200; // top offset — gives breathing room above the first card
+  var ROW_GAP    = 200; // vertical gap between cards in a column
+
+  // Remove old auto-connections (manually created connections are preserved)
+  connections = connections.filter(function(c) { return !c.auto; });
+
+  TYPE_ORDER.forEach(function(type, colIndex) {
+    var colCards = cards
+      .filter(function(c) { return c.type === type; })
+      .sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
+
+    var colX = START_X + colIndex * (CARD_W + COL_GAP);
+
+    colCards.forEach(function(card, rowIndex) {
+      var existing = cardPositions[card.id] || {};
+      cardPositions[card.id] = {
+        x: colX,
+        y: START_Y + rowIndex * ROW_GAP,
+        w: existing.w,
+        h: existing.h
+      };
+
+      // Auto-connect consecutive cards within the same column
+      if (rowIndex > 0) {
+        var prevCard = colCards[rowIndex - 1];
+        var alreadyConnected = connections.some(function(c) {
+          return (c.from === prevCard.id && c.to === card.id) ||
+                 (c.from === card.id && c.to === prevCard.id);
+        });
+        if (!alreadyConnected) {
+          connections.push({ id: generateId(), from: prevCard.id, to: card.id, auto: true });
+        }
+      }
+    });
+  });
+
+  saveCardPositions();
+  saveConnections();
+
+  // Re-frame the viewport so the organized layout is visible from the left
+  var mapViewEl = document.getElementById('mapView');
+  if (mapViewEl) {
+    mapViewEl.scrollLeft = 280;
+    mapViewEl.scrollTop  = 120;
+  }
+}
+
+// ── 14c: COMBINE CARDS ───────────────────────────────────────
+
+// handleCardSelectForCombine: manages the 2-card selection state for combining
+function handleCardSelectForCombine(cardId) {
+  var idx = selectedCardsForCombine.indexOf(cardId);
+
+  if (idx !== -1) {
+    // Clicking a selected card deselects it
+    selectedCardsForCombine.splice(idx, 1);
+    if (selectedCardsForCombine.length < 2) hideCombinePanel();
+  } else if (selectedCardsForCombine.length >= 2) {
+    // Clicking a 3rd card: clear all selection, select the new one
+    selectedCardsForCombine = [cardId];
+    hideCombinePanel();
+  } else {
+    selectedCardsForCombine.push(cardId);
+    if (selectedCardsForCombine.length === 2) {
+      showCombinePanel(selectedCardsForCombine[0], selectedCardsForCombine[1]);
+    }
+  }
+
+  // Update visual selection classes
+  document.querySelectorAll('.map-card').forEach(function(el) {
+    el.classList.toggle('card-selected', selectedCardsForCombine.indexOf(el.dataset.id) !== -1);
+  });
+}
+
+// showCombinePanel: populates and shows the floating combine panel
+function showCombinePanel(id1, id2) {
+  var card1 = cards.find(function(c) { return c.id === id1; });
+  var card2 = cards.find(function(c) { return c.id === id2; });
+  if (!card1 || !card2) return;
+
+  document.getElementById('combineCard1Name').textContent = card1.title;
+  document.getElementById('combineCard2Name').textContent = card2.title;
+  document.getElementById('combineContextNote').value = '';
+  document.getElementById('combineStatusMsg').textContent = '';
+  document.getElementById('combineConfirmBtn').disabled = false;
+  document.getElementById('combinePanel').classList.remove('hidden');
+}
+
+// hideCombinePanel: hides the combine panel and clears selection state
+function hideCombinePanel() {
+  var panel = document.getElementById('combinePanel');
+  if (panel) panel.classList.add('hidden');
+  selectedCardsForCombine = [];
+  document.querySelectorAll('.map-card.card-selected').forEach(function(el) {
+    el.classList.remove('card-selected');
+  });
+}
+
+// showMapSyncPanel: shows the map sync prompt
+function showMapSyncPanel() {
+  var count = unsyncedIds.size;
+  var countEl = document.getElementById('mapSyncCount');
+  if (countEl) countEl.textContent = count;
+  var note = document.getElementById('mapSyncContextNote');
+  if (note) note.value = '';
+  var msg = document.getElementById('mapSyncStatusMsg');
+  if (msg) msg.textContent = '';
+  var btn = document.getElementById('mapSyncConfirmBtn');
+  if (btn) btn.disabled = false;
+  var panel = document.getElementById('mapSyncPanel');
+  if (panel) panel.classList.remove('hidden');
+}
+
+// hideMapSyncPanel: hides the map sync panel
+function hideMapSyncPanel() {
+  var panel = document.getElementById('mapSyncPanel');
+  if (panel) panel.classList.add('hidden');
+}
+
+// Wire up combine panel buttons
+document.getElementById('combineCancelBtn').addEventListener('click', hideCombinePanel);
+
+document.getElementById('combineConfirmBtn').addEventListener('click', async function() {
+  var key = apiKey || localStorage.getItem('sf_api_key');
+  if (!key) {
+    document.getElementById('combineStatusMsg').textContent = '⚠️ Set your API key first.';
+    return;
+  }
+  if (selectedCardsForCombine.length < 2) return;
+
+  var card1 = cards.find(function(c) { return c.id === selectedCardsForCombine[0]; });
+  var card2 = cards.find(function(c) { return c.id === selectedCardsForCombine[1]; });
+  if (!card1 || !card2) return;
+
+  var instructions = document.getElementById('combineContextNote').value.trim();
+  var instrLine = instructions ? '\n\nUser instructions: ' + instructions : '';
+
+  var combinePrompt =
+    'Combine these two story notes into ONE new story card.' + instrLine + '\n' +
+    'Return ONLY a JSON object with fields: "type" (one of: character, world, arc, quote, idea), ' +
+    '"title" (max 6 words), "content" (2-3 sentences).\n\n' +
+    'Card A: ' + card1.title + ': ' + card1.content + '\n' +
+    'Card B: ' + card2.title + ': ' + card2.content;
+
+  document.getElementById('combineStatusMsg').textContent = '⏳ Combining...';
+  document.getElementById('combineConfirmBtn').disabled = true;
+
+  try {
+    var raw = await callClaudeForCard(key, combinePrompt, 300);
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    var newCard = JSON.parse(raw);
+    var validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
+    if (newCard && newCard.title && validTypes.includes(newCard.type)) {
+      addCard(newCard.type, newCard.title, newCard.content || '');
+      hideCombinePanel();
+      showToast('✅ Created "' + newCard.title + '" (' + newCard.type + ')');
+    } else {
+      throw new Error('Unexpected response format');
+    }
+  } catch (err) {
+    document.getElementById('combineStatusMsg').textContent = '❌ ' + err.message;
+    document.getElementById('combineConfirmBtn').disabled = false;
+  }
+});
+
+// Wire up map sync panel buttons
+document.getElementById('mapSyncSkipBtn').addEventListener('click', function() {
+  hideMapSyncPanel();
+  autoOrganizeMap();
+  renderMap();
+  unsyncedIds.clear();
+  saveUnsyncedIds();
+});
+
+document.getElementById('mapSyncConfirmBtn').addEventListener('click', async function() {
+  var key = apiKey || localStorage.getItem('sf_api_key');
+  if (!key) {
+    document.getElementById('mapSyncStatusMsg').textContent = '⚠️ Set your API key first.';
+    return;
+  }
+
+  var contextNote = document.getElementById('mapSyncContextNote').value.trim();
+  var unsyncedCards = Array.from(unsyncedIds)
+    .map(function(id) { return cards.find(function(c) { return c.id === id; }); })
+    .filter(Boolean);
+
+  if (unsyncedCards.length === 0) {
+    hideMapSyncPanel();
+    autoOrganizeMap();
+    renderMap();
+    return;
+  }
+
+  document.getElementById('mapSyncStatusMsg').textContent = '⏳ Syncing...';
+  document.getElementById('mapSyncConfirmBtn').disabled = true;
+
+  var cardListText = unsyncedCards.map(function(c) {
+    return '- [' + c.id + '] ' + c.type + ': ' + c.title + ' — ' + c.content;
+  }).join('\n');
+
+  var syncPromptText =
+    'Review these story notes and improve their descriptions if needed. Keep them concise (1-3 sentences).' +
+    (contextNote ? '\n\nContext: ' + contextNote : '') +
+    '\n\nReturn ONLY a JSON array where each object has: "id" (unchanged), "type" (unchanged), "title", "content".\n\n' +
+    cardListText;
+
+  try {
+    var raw = await callClaudeForCard(key, syncPromptText, 800);
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    var improved = JSON.parse(raw);
+    if (Array.isArray(improved)) {
+      var validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
+      improved.forEach(function(item) {
+        if (!item.id || !item.title) return;
+        var card = cards.find(function(c) { return c.id === item.id; });
+        if (card && validTypes.includes(item.type)) {
+          card.title   = item.title;
+          card.content = item.content || card.content;
+        }
+      });
+      saveCards();
+    }
+  } catch(err) {
+    // Sync failed — still organize, just with current data
+  }
+
+  hideMapSyncPanel();
+  autoOrganizeMap();
+  renderMap();
+  unsyncedIds.clear();
+  saveUnsyncedIds();
+  showToast('✅ Map organized!');
+});
+
+// Wire up toolbar map buttons
+document.getElementById('mapSyncBtn').addEventListener('click', function() {
+  if (unsyncedIds.size > 0) {
+    showMapSyncPanel();
+  } else {
+    autoOrganizeMap();
+    renderMap();
+    showToast('Map organized!');
+  }
+});
+
+document.getElementById('reorgBtn').addEventListener('click', function() {
+  autoOrganizeMap();
+  renderMap();
+  showToast('Map re-organized!');
+});
 
 
 // ============================================================

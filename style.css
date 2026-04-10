@@ -5,10 +5,12 @@
   --accent:            #e85d04;
   --accent-hover:      #c2410c;
   --accent-light:      rgba(232,93,4,0.12);
+  --accent-rgb:        232, 93, 4;
 
   --bg:                #0d1117;
   --surface:           #161b22;
   --surface-2:         #1c2128;
+  --surface-selected:  #1e1812;
   --border:            #30363d;
 
   --text:              #e6edf3;
@@ -101,15 +103,17 @@ body {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  letter-spacing: 0.01em;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.30);
 }
-.btn-add-notes:hover { background: var(--accent-hover); transform: translateY(-1px); }
-.btn-add-notes:active { transform: none; }
+.btn-add-notes:hover  { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.40); }
+.btn-add-notes:active { transform: none; box-shadow: none; }
 
 /* ============================================================
    TAB BAR
@@ -368,7 +372,7 @@ body {
   transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
   animation: cardIn 0.18s ease both;
 }
-.story-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); border-color: #484f58; }
+.story-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); border-color: #484f58; background: #1a1f27; }
 
 .canvas-col[data-type="character"] .story-card { border-left: 3px solid var(--color-character); }
 .canvas-col[data-type="world"]     .story-card { border-left: 3px solid var(--color-world); }
@@ -414,15 +418,15 @@ body {
    the correct scrollable area when the canvas is zoomed */
 .map-scaler {
   position: relative;
-  width: 3000px;
-  height: 2000px;
+  width: 4000px;
+  height: 2500px;
 }
 
 .map-inner {
   position: absolute;
   top: 0; left: 0;
-  width: 3000px;
-  height: 2000px;
+  width: 4000px;
+  height: 2500px;
   background-color: var(--bg);
   background-image: radial-gradient(circle, #30363d 1px, transparent 1px);
   background-size: 28px 28px;
@@ -455,10 +459,22 @@ body {
   transition: box-shadow var(--transition);
   user-select: none;
 }
-.map-card:hover  { box-shadow: var(--shadow-md); }
+.map-inner { cursor: grab; }
+
+.map-card:hover  { box-shadow: var(--shadow-md); border-color: #484f58; }
 .map-card.dragging { cursor: grabbing; box-shadow: var(--shadow-lg); z-index: 10; transition: none; }
 .map-card.connecting-from { box-shadow: 0 0 0 3px var(--accent); }
 .map-card.connecting-target { box-shadow: 0 0 0 2px var(--color-character); cursor: pointer; }
+
+/* Selected state for combine flow */
+.map-card.card-selected {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 20px rgba(var(--accent-rgb), 0.22) !important;
+  background: var(--surface-selected);
+  transform: scale(1.025);
+  z-index: 10;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s, background 0.15s;
+}
 
 .map-card-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .map-card-title {
@@ -786,20 +802,21 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   position: fixed;
   bottom: 56px;
   right: 24px;
-  background: var(--header-bg);
+  background: var(--surface);
   color: #f8fafc;
-  border: none;
+  border: 1px solid #2d333b;
   border-radius: 24px;
   padding: 11px 20px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.50);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.55);
   transition: all var(--transition);
   z-index: 150;
+  letter-spacing: 0.01em;
 }
-.fab-chat:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.60); }
+.fab-chat:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.65); border-color: var(--accent); color: var(--accent); }
 
 /* ============================================================
    MODAL
@@ -1036,14 +1053,199 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
   white-space: nowrap;
   flex-shrink: 0;
   letter-spacing: 0.01em;
+  box-shadow: 0 2px 10px rgba(var(--accent-rgb), 0.30);
 }
-.btn-organize:hover    { background: var(--accent-hover); transform: translateY(-1px); }
-.btn-organize:active   { transform: none; }
-.btn-organize:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; transform: none; }
+.btn-organize:hover    { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.40); }
+.btn-organize:active   { transform: none; box-shadow: none; }
+.btn-organize:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ============================================================
+   MAP TOOLBAR BUTTONS
+   ============================================================ */
+.map-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-map-action {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.btn-map-action:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.btn-map-action.has-unsynced {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.unsynced-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 5px;
+  vertical-align: middle;
+  animation: pulseDot 1.8s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ============================================================
+   COMBINE & MAP SYNC FLOATING PANEL
+   ============================================================ */
+.combine-panel {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+  min-width: 320px;
+  max-width: 480px;
+  width: calc(100% - 48px);
+  animation: panelUp 0.2s cubic-bezier(0.34, 1.3, 0.64, 1);
+  overflow: hidden;
+}
+@keyframes panelUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.combine-panel.hidden { display: none; }
+
+.combine-panel-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.combine-panel-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: block;
+}
+.combine-panel-label strong { color: var(--text); font-weight: 600; }
+
+.combine-panel textarea {
+  display: block;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  resize: none;
+  outline: none;
+  height: 68px;
+  line-height: 1.55;
+}
+.combine-panel textarea::placeholder { color: var(--text-light); }
+.combine-panel textarea:focus { background: #1a1e26; }
+
+.combine-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+}
+.combine-status-msg {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Small buttons for panels */
+.btn-secondary-sm {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.btn-secondary-sm:hover { border-color: #6e7681; color: var(--text); }
+
+.btn-accent-sm {
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  color: #fff;
+  transition: background var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+.btn-accent-sm:hover    { background: var(--accent-hover); transform: translateY(-1px); }
+.btn-accent-sm:active   { transform: none; }
+.btn-accent-sm:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; transform: none; }
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+.sf-toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+  z-index: 400;
+  max-width: 320px;
+  line-height: 1.5;
+  animation: toastIn 0.18s ease both;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.sf-toast-fade { opacity: 0; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* FAB chat notification dot */
+.fab-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+.fab-dot.hidden { display: none; }
 
 /* ============================================================
    UTILITY

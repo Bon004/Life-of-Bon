@@ -52,7 +52,11 @@
           <button class="view-btn active" id="viewBoard">Board</button>
           <button class="view-btn" id="viewMap">Map</button>
         </div>
-        <span class="toolbar-hint hidden" id="mapHint">Drag cards to move · click ⊕ to connect · click ✕ on a line to remove it</span>
+        <span class="toolbar-hint hidden" id="mapHint">Click cards to select for combining · drag to move · ⊕ to connect</span>
+        <div class="map-buttons hidden" id="mapButtons">
+          <button class="btn-map-action" id="mapSyncBtn">⊞ Sync Map</button>
+          <button class="btn-map-action" id="reorgBtn">↻ Re-organize</button>
+        </div>
         <div class="zoom-controls hidden" id="zoomControls">
           <button class="zoom-btn" id="zoomOut">−</button>
           <span class="zoom-label" id="zoomLabel" title="Click to reset to 100%">100%</span>
@@ -238,6 +242,32 @@
     </div>
   </div>
 
+  <!-- COMBINE CARDS PANEL -->
+  <div class="combine-panel hidden" id="combinePanel">
+    <div class="combine-panel-header">
+      <span class="combine-panel-label">Combining <strong id="combineCard1Name"></strong> + <strong id="combineCard2Name"></strong></span>
+    </div>
+    <textarea id="combineContextNote" placeholder="Optional: how should they be combined? (e.g. 'make them fight', 'merge backstories')"></textarea>
+    <div class="combine-panel-actions">
+      <span id="combineStatusMsg" class="combine-status-msg"></span>
+      <button id="combineCancelBtn" class="btn-secondary-sm">Cancel</button>
+      <button id="combineConfirmBtn" class="btn-accent-sm">Combine</button>
+    </div>
+  </div>
+
+  <!-- MAP SYNC PANEL -->
+  <div class="combine-panel hidden" id="mapSyncPanel">
+    <div class="combine-panel-header">
+      <span class="combine-panel-label"><strong id="mapSyncCount">0</strong> unsynced cards — organize on map?</span>
+    </div>
+    <textarea id="mapSyncContextNote" placeholder="Optional context for the AI (e.g. 'focus on Act 2', 'new characters added')..."></textarea>
+    <div class="combine-panel-actions">
+      <span id="mapSyncStatusMsg" class="combine-status-msg"></span>
+      <button id="mapSyncSkipBtn" class="btn-secondary-sm">Just Organize</button>
+      <button id="mapSyncConfirmBtn" class="btn-accent-sm">Sync + Organize</button>
+    </div>
+  </div>
+
   <!-- CLAUDE CHAT PANEL -->
   <div class="chat-panel" id="chatPanel">
     <div class="chat-header">
@@ -260,7 +290,7 @@
   </div>
 
   <!-- Floating chat button -->
-  <button class="fab-chat" id="openChat">✦ Ask Claude</button>
+  <button class="fab-chat" id="openChat">✦ Ask Claude<span class="fab-dot hidden" id="chatNotifDot"></span></button>
 
   <script type="module" src="app.js"></script>
 
