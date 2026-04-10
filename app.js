@@ -1,14 +1,35 @@
 // ============================================================
 // app.js — StoryForge: all the logic
 // ============================================================
+//
+// TABLE OF CONTENTS
+// ─────────────────────────────────────────────────────────────
+//  Section 1  · Card Data         — loads cards from localStorage
+//  Section 2  · Card Helpers      — saveCards, addCard, deleteCard, renderCards
+//  Section 3  · + Card Buttons    — manual add via prompt()
+//  Section 4  · Tab Switching     — switches between the 4 main tabs
+//  Section 5  · Modal Open/Close  — Add Notes modal lifecycle
+//  Section 6  · Modal Mode Toggle — Paste Text vs Upload File
+//  Section 7  · File Upload       — reads .txt .md .docx .pdf .jpg .png
+//  Section 8  · API Key           — saves key to localStorage
+//  Section 9  · Organize with AI  — sends notes → Claude → extracts cards
+//  Section 10 · Sync Notes        — batch syncs story-notes/ folder
+//  Section 11 · Map View          — drag, zoom, connect, resize, SVG lines
+//  Section 12 · Story Summary     — AI-generated overview bar
+//  Section 13 · Claude Chat       — writing assistant panel
+// ─────────────────────────────────────────────────────────────
 
-
-import { generateId, escapeHtml, buildPrompt, buildSyncPrompt, validTypes } from './story-utils.js';
 
 // ============================================================
 // SECTION 1: CARD DATA
-// Cards are stored in the browser's localStorage as a JSON string.
-// When the page loads we read them back into this 'cards' array.
+// ─────────────────────────────────────────────────────────────
+// What it does: Initializes all persistent state by reading from
+// localStorage. This runs once when the page loads.
+//
+// Reads:  localStorage keys: sf_cards, sf_api_key, sf_positions,
+//         sf_connections, sf_zoom
+// Writes: populates cards[], cardPositions{}, connections[],
+//         apiKey, mapZoom
 // ============================================================
 
 let cards = [];
@@ -31,6 +52,9 @@ let connectingFrom = null;    // cardId we're connecting FROM
 try { cardPositions = JSON.parse(localStorage.getItem('sf_positions') || '{}'); } catch(e) {}
 try { connections   = JSON.parse(localStorage.getItem('sf_connections') || '[]'); } catch(e) {}
 
+// Map zoom level (0.1 = very far out, 5.0 = very zoomed in)
+var mapZoom = parseFloat(localStorage.getItem('sf_zoom') || '1.0');
+
 // Color lookup for each card type
 const TYPE_COLORS = {
   character: '#3b82f6',
@@ -42,6 +66,13 @@ const TYPE_COLORS = {
 
 // ============================================================
 // SECTION 2: CARD HELPER FUNCTIONS
+// ─────────────────────────────────────────────────────────────
+// What it does: Core CRUD operations for cards. All changes go
+// through saveCards() which persists to localStorage immediately.
+//
+// Reads:  cards[] array
+// Writes: localStorage sf_cards, re-renders DOM via renderCards()
+// Entry:  addCard(), deleteCard() are called throughout
 // ============================================================
 
 // saveCards: turns our cards array into a text string and stores it
@@ -52,6 +83,47 @@ function saveCards() {
 // generateId: makes a random short ID like "a3f9b2" for each card
 function generateId() {
   return Math.random().toString(36).slice(2, 8);
+}
+
+// escapeHtml: converts special characters so they're safe to put inside innerHTML
+function escapeHtml(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// buildPrompt: returns the Claude prompt for the "Organize with AI" button
+function buildPrompt(existingTitles) {
+  const skipLine = existingTitles && existingTitles.length > 0
+    ? 'Skip anything matching these already-existing titles: ' + existingTitles.join(', ') + '.'
+    : '';
+  return [
+    'You are a story organization assistant. Read the notes below and extract story elements.',
+    'Return a JSON array of objects. Each object must have exactly these fields:',
+    '  "type"    — one of: character, world, arc, quote, idea',
+    '  "title"   — short name or label (max 6 words)',
+    '  "content" — 1-3 sentence description',
+    '',
+    skipLine,
+    'Return only the JSON array, nothing else.'
+  ].filter(Boolean).join('\n');
+}
+
+// buildSyncPrompt: same as buildPrompt but used for the Sync Notes batch job
+function buildSyncPrompt(existingTitles) {
+  const skipLine = existingTitles && existingTitles.length > 0
+    ? 'Skip anything matching these already-existing titles: ' + existingTitles.join(', ') + '.'
+    : '';
+  return [
+    'You are a story organization assistant. Read the content below and extract story elements.',
+    'IMPORTANT: If the content is NOT related to a story, characters, plot, or worldbuilding, return an empty array [].',
+    'Return a JSON array of objects. Each object must have exactly these fields:',
+    '  "type"    — one of: character, world, arc, quote, idea',
+    '  "title"   — short name or label (max 6 words)',
+    '  "content" — 1-3 sentence description',
+    '',
+    skipLine,
+    '- Maximum 15 new cards per file',
+    'Return only the JSON array, nothing else.'
+  ].filter(Boolean).join('\n');
 }
 
 // addCard: creates a new card object and adds it to the cards array
@@ -139,6 +211,12 @@ function renderCards() {
 
 // ============================================================
 // SECTION 3: "+ Card" BUTTONS (manual add)
+// ─────────────────────────────────────────────────────────────
+// What it does: Attaches click listeners to the + button at
+// the top of each board column. Uses browser prompt() to ask
+// for a title, then calls addCard().
+//
+// Entry:  .btn-add-card click → prompt → addCard()
 // ============================================================
 
 document.querySelectorAll('.btn-add-card').forEach(function(btn) {
@@ -158,6 +236,12 @@ document.querySelectorAll('.btn-add-card').forEach(function(btn) {
 
 // ============================================================
 // SECTION 4: TAB SWITCHING
+// ─────────────────────────────────────────────────────────────
+// What it does: Manages the 4 top tabs (Story Canvas, Writing,
+// Characters, Arcs). Shows the matching panel by toggling the
+// 'active' class.
+//
+// Entry:  .tab-btn click → hides all panels → shows panel-{tab}
 // ============================================================
 
 const tabButtons = document.querySelectorAll('.tab-btn');
@@ -181,6 +265,13 @@ tabButtons.forEach(function(button) {
 
 // ============================================================
 // SECTION 5: MODAL — OPEN & CLOSE
+// ─────────────────────────────────────────────────────────────
+// What it does: Controls the "Add Notes" modal. Opens on button
+// click, closes via X button, clicking outside, or pressing ESC.
+// Also clears form state when closed.
+//
+// Entry:  #openNotesModal click → show modal
+//         #closeNotesModal / ESC / backdrop click → closeModal()
 // ============================================================
 
 const notesModal    = document.getElementById('notesModal');
@@ -217,6 +308,11 @@ function closeModal() {
 
 // ============================================================
 // SECTION 6: MODAL MODE TOGGLE (Paste Text vs Upload File)
+// ─────────────────────────────────────────────────────────────
+// What it does: Switches between the two input modes inside
+// the Add Notes modal. Only one mode panel is visible at a time.
+//
+// Entry:  .mode-btn click → toggles active class on btn + panel
 // ============================================================
 
 const modeBtns   = document.querySelectorAll('.mode-btn');
@@ -237,6 +333,19 @@ modeBtns.forEach(function(btn) {
 
 // ============================================================
 // SECTION 7: FILE UPLOAD & READING
+// ─────────────────────────────────────────────────────────────
+// What it does: Handles drag-and-drop and "Browse Files" file
+// selection. Reads the file into memory based on its type:
+//   .txt/.md   → plain text (FileReader)
+//   .jpg/.png  → base64 image (for Claude vision API)
+//   .docx      → plain text extracted via mammoth.js
+//   .pdf       → plain text extracted via PDF.js
+// The result is stored in fileContent{} until the user clicks
+// "Organize with AI".
+//
+// Reads:  file from <input type="file"> or drag-and-drop
+// Writes: fileContent = { type, text } or { type, base64, mediaType }
+// Entry:  fileInput change / dropZone drop → handleFile(file)
 // ============================================================
 
 let fileContent = null; // holds the file contents after reading
@@ -385,6 +494,11 @@ async function readAsPdf(file) {
 
 // ============================================================
 // SECTION 8: API KEY MANAGEMENT
+// ─────────────────────────────────────────────────────────────
+// What it does: Saves the Anthropic API key entered in the modal
+// to both the apiKey variable and localStorage.
+//
+// Entry:  #saveApiKey click → saves key → shows confirmation
 // ============================================================
 
 document.getElementById('saveApiKey').addEventListener('click', function() {
@@ -399,8 +513,14 @@ document.getElementById('saveApiKey').addEventListener('click', function() {
 
 // ============================================================
 // SECTION 9: ORGANIZE WITH AI
-// This is the main feature — sends your notes to Claude and
-// gets back organized cards for the canvas.
+// ─────────────────────────────────────────────────────────────
+// What it does: The main AI feature. Takes whatever the user
+// pasted or uploaded, sends it to Claude with a structured
+// prompt, and parses the JSON response into cards on the board.
+//
+// Reads:  pasteText value, fileContent{}, apiKey
+// Writes: new cards via addCard() → saves to localStorage
+// Entry:  #organizeBtn click → organizeWithAI()
 // ============================================================
 
 document.getElementById('organizeBtn').addEventListener('click', organizeWithAI);
@@ -587,9 +707,16 @@ function setStatus(msg) {
 
 // ============================================================
 // SECTION 10: SYNC NOTES FROM story-notes/ FOLDER
-// Reads all files listed in story-notes/manifest.json,
-// sends new ones to Claude, and adds the cards automatically.
-// Already-processed files are skipped (tracked in localStorage).
+// ─────────────────────────────────────────────────────────────
+// What it does: Reads story-notes/manifest.json to get a list
+// of all files. Skips any already processed (stored in
+// sf_synced_files). Sends new files to Claude one-by-one and
+// adds whatever cards come back.
+//
+// Reads:  story-notes/manifest.json, each file listed in it
+// Writes: new cards via addCard(), updates sf_synced_files
+// Entry:  #syncNotesBtn click → syncStoryNotes()
+// Helper: sendToClaudeAndAddCards(), extractTextFromPdfBuffer()
 // ============================================================
 
 document.getElementById('syncNotesBtn').addEventListener('click', syncStoryNotes);
@@ -601,87 +728,100 @@ async function syncStoryNotes() {
     return;
   }
 
+  // Requires Chrome/Edge File System Access API
+  if (!window.showDirectoryPicker) {
+    alert('Folder sync requires Chrome or Edge. Please open the site in one of those browsers.');
+    return;
+  }
+
+  // Open a folder picker so the user selects their notes folder
+  let dirHandle;
+  try {
+    dirHandle = await window.showDirectoryPicker();
+  } catch (err) {
+    if (err.name === 'AbortError') return; // user cancelled
+    alert('Could not open folder: ' + err.message);
+    return;
+  }
+
   const btn = document.getElementById('syncNotesBtn');
   btn.disabled = true;
 
   try {
-    // Load the list of files from manifest.json
-    const res = await fetch('story-notes/manifest.json');
-    if (!res.ok) throw new Error('Could not load story-notes/manifest.json');
-    const manifest = await res.json();
-
-    // Check which files we've already processed
+    const SUPPORTED = ['txt', 'md', 'pdf', 'docx', 'jpg', 'jpeg', 'png', 'heic'];
     const synced = JSON.parse(localStorage.getItem('sf_synced_files') || '[]');
-    const pending = manifest.files.filter(function(f) { return !synced.includes(f); });
 
-    if (pending.length === 0) {
+    // Scan all files in the selected folder (top-level only)
+    const filesToProcess = [];
+    for await (const entry of dirHandle.values()) {
+      if (entry.kind !== 'file') continue;
+      const ext = entry.name.split('.').pop().toLowerCase();
+      if (!SUPPORTED.includes(ext)) continue;
+      const file    = await entry.getFile();
+      // Track by filename + lastModified to detect changes
+      const fileKey = entry.name + '_' + file.lastModified;
+      if (synced.includes(fileKey)) continue;
+      filesToProcess.push({ file, ext, fileKey, name: entry.name });
+    }
+
+    if (filesToProcess.length === 0) {
       btn.textContent = '✅ Already synced!';
-      setTimeout(function() { btn.textContent = '🔄 Sync Notes'; btn.disabled = false; }, 2500);
+      setTimeout(function() { btn.textContent = '↻ Sync Notes'; btn.disabled = false; }, 2500);
       return;
     }
 
     let totalAdded = 0;
 
-    for (let i = 0; i < pending.length; i++) {
-      const filePath = pending[i];
-      const fileName = filePath.split('/').pop();
-      const ext      = fileName.split('.').pop().toLowerCase();
-
-      btn.textContent = '⏳ Reading ' + fileName + '...';
+    for (let i = 0; i < filesToProcess.length; i++) {
+      const { file, ext, fileKey, name } = filesToProcess[i];
+      btn.textContent = '⏳ ' + (i + 1) + '/' + filesToProcess.length + ' — ' + name;
 
       let messageContent;
 
       if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'heic') {
-        // Fetch image and convert to base64 for Claude vision
-        const blob   = await fetch(filePath).then(function(r) { return r.blob(); });
         const base64 = await new Promise(function(resolve) {
           const reader = new FileReader();
           reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-          reader.readAsDataURL(blob);
+          reader.readAsDataURL(file);
         });
         messageContent = [
-          { type: 'image', source: { type: 'base64', media_type: blob.type || 'image/jpeg', data: base64 } },
+          { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
           { type: 'text',  text: buildSyncPrompt() + '\n\nExtract any story elements from this image.' }
         ];
 
       } else if (ext === 'pdf') {
-        const buffer = await fetch(filePath).then(function(r) { return r.arrayBuffer(); });
+        const buffer = await file.arrayBuffer();
         const text   = await extractTextFromPdfBuffer(buffer);
-        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + text;
+        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + text.slice(0, 8000);
 
       } else if (ext === 'docx') {
-        const buffer = await fetch(filePath).then(function(r) { return r.arrayBuffer(); });
+        const buffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + result.value;
-
-      } else if (ext === 'txt' || ext === 'md') {
-        const text = await fetch(filePath).then(function(r) { return r.text(); });
-        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + text;
+        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + result.value.slice(0, 8000);
 
       } else {
-        // Unsupported file type — mark as done and skip
-        synced.push(filePath);
-        localStorage.setItem('sf_synced_files', JSON.stringify(synced));
-        continue;
+        // txt / md — read directly from the File object (no fetch needed)
+        const text = await file.text();
+        messageContent = buildSyncPrompt() + '\n\nContent to organize:\n' + text.slice(0, 8000);
       }
 
-      btn.textContent = '✨ Organizing ' + fileName + '...';
+      btn.textContent = '✨ Organizing ' + name + '...';
       const added = await sendToClaudeAndAddCards(key, messageContent);
       totalAdded += added;
 
-      // Mark this file as processed so we don't re-run it next time
-      synced.push(filePath);
+      // Mark as processed so we skip it next time
+      synced.push(fileKey);
       localStorage.setItem('sf_synced_files', JSON.stringify(synced));
     }
 
     const word = totalAdded === 1 ? 'card' : 'cards';
     btn.textContent = '✅ Added ' + totalAdded + ' ' + word + '!';
     if (totalAdded > 0) setTimeout(generateSummary, 1000);
-    setTimeout(function() { btn.textContent = '🔄 Sync Notes'; btn.disabled = false; }, 3000);
+    setTimeout(function() { btn.textContent = '↻ Sync Notes'; btn.disabled = false; }, 3000);
 
   } catch (err) {
     btn.textContent = '❌ ' + err.message;
-    setTimeout(function() { btn.textContent = '🔄 Sync Notes'; btn.disabled = false; }, 4000);
+    setTimeout(function() { btn.textContent = '↻ Sync Notes'; btn.disabled = false; }, 4000);
   }
 }
 
@@ -746,7 +886,28 @@ async function sendToClaudeAndAddCards(key, messageContent) {
 
 
 // ============================================================
-// SECTION 11: MAP VIEW — drag cards, draw connection lines
+// SECTION 11: MAP VIEW — drag, zoom, connect, resize
+// ─────────────────────────────────────────────────────────────
+// What it does: Free-canvas view where cards are positioned
+// absolutely and can be dragged, zoomed, resized, and connected
+// with SVG bezier lines.
+//
+// Key concepts:
+//   - mapZoom: current scale (0.1–5.0). Drag deltas are divided
+//     by mapZoom so cards follow the cursor at any zoom level.
+//   - mapScaler: a wrapper div whose CSS width/height matches
+//     the zoomed canvas size, giving the scroll container the
+//     right scrollable area.
+//   - cardPositions: { [id]: { x, y, w, h } } saved to
+//     localStorage as sf_positions.
+//   - connections: [{ id, from, to }] saved as sf_connections.
+//   - ResizeObserver: detects when a card is resized and saves
+//     the new w/h to localStorage.
+//
+// Reads:  cards[], cardPositions{}, connections[], mapZoom
+// Writes: cardPositions{} → sf_positions, connections{} → sf_connections
+// Entry:  #viewMap click → renderMap()
+//         scroll wheel on #mapView → applyZoom()
 // ============================================================
 
 document.getElementById('viewBoard').addEventListener('click', function() {
@@ -756,6 +917,7 @@ document.getElementById('viewBoard').addEventListener('click', function() {
   document.getElementById('boardView').classList.remove('hidden');
   document.getElementById('mapView').classList.add('hidden');
   document.getElementById('mapHint').classList.add('hidden');
+  document.getElementById('zoomControls').classList.add('hidden');
   cancelConnect();
 });
 
@@ -766,7 +928,50 @@ document.getElementById('viewMap').addEventListener('click', function() {
   document.getElementById('mapView').classList.remove('hidden');
   document.getElementById('boardView').classList.add('hidden');
   document.getElementById('mapHint').classList.remove('hidden');
+  document.getElementById('zoomControls').classList.remove('hidden');
   renderMap();
+  applyZoom(mapZoom); // restore saved zoom level
+});
+
+// applyZoom: scales the map canvas and updates the scroll area + label
+function applyZoom(newZoom) {
+  // Clamp between 0.1× and 5×
+  mapZoom = Math.max(0.1, Math.min(5.0, newZoom));
+  mapZoom = Math.round(mapZoom * 100) / 100; // avoid floating-point drift
+
+  localStorage.setItem('sf_zoom', String(mapZoom));
+
+  var mapInner  = document.getElementById('mapInner');
+  var mapScaler = document.getElementById('mapScaler');
+
+  // Scale the canvas visually (transform-origin: 0 0 set in CSS)
+  mapInner.style.transform = 'scale(' + mapZoom + ')';
+
+  // Resize the scaler wrapper so the scroll container knows the full extent
+  mapScaler.style.width  = (3000 * mapZoom) + 'px';
+  mapScaler.style.height = (2000 * mapZoom) + 'px';
+
+  // Update zoom label
+  var label = document.getElementById('zoomLabel');
+  if (label) label.textContent = Math.round(mapZoom * 100) + '%';
+}
+
+// Scroll wheel on the map → zoom in/out
+document.getElementById('mapView').addEventListener('wheel', function(e) {
+  e.preventDefault();
+  var direction = e.deltaY > 0 ? -0.1 : 0.1;
+  applyZoom(mapZoom + direction);
+}, { passive: false });
+
+// Zoom + / − / reset buttons
+document.getElementById('zoomIn').addEventListener('click', function() {
+  applyZoom(mapZoom + 0.1);
+});
+document.getElementById('zoomOut').addEventListener('click', function() {
+  applyZoom(mapZoom - 0.1);
+});
+document.getElementById('zoomLabel').addEventListener('click', function() {
+  applyZoom(1.0); // click the percentage label to reset to 100%
 });
 
 // Escape cancels connection mode
@@ -814,8 +1019,13 @@ function renderMap() {
     el.style.left        = pos.x + 'px';
     el.style.top         = pos.y + 'px';
     el.style.borderLeftColor = color;
+    // Restore saved card size if the user previously resized it
+    if (pos.w) el.style.width  = pos.w + 'px';
+    if (pos.h) el.style.height = pos.h + 'px';
 
     el.innerHTML =
+      '<button class="card-tab-btn" data-id="' + card.id + '" title="AI Actions">⋮</button>' +
+      '<div class="card-tab-dropdown" data-id="' + card.id + '"></div>' +
       '<div class="map-card-header">' +
         '<span class="col-dot" style="background:' + color + ';flex-shrink:0"></span>' +
         '<div class="map-card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
@@ -828,6 +1038,20 @@ function renderMap() {
 
     mapInner.appendChild(el);
     makeDraggable(el, card.id);
+
+    // ResizeObserver: fires whenever the card is resized by the user.
+    // Saves the new dimensions so they persist after page refresh.
+    (function(cardEl, cardId) {
+      var observer = new ResizeObserver(function() {
+        var pos = cardPositions[cardId];
+        if (pos) {
+          pos.w = cardEl.offsetWidth;
+          pos.h = cardEl.offsetHeight;
+          saveCardPositions();
+        }
+      });
+      observer.observe(cardEl);
+    })(el, card.id);
   });
 
   // Wire up buttons
@@ -844,6 +1068,55 @@ function renderMap() {
       deleteCard(btn.dataset.id);
     });
   });
+
+  // Wire up the ⋮ AI tab buttons
+  mapInner.querySelectorAll('.card-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var cardId   = btn.dataset.id;
+      var dropdown = mapInner.querySelector('.card-tab-dropdown[data-id="' + cardId + '"]');
+      if (!dropdown) return;
+
+      // Close all other open dropdowns first
+      mapInner.querySelectorAll('.card-tab-dropdown.open').forEach(function(d) {
+        if (d !== dropdown) d.classList.remove('open');
+      });
+
+      // Build dropdown contents based on whether the card has connections
+      var hasConnections = connections.some(function(c) {
+        return c.from === cardId || c.to === cardId;
+      });
+      dropdown.innerHTML =
+        '<div class="dropdown-section">AI Actions</div>' +
+        '<button data-action="summarize" data-id="' + cardId + '">📝 Summarize Card</button>' +
+        '<button data-action="continue"  data-id="' + cardId + '">✨ Continue Story</button>' +
+        '<button data-action="related"   data-id="' + cardId + '">🔗 Find Related Cards</button>' +
+        (hasConnections
+          ? '<button data-action="sync"    data-id="' + cardId + '">🔀 Sync with Connected</button>' +
+            '<button data-action="combine" data-id="' + cardId + '">➕ Combine & Create New</button>'
+          : '') +
+        '<div class="dropdown-section">Card</div>' +
+        '<button data-action="delete" data-id="' + cardId + '" class="danger">✕ Delete Card</button>';
+
+      dropdown.classList.toggle('open');
+
+      // Wire up dropdown buttons
+      dropdown.querySelectorAll('button[data-action]').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+          e.stopPropagation();
+          dropdown.classList.remove('open');
+          handleCardTabAction(item.dataset.action, item.dataset.id);
+        });
+      });
+    });
+  });
+
+  // Close dropdowns when clicking elsewhere on the map
+  document.addEventListener('click', function closeDropdowns() {
+    mapInner.querySelectorAll('.card-tab-dropdown.open').forEach(function(d) {
+      d.classList.remove('open');
+    });
+  }, { once: false, capture: false });
 
   // Inline editing in map cards
   mapInner.querySelectorAll('[contenteditable="true"]').forEach(function(el) {
@@ -882,9 +1155,14 @@ function makeDraggable(el, cardId) {
 
     function onMove(e) {
       moved = true;
-      var newX = Math.max(0, startLeft + (e.clientX - startX));
-      var newY = Math.max(0, startTop  + (e.clientY - startY));
-      cardPositions[cardId] = { x: newX, y: newY };
+      // Divide mouse delta by mapZoom so the card follows the cursor
+      // correctly at any zoom level (e.g., at 0.5× zoom, mouse moves
+      // 100px but we only want the card to move 50px in canvas space)
+      var newX = Math.max(0, startLeft + (e.clientX - startX) / mapZoom);
+      var newY = Math.max(0, startTop  + (e.clientY - startY) / mapZoom);
+      // Preserve saved w/h when updating position
+      var existing = cardPositions[cardId] || {};
+      cardPositions[cardId] = { x: newX, y: newY, w: existing.w, h: existing.h };
       el.style.left = newX + 'px';
       el.style.top  = newY + 'px';
       drawConnections();
@@ -988,8 +1266,8 @@ function drawConnections() {
     circle.setAttribute('cx', midX);
     circle.setAttribute('cy', midY);
     circle.setAttribute('r', '8');
-    circle.setAttribute('fill', '#ffffff');
-    circle.setAttribute('stroke', '#94a3b8');
+    circle.setAttribute('fill', '#161b22');   // dark surface, matches dark theme
+    circle.setAttribute('stroke', '#484f58');
     circle.setAttribute('stroke-width', '1.5');
 
     var txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -1022,14 +1300,145 @@ function saveConnections() {
   localStorage.setItem('sf_connections', JSON.stringify(connections));
 }
 
+// handleCardTabAction: called when user picks an option from the ⋮ dropdown on a map card
+async function handleCardTabAction(action, cardId) {
+  var key = apiKey || localStorage.getItem('sf_api_key');
+  if (!key) {
+    alert('Please set your API key first — click "+ Add Notes" and expand the API Key section.');
+    return;
+  }
+
+  if (action === 'delete') {
+    deleteCard(cardId);
+    return;
+  }
+
+  var card = cards.find(function(c) { return c.id === cardId; });
+  if (!card) return;
+
+  // Get all cards connected to this one
+  var connectedCards = connections
+    .filter(function(c) { return c.from === cardId || c.to === cardId; })
+    .map(function(c) { return c.from === cardId ? c.to : c.from; })
+    .map(function(id) { return cards.find(function(c) { return c.id === id; }); })
+    .filter(Boolean);
+
+  var cardText   = card.title + ': ' + card.content;
+  var connText   = connectedCards.map(function(c) { return '- ' + c.title + ': ' + c.content; }).join('\n');
+  var storyCtx   = buildStoryContext();
+
+  var prompt;
+  if (action === 'summarize') {
+    prompt = 'Summarize this story note in 2-3 clear sentences:\n\n' + cardText;
+
+  } else if (action === 'continue') {
+    prompt = 'Based on this story note from "Life of Bon", suggest 2-3 specific ways the story could continue from here:\n\n' + cardText;
+
+  } else if (action === 'related') {
+    prompt = 'Given this story note and the full story context below, which other elements, themes, or characters does it relate to most? Give 2-3 specific connections.\n\nNote:\n' + cardText + '\n\nFull story context:\n' + storyCtx;
+
+  } else if (action === 'sync') {
+    if (connectedCards.length === 0) {
+      openChat();
+      appendChatMsg('assistant', 'This card has no connections yet. Connect it to another card first using the ⊕ button.');
+      return;
+    }
+    prompt = 'These connected story notes are from "Life of Bon". Reconcile and merge them into a coherent combined description (2-4 sentences):\n\nMain card:\n' + cardText + '\n\nConnected cards:\n' + connText;
+
+  } else if (action === 'combine') {
+    if (connectedCards.length === 0) {
+      openChat();
+      appendChatMsg('assistant', 'This card has no connections yet. Connect it to another card first using the ⊕ button.');
+      return;
+    }
+    // "Combine & Create" makes a new card — send to Claude for JSON response
+    var combinePrompt = 'Combine these connected story notes into ONE new story card. Return only a JSON object with fields: "type" (one of: character, world, arc, quote, idea), "title" (max 6 words), "content" (2-3 sentences).\n\nCards to combine:\n' + cardText + '\n' + connText;
+    try {
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type':                              'application/json',
+          'x-api-key':                                 key,
+          'anthropic-version':                         '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model:      'claude-sonnet-4-5-20250929',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: combinePrompt }]
+        })
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'API error');
+      var raw = (data.content?.[0]?.text || '').trim()
+        .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+      var newCard = JSON.parse(raw);
+      var validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
+      if (newCard && newCard.title && validTypes.includes(newCard.type)) {
+        addCard(newCard.type, newCard.title, newCard.content || '');
+        openChat();
+        appendChatMsg('assistant', '✅ Created new card: "' + newCard.title + '" (' + newCard.type + ')');
+      } else {
+        throw new Error('Unexpected response format');
+      }
+    } catch (err) {
+      openChat();
+      appendChatMsg('assistant', '❌ Could not combine cards: ' + err.message);
+    }
+    return;
+  }
+
+  // For all non-combine actions: send to Claude and show result in chat
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':                              'application/json',
+        'x-api-key':                                 key,
+        'anthropic-version':                         '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-5-20250929',
+        max_tokens: 400,
+        system:     'You are a creative writing assistant for an isekai light novel called "Life of Bon". Be specific, concise, and helpful.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var responseData = await response.json();
+    if (!response.ok) throw new Error(responseData?.error?.message || 'API error');
+    var reply = (responseData.content?.[0]?.text || '').trim();
+    openChat();
+    var label = { summarize: '📝 Summary', continue: '✨ Story Ideas', related: '🔗 Related Cards', sync: '🔀 Merged View' };
+    appendChatMsg('assistant', (label[action] || 'AI') + ' for "' + card.title + '":\n\n' + reply);
+  } catch (err) {
+    openChat();
+    appendChatMsg('assistant', '❌ ' + err.message);
+  }
+}
+
 
 // ============================================================
 // SECTION 12: STORY SUMMARY
-// AI-generated overview shown at the bottom of the canvas.
-// Auto-refreshes after notes are added or synced.
+// ─────────────────────────────────────────────────────────────
+// What it does: Sends all current cards to Claude and asks for
+// a 1–2 sentence story overview. Result is shown in the summary
+// bar at the bottom of the canvas and cached in localStorage.
+//
+// Reads:  cards[], apiKey
+// Writes: #summaryText innerHTML, localStorage sf_summary
+// Entry:  #refreshSummary click → generateSummary()
+//         Also called automatically after AI organizes or syncs
 // ============================================================
 
 document.getElementById('refreshSummary').addEventListener('click', generateSummary);
+
+// Summary bar collapse/expand toggle
+document.getElementById('toggleSummary').addEventListener('click', function() {
+  var bar = document.getElementById('summaryBar');
+  var collapsed = bar.classList.toggle('collapsed');
+  localStorage.setItem('sf_summary_expanded', collapsed ? 'false' : 'true');
+});
 
 async function generateSummary() {
   var key = apiKey || localStorage.getItem('sf_api_key');
@@ -1044,11 +1453,12 @@ async function generateSummary() {
 
   document.getElementById('summaryText').textContent = 'Generating overview...';
 
-  // Build text of all cards grouped by type
+  // Build condensed card list (title + first 50 chars of content) to save tokens
   var byType = {};
   cards.forEach(function(c) {
     if (!byType[c.type]) byType[c.type] = [];
-    byType[c.type].push(c.title + ': ' + c.content);
+    var snippet = c.content ? c.content.slice(0, 80) : '';
+    byType[c.type].push(c.title + (snippet ? ': ' + snippet : ''));
   });
 
   var storyData = '';
@@ -1068,10 +1478,10 @@ async function generateSummary() {
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-5-20250929',
-        max_tokens: 120,
+        max_tokens: 300,
         messages: [{
           role:    'user',
-          content: 'Write a 1–2 sentence story overview for an isekai light novel called "Life of Bon" based on these notes. Be specific. Max 50 words.\n\n' + storyData
+          content: 'Write a 3–5 sentence story overview for an isekai light novel called "Life of Bon" based on these notes. Be specific about characters, current arcs, and world details. Max 120 words.\n\n' + storyData
         }]
       })
     });
@@ -1083,21 +1493,44 @@ async function generateSummary() {
     document.getElementById('summaryText').textContent = text;
     localStorage.setItem('sf_summary', text);
 
+    // Make sure bar is expanded so user sees the new summary
+    document.getElementById('summaryBar').classList.remove('collapsed');
+    localStorage.setItem('sf_summary_expanded', 'true');
+
   } catch (err) {
     document.getElementById('summaryText').textContent = 'Could not generate summary — ' + err.message;
   }
 }
 
-// Load saved summary on startup
+// Load saved summary and collapsed state on startup
 (function() {
   var saved = localStorage.getItem('sf_summary');
   if (saved) document.getElementById('summaryText').textContent = saved;
+
+  var expanded = localStorage.getItem('sf_summary_expanded');
+  // Default expanded (true). Collapse only if explicitly saved as 'false'.
+  if (expanded === 'false') {
+    document.getElementById('summaryBar').classList.add('collapsed');
+  }
 })();
 
 
 // ============================================================
 // SECTION 13: CLAUDE CHAT
-// A writing assistant panel with full story context.
+// ─────────────────────────────────────────────────────────────
+// What it does: A floating writing assistant chat panel. On the
+// first message it injects all current story cards as context
+// so Claude can answer questions about specific characters,
+// plot, or world details.
+//
+// Key: chatHistory[] keeps the conversation turn-by-turn. On
+// the first user message, two synthetic turns are prepended
+// (user sends the story notes, assistant acknowledges them)
+// so Claude has context from message 1.
+//
+// Reads:  cards[], apiKey, chatHistory[]
+// Writes: chatHistory[], DOM messages in #chatMessages
+// Entry:  #openChat click → openChat() → #chatSend → sendChatMessage()
 // ============================================================
 
 var chatHistory = [];
@@ -1124,6 +1557,11 @@ function openChat() {
   chatIsOpen = true;
   document.getElementById('chatPanel').classList.add('open');
   document.getElementById('chatInput').focus();
+  // Show memory badge if we have a stored memory summary
+  var memBadge = document.getElementById('chatMemoryBadge');
+  if (memBadge) {
+    memBadge.style.display = localStorage.getItem('sf_chat_memory') ? '' : 'none';
+  }
 }
 
 function closeChat() {
@@ -1131,14 +1569,24 @@ function closeChat() {
   document.getElementById('chatPanel').classList.remove('open');
 }
 
-// buildStoryContext: summarises all cards for Claude's system context
+// buildStoryContext: summarises all cards for Claude's system context.
+// To reduce token usage: sends full content only for the 5 most recently added cards;
+// all other cards send title + type only.
 function buildStoryContext() {
   if (cards.length === 0) return 'No story notes added yet.';
+
+  // Sort by createdAt to find the most recent
+  var sorted = cards.slice().sort(function(a, b) {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  var recentIds = sorted.slice(0, 5).map(function(c) { return c.id; });
 
   var byType = {};
   cards.forEach(function(c) {
     if (!byType[c.type]) byType[c.type] = [];
-    byType[c.type].push('• ' + c.title + (c.content ? ': ' + c.content : ''));
+    var isRecent = recentIds.includes(c.id);
+    // Full content for recent cards; title only for the rest (saves tokens)
+    byType[c.type].push('• ' + c.title + (isRecent && c.content ? ': ' + c.content : ''));
   });
 
   var ctx = 'Current story notes for "Life of Bon":\n\n';
@@ -1171,6 +1619,50 @@ async function sendChatMessage() {
   document.getElementById('chatSend').disabled = true;
 
   try {
+    // If history is getting long, summarize oldest turns before trimming
+    if (chatHistory.length > 20) {
+      var oldest = chatHistory.slice(0, 10);
+      chatHistory = chatHistory.slice(10);
+      try {
+        var memText = oldest.map(function(m) {
+          return (m.role === 'user' ? 'User: ' : 'Claude: ') + m.content;
+        }).join('\n');
+        var memRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type':                              'application/json',
+            'x-api-key':                                 key,
+            'anthropic-version':                         '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model:      'claude-sonnet-4-5-20250929',
+            max_tokens: 200,
+            messages: [{
+              role:    'user',
+              content: 'Summarize these story-planning notes as brief bullet points (max 100 words). Capture key decisions, character details, and plot points only:\n\n' + memText
+            }]
+          })
+        });
+        var memData = await memRes.json();
+        if (memRes.ok) {
+          var memSummary = (memData.content?.[0]?.text || '').trim();
+          // Append to any existing memory
+          var existing = localStorage.getItem('sf_chat_memory') || '';
+          localStorage.setItem('sf_chat_memory', (existing ? existing + '\n' : '') + memSummary);
+          var memBadge = document.getElementById('chatMemoryBadge');
+          if (memBadge) memBadge.style.display = '';
+        }
+      } catch (_) { /* memory summarization is best-effort */ }
+    }
+
+    // Build system prompt, injecting stored memory if available
+    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.';
+    var storedMemory = localStorage.getItem('sf_chat_memory');
+    var systemPrompt = storedMemory
+      ? baseSystem + '\n\nStory planning memory from earlier in this session:\n' + storedMemory
+      : baseSystem;
+
     // Build messages: if first turn, prepend a context exchange
     var messages = [];
     if (chatHistory.length === 1) {
@@ -1196,7 +1688,7 @@ async function sendChatMessage() {
       body: JSON.stringify({
         model:      'claude-sonnet-4-5-20250929',
         max_tokens: 1024,
-        system:     'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.',
+        system:     systemPrompt,
         messages:   messages
       })
     });
@@ -1210,9 +1702,6 @@ async function sendChatMessage() {
 
     appendChatMsg('assistant', reply);
     chatHistory.push({ role: 'assistant', content: reply });
-
-    // Keep history trimmed to avoid token overflow
-    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
 
   } catch (err) {
     var typingEl = document.getElementById(typingId);

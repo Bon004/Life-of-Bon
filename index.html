@@ -53,6 +53,11 @@
           <button class="view-btn" id="viewMap">Map</button>
         </div>
         <span class="toolbar-hint hidden" id="mapHint">Drag cards to move · click ⊕ to connect · click ✕ on a line to remove it</span>
+        <div class="zoom-controls hidden" id="zoomControls">
+          <button class="zoom-btn" id="zoomOut">−</button>
+          <span class="zoom-label" id="zoomLabel" title="Click to reset to 100%">100%</span>
+          <button class="zoom-btn" id="zoomIn">+</button>
+        </div>
       </div>
 
       <!-- Board view (columns) -->
@@ -124,17 +129,27 @@
 
       <!-- Map view (free canvas) -->
       <div class="map-view hidden" id="mapView">
-        <div class="map-inner" id="mapInner">
-          <svg class="connections-svg" id="connectionsSvg" width="3000" height="2000"></svg>
-          <!-- Map cards injected here by JS -->
+        <!-- map-scaler is resized by JS to match the zoomed canvas dimensions,
+             so the scroll container knows how far to scroll -->
+        <div class="map-scaler" id="mapScaler">
+          <div class="map-inner" id="mapInner">
+            <svg class="connections-svg" id="connectionsSvg" width="3000" height="2000"></svg>
+            <!-- Map cards injected here by JS -->
+          </div>
         </div>
       </div>
 
       <!-- Summary bar (bottom of canvas) -->
-      <div class="summary-bar">
-        <span class="summary-icon">✦</span>
-        <p class="summary-text" id="summaryText">Add notes to generate an AI overview of your story.</p>
-        <button class="btn-summary-refresh" id="refreshSummary" title="Refresh summary">↻</button>
+      <div class="summary-bar" id="summaryBar">
+        <div class="summary-bar-header">
+          <span class="summary-icon">✦</span>
+          <span class="summary-label">Story Overview</span>
+          <button class="btn-summary-refresh" id="refreshSummary" title="Refresh summary">↻ Refresh</button>
+          <button class="summary-toggle" id="toggleSummary" title="Collapse">▲</button>
+        </div>
+        <div class="summary-body" id="summaryBody">
+          <p class="summary-text" id="summaryText">Add notes to generate an AI overview of your story.</p>
+        </div>
       </div>
 
     </section>
@@ -229,6 +244,7 @@
       <div class="chat-header-left">
         <span class="chat-title">✦ Claude</span>
         <span class="chat-subtitle">Writing Assistant</span>
+        <span class="chat-memory-badge" id="chatMemoryBadge" style="display:none" title="Story memory active from earlier in this session">● Memory</span>
       </div>
       <button class="chat-close" id="chatClose">✕</button>
     </div>
