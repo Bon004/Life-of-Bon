@@ -21,12 +21,21 @@ storyforge/
 └── README.md        # (optional) user documentation
 ```
 
+## My Environment
+- Machine: Windows 11, user is `egarza`
+- Project path: `C:\Users\egarza\Master File for code stuff\Life-of-Bon`
+- Paths with spaces: always quote them in terminal commands
+- Work laptop: requires admin approval to install software — flag any suggestion that needs admin rights so the user can plan ahead
+- Home machine: no restrictions, full admin access
+- No build steps — open index.html directly or use Live Server
+- Testing: manually in browser (no test runner)
+
 ## How to Work on This Project
 
 ### Local Development
-1. Open terminal and navigate to the storyforge folder:
+1. Open terminal and navigate to the project folder:
    ```
-   cd C:\Users\esteb\Documents\storyforge
+   cd "C:\Users\egarza\Master File for code stuff\Life-of-Bon"
    ```
 2. Start Live Server:
    ```
@@ -76,6 +85,11 @@ storyforge/
 - Automatically saved when added, edited, or deleted
 - No server required
 
+### localStorage Keys
+- `sf_cards` — array of all card objects
+- `sf_api_key` — user's Anthropic API key (string)
+- Do NOT add new keys without listing them here first
+
 ## When Editing Code
 
 1. **Always read the file first** before making changes
@@ -84,14 +98,28 @@ storyforge/
 4. **Explain like a beginner** — comments should be clear and helpful
 5. **No deleting features** — if something isn't working, debug it instead
 
+## What NOT to Do
+- Don't suggest npm packages, webpack, React, or any build tools — plain HTML/JS only
+- Don't add new files beyond index.html, style.css, app.js
+- Don't use fetch() for local files — everything runs in-browser
+- If something isn't working after 2 attempts, stop and explain the problem instead of retrying
+
 ## Next Phases (In Order)
 1. ✅ Add Notes with AI organization (DONE)
-2. Polish homepage design (make it look like "an actual website")
+2. Polish homepage design
+   - Hero section with title, subtitle, and visible "Add Notes" CTA
+   - Consistent card shadows and hover states
+   - Done when: looks polished on 1080p desktop and iPad
 3. Writing tab: chapter editor, word count, auto-save
+   - Done when: user can type a chapter, see word count live, and have it save automatically
 4. Characters tab: character profile sheets, emoji picker
+   - Done when: each character card has expandable profile fields and an emoji avatar picker
 5. Arcs tab: arc timeline with events
+   - Done when: arcs display in chronological order with events attached
 6. Settings/backup: export/import data
+   - Done when: user can download all cards as JSON and re-import them
 7. Mobile refinements for iPad use
+   - Done when: all 4 tabs are usable on iPad without horizontal scrolling
 
 ## Git Workflow
 - Push changes regularly to `https://github.com/Bon004/Life-of-Bon.git`
