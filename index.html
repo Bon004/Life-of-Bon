@@ -40,6 +40,12 @@
     <button class="tab-btn" data-tab="arcs">Arcs & Timeline</button>
   </nav>
 
+  <!-- NO-KEY BANNER: shown when no API key is found on startup -->
+  <div class="no-key-banner hidden" id="noKeyBanner">
+    <span>⚠️ No API key found — AI features won't work until you add one.</span>
+    <button id="noKeyBannerBtn">Set API Key →</button>
+  </div>
+
   <!-- MAIN -->
   <main class="app-main">
 
@@ -226,12 +232,17 @@
       </div>
 
       <details class="api-key-section" id="apiKeyDetails">
-        <summary>🔑 API Key <span class="key-hint">— click to set</span></summary>
+        <summary>🔑 API Key <span id="keyStatusChip" class="key-hint">— click to set</span></summary>
         <div class="api-key-row">
           <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
           <button id="saveApiKey" class="btn-save-key">Save</button>
         </div>
-        <p class="api-key-note">Stored in your browser only. Never sent anywhere except Anthropic.</p>
+        <p class="api-key-note">
+          Stored locally only — never sent anywhere except Anthropic.<br>
+          To auto-load your key, save it in a file called <code>api-key.txt</code> in the
+          same folder as this app (already gitignored and safe from commits).
+        </p>
+        <button class="btn-clear-key hidden" id="clearKeyBtn">✕ Remove saved key</button>
       </details>
 
       <div class="modal-footer">

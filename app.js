@@ -75,6 +75,12 @@ const TYPE_COLORS = {
   idea:      '#ef4444'
 };
 
+// The Claude model used for all API calls. Update here to upgrade globally.
+const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
+
+// Valid card types accepted by the app. Used for validating AI responses.
+const VALID_CARD_TYPES = ['character', 'world', 'arc', 'quote', 'idea'];
+
 // ============================================================
 // SECTION 2: CARD HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────
@@ -176,9 +182,7 @@ function deleteCard(id) {
 
 // renderCards: redraws all cards — both board view and map view (if active)
 function renderCards() {
-  const columnTypes = ['character', 'world', 'arc', 'quote', 'idea'];
-
-  columnTypes.forEach(function(type) {
+  VALID_CARD_TYPES.forEach(function(type) {
     const col = document.getElementById('cards-' + type);
     col.innerHTML = ''; // clear the column
 
@@ -334,7 +338,7 @@ function closeModal() {
   notesModal.classList.add('hidden');
   document.getElementById('pasteText').value = '';
   clearFileSelection();
-  setStatus('');
+  setModalStatus('');
 }
 
 
@@ -421,7 +425,7 @@ function clearFileSelection() {
 // handleFile: decides how to read the file based on its extension
 function handleFile(file) {
   const name = file.name.toLowerCase();
-  setStatus('Reading file...');
+  setModalStatus('Reading file...');
 
   if (name.endsWith('.txt') || name.endsWith('.md')) {
     readAsText(file);
@@ -439,7 +443,7 @@ function handleFile(file) {
     readAsPdf(file);
 
   } else {
-    setStatus('Unsupported file type. Please use .txt .md .jpg .png .heic or .docx');
+    setModalStatus('Unsupported file type. Please use .txt .md .jpg .png .heic or .docx');
     return;
   }
 
@@ -454,7 +458,7 @@ function readAsText(file) {
   const reader = new FileReader();
   reader.onload = function(e) {
     fileContent = { type: 'text', text: e.target.result };
-    setStatus('File ready! Click "Organize with AI" to continue.');
+    setModalStatus('File ready! Click "Organize with AI" to continue.');
   };
   reader.readAsText(file);
 }
@@ -467,7 +471,7 @@ function readAsImage(file) {
     const base64    = e.target.result.split(',')[1]; // just the base64 part
     const mediaType = file.type || 'image/jpeg';
     fileContent = { type: 'image', base64: base64, mediaType: mediaType };
-    setStatus('Image ready! Click "Organize with AI" to continue.');
+    setModalStatus('Image ready! Click "Organize with AI" to continue.');
   };
   reader.readAsDataURL(file);
 }
@@ -475,7 +479,7 @@ function readAsImage(file) {
 // readAsDocx: reads Word documents using the mammoth.js library
 function readAsDocx(file) {
   if (typeof mammoth === 'undefined') {
-    setStatus('Word doc reader not loaded yet. Please refresh the page and try again.');
+    setModalStatus('Word doc reader not loaded yet. Please refresh the page and try again.');
     return;
   }
   const reader = new FileReader();
@@ -483,10 +487,10 @@ function readAsDocx(file) {
     mammoth.extractRawText({ arrayBuffer: e.target.result })
       .then(function(result) {
         fileContent = { type: 'text', text: result.value };
-        setStatus('Word doc ready! Click "Organize with AI" to continue.');
+        setModalStatus('Word doc ready! Click "Organize with AI" to continue.');
       })
       .catch(function() {
-        setStatus('Could not read Word doc. Please paste the text in the "Paste Text" tab instead.');
+        setModalStatus('Could not read Word doc. Please paste the text in the "Paste Text" tab instead.');
       });
   };
   reader.readAsArrayBuffer(file);
@@ -496,7 +500,7 @@ function readAsDocx(file) {
 // readAsPdf: reads PDF files using the PDF.js library
 async function readAsPdf(file) {
   if (typeof pdfjsLib === 'undefined') {
-    setStatus('PDF reader not loaded. Please refresh the page and try again.');
+    setModalStatus('PDF reader not loaded. Please refresh the page and try again.');
     return;
   }
 
@@ -517,9 +521,9 @@ async function readAsPdf(file) {
     }
 
     fileContent = { type: 'text', text: text };
-    setStatus('PDF ready! Click "Organize with AI" to continue.');
+    setModalStatus('PDF ready! Click "Organize with AI" to continue.');
   } catch (err) {
-    setStatus('Could not read PDF. Try a different file or paste the text instead.');
+    setModalStatus('Could not read PDF. Try a different file or paste the text instead.');
   }
 }
 
@@ -527,21 +531,138 @@ async function readAsPdf(file) {
 // ============================================================
 // SECTION 8: API KEY MANAGEMENT
 // ─────────────────────────────────────────────────────────────
-// What it does: Saves the Anthropic API key entered in the modal
-// to both the apiKey variable and localStorage.
+// How the key is stored and loaded (3-tier priority):
 //
-// Entry:  #saveApiKey click → saves key → shows confirmation
+//   1. Local file (api-key.txt in the project folder)
+//      - Fetched automatically at startup via Live Server
+//      - Gitignored — safe from commits
+//      - Best for "set it and forget it" use
+//
+//   2. Browser localStorage (key: sf_api_key)
+//      - Saved whenever the user clicks Save in the modal
+//      - Persists between browser sessions
+//      - Falls back when the file isn't present
+//
+//   3. Manual entry
+//      - User pastes key into the modal input
+//      - Saved to localStorage (and optionally overwrites the txt file)
+//
+// Security note: the key lives only on your machine (localhost).
+// Other websites cannot read your localhost files or localStorage
+// due to the browser's same-origin policy. The key is never
+// hardcoded in source files and is gitignored.
+//
+// Entry: initApiKeyUx() → called at startup
+//        #saveApiKey click → saves key → updates UI
+//        #clearKeyBtn click → removes from localStorage → shows banner
 // ============================================================
 
+// initApiKeyUx: runs at startup. Tries to load the key from the local file
+// first, then falls back to localStorage. Updates all UI accordingly.
+async function initApiKeyUx() {
+  let key = '';
+
+  // --- Step 1: Try to fetch from api-key.txt ---
+  // Only fetches if localStorage doesn't already have a valid key,
+  // so returning users skip the network request entirely.
+  const cached = localStorage.getItem('sf_api_key') || '';
+  if (cached) {
+    key = cached;
+    apiKey = key;
+  } else {
+    try {
+      const resp = await fetch('api-key.txt');
+      if (resp.ok) {
+        const text = (await resp.text()).trim();
+        if (text.startsWith('sk-')) {
+          key = text;
+          apiKey = key;
+          // Mirror to localStorage so the key works even if the file is moved later
+          localStorage.setItem('sf_api_key', key);
+        }
+      }
+    } catch (_) {
+      // File not found or Live Server not running — silently fall through
+    }
+  }
+
+  // --- Step 3: Update the UI to reflect what we found ---
+  updateKeyStatusUi(key);
+
+  // Banner → open modal focused on the key section
+  document.getElementById('noKeyBannerBtn').addEventListener('click', function() {
+    document.getElementById('notesModal').classList.remove('hidden');
+    document.getElementById('apiKeyDetails').open = true;
+    // Small delay lets the modal's display transition complete before focusing
+    setTimeout(function() { document.getElementById('apiKeyInput').focus(); }, 80);
+  });
+
+  // Clear button → remove from localStorage and show banner
+  document.getElementById('clearKeyBtn').addEventListener('click', clearApiKey);
+}
+
+// updateKeyStatusUi: updates the summary chip, banner, input, and clear button
+// based on whether a key is currently available.
+function updateKeyStatusUi(key) {
+  const chip     = document.getElementById('keyStatusChip');
+  const banner   = document.getElementById('noKeyBanner');
+  const input    = document.getElementById('apiKeyInput');
+  const clearBtn = document.getElementById('clearKeyBtn');
+
+  if (key) {
+    const masked = '···' + key.slice(-4); // last 4 chars so user can verify which key is active
+    chip.textContent = '✓ active (' + masked + ')';
+    chip.classList.add('has-key');
+    banner.classList.add('hidden');
+    input.value = key; // pre-fill so the user can see/edit the current key
+    clearBtn.classList.remove('hidden');
+  } else {
+    chip.textContent = '— click to set';
+    chip.classList.remove('has-key');
+    banner.classList.remove('hidden');
+    input.value = '';
+    clearBtn.classList.add('hidden');
+  }
+}
+
+// clearApiKey: removes the saved key from localStorage and resets the UI.
+function clearApiKey() {
+  apiKey = '';
+  localStorage.removeItem('sf_api_key');
+  updateKeyStatusUi('');
+  setModalStatus('🗑️ Saved key removed. Enter a new one above.');
+  document.getElementById('apiKeyDetails').open = true;
+}
+
+// Save button: validate and persist the key the user typed in the modal
 document.getElementById('saveApiKey').addEventListener('click', function() {
   const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) {
-    apiKey = key;
-    localStorage.setItem('sf_api_key', key);
-    setStatus('✅ API key saved!');
+  if (!key) {
+    setModalStatus('⚠️ Paste your API key first.');
+    return;
   }
+  if (!key.startsWith('sk-')) {
+    setModalStatus('⚠️ That doesn\'t look like an Anthropic key (should start with sk-).');
+    return;
+  }
+  apiKey = key;
+  localStorage.setItem('sf_api_key', key);
+  updateKeyStatusUi(key);
+  setModalStatus('✅ API key saved!');
 });
 
+
+// getApiKey: returns the active Anthropic API key from memory or localStorage.
+// Centralizes the repeated pattern: apiKey || localStorage.getItem('sf_api_key')
+function getApiKey() {
+  return apiKey || localStorage.getItem('sf_api_key') || '';
+}
+
+// getExistingTitles: returns lowercase list of all current card titles.
+// Used to prevent Claude from creating duplicate cards.
+function getExistingTitles() {
+  return cards.map(function(c) { return c.title.toLowerCase(); });
+}
 
 // ============================================================
 // SECTION 9: ORGANIZE WITH AI
@@ -564,7 +685,7 @@ async function organizeWithAI() {
   if (!key) {
     // Open the API key section so the user sees where to enter it
     document.getElementById('apiKeyDetails').open = true;
-    setStatus('⚠️ Please enter your Anthropic API key first.');
+    setModalStatus('⚠️ Please enter your Anthropic API key first.');
     return;
   }
   // Save the key so it's remembered
@@ -576,17 +697,17 @@ async function organizeWithAI() {
   const pasteText  = document.getElementById('pasteText').value.trim();
 
   if (activeMode === 'paste' && !pasteText) {
-    setStatus('⚠️ Please paste some text first.');
+    setModalStatus('⚠️ Please paste some text first.');
     return;
   }
   if (activeMode === 'upload' && !fileContent) {
-    setStatus('⚠️ Please select a file first.');
+    setModalStatus('⚠️ Please select a file first.');
     return;
   }
 
   // --- Collect existing card titles so we can skip duplicates ---
   // We pass these to Claude and ask it not to repeat what's already there
-  const existingTitles = cards.map(function(c) { return c.title.toLowerCase(); });
+  const existingTitles = getExistingTitles();
 
   // --- Build the prompt we'll send to Claude ---
   const prompt = buildPrompt(existingTitles);
@@ -627,7 +748,7 @@ async function organizeWithAI() {
   }
 
   // --- Show loading state ---
-  setStatus('⏳ Sending to Claude AI...');
+  setModalStatus('⏳ Sending to Claude AI...');
   document.getElementById('organizeBtn').disabled = true;
 
   try {
@@ -645,7 +766,7 @@ async function organizeWithAI() {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-5-20250929',
+        model:      CLAUDE_MODEL,
         max_tokens: 2048,
         messages: [
           { role: 'user', content: messageContent }
@@ -699,12 +820,10 @@ async function organizeWithAI() {
 
     // --- Add the new cards (skip duplicates) ---
     let addedCount = 0;
-    const validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
-
     newCards.forEach(function(c) {
       // Skip if missing required fields or invalid type
       if (!c.type || !c.title) return;
-      if (!validTypes.includes(c.type)) return;
+      if (!VALID_CARD_TYPES.includes(c.type)) return;
 
       // Skip if a card with this title already exists
       const alreadyExists = existingTitles.includes(c.title.toLowerCase());
@@ -716,7 +835,7 @@ async function organizeWithAI() {
 
     // --- Show success and switch to canvas ---
     const word = addedCount === 1 ? 'card' : 'cards';
-    setStatus('✅ Added ' + addedCount + ' new ' + word + ' to your canvas!');
+    setModalStatus('✅ Added ' + addedCount + ' new ' + word + ' to your canvas!');
     if (addedCount > 0) setTimeout(generateSummary, 2000);
 
     // After 1.5 seconds, close the modal and show the canvas
@@ -727,7 +846,7 @@ async function organizeWithAI() {
 
   } catch (err) {
     // Show a clear error message
-    setStatus('❌ ' + err.message);
+    setModalStatus('❌ ' + err.message);
   } finally {
     // Always re-enable the button after the request finishes
     document.getElementById('organizeBtn').disabled = false;
@@ -736,9 +855,9 @@ async function organizeWithAI() {
 
 
 // ============================================================
-// HELPER: setStatus — updates the small status line in the modal footer
+// HELPER: setModalStatus — updates the small status line in the modal footer
 // ============================================================
-function setStatus(msg) {
+function setModalStatus(msg) {
   document.getElementById('organizeStatus').textContent = msg;
 }
 
@@ -754,7 +873,7 @@ function setStatus(msg) {
 // Reads:  story-notes/manifest.json, each file listed in it
 // Writes: new cards via addCard(), updates sf_synced_files
 // Entry:  #syncNotesBtn click → syncStoryNotes()
-// Helper: sendToClaudeAndAddCards(), extractTextFromPdfBuffer()
+// Helper: processFileWithAi(), extractTextFromPdfBuffer()
 // ============================================================
 
 document.getElementById('syncNotesBtn').addEventListener('click', syncStoryNotes);
@@ -817,7 +936,7 @@ async function syncStoryNotes() {
       let messageContent;
 
       // Recompute existing titles each iteration since cards accumulate
-      var existingTitlesNow = cards.map(function(c) { return c.title.toLowerCase(); });
+      var existingTitlesNow = getExistingTitles();
 
       if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'heic') {
         const base64 = await new Promise(function(resolve) {
@@ -847,12 +966,17 @@ async function syncStoryNotes() {
       }
 
       btn.textContent = '✨ Organizing ' + name + '...';
-      const added = await sendToClaudeAndAddCards(key, messageContent);
-      totalAdded += added;
-
-      // Mark as processed so we skip it next time
-      synced.push(fileKey);
-      localStorage.setItem('sf_synced_files', JSON.stringify(synced));
+      try {
+        const added = await processFileWithAi(key, messageContent);
+        totalAdded += added;
+        // Mark as processed so we skip it next time
+        synced.push(fileKey);
+        localStorage.setItem('sf_synced_files', JSON.stringify(synced));
+      } catch (fileErr) {
+        // Skip this file and continue — don't abort the whole sync
+        showToast('⚠️ Skipped ' + name + ': ' + fileErr.message);
+        console.warn('Sync skipped', name, fileErr);
+      }
     }
 
     const word = totalAdded === 1 ? 'card' : 'cards';
@@ -882,41 +1006,50 @@ async function extractTextFromPdfBuffer(arrayBuffer) {
   return text;
 }
 
-// sendToClaudeAndAddCards: calls the API and adds whatever cards come back
-async function sendToClaudeAndAddCards(key, messageContent) {
-  const existingTitles = cards.map(function(c) { return c.title.toLowerCase(); });
+// processFileWithAi: calls the API and adds whatever cards come back
+async function processFileWithAi(key, messageContent) {
+  const existingTitles = getExistingTitles();
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type':                              'application/json',
-      'x-api-key':                                 key,
-      'anthropic-version':                         '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model:      'claude-sonnet-4-5-20250929',
-      max_tokens: 2048,
-      messages:   [{ role: 'user', content: messageContent }]
-    })
-  });
-
-  const data = await response.json();
+  let response, data;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':                              'application/json',
+        'x-api-key':                                 key,
+        'anthropic-version':                         '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model:      CLAUDE_MODEL,
+        max_tokens: 2048,
+        messages:   [{ role: 'user', content: messageContent }]
+      })
+    });
+    data = await response.json();
+  } catch (e) {
+    throw new Error('Network error: ' + e.message);
+  }
   if (!response.ok) throw new Error(data?.error?.message || 'API error (status ' + response.status + ')');
 
   let raw = (data.content?.[0]?.text || '').trim();
   raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
   let newCards;
-  try { newCards = JSON.parse(raw); } catch (e) { return 0; }
+  try {
+    newCards = JSON.parse(raw);
+  } catch (e) {
+    console.warn('Claude response was not valid JSON:', raw.slice(0, 200));
+    showToast('⚠️ Could not parse AI response — no cards added');
+    return 0;
+  }
   if (!Array.isArray(newCards)) return 0;
 
-  const validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
   let count = 0;
 
   newCards.forEach(function(c) {
     if (!c.type || !c.title) return;
-    if (!validTypes.includes(c.type)) return;
+    if (!VALID_CARD_TYPES.includes(c.type)) return;
     if (existingTitles.includes(c.title.toLowerCase())) return;
     addCard(c.type, c.title, c.content || '');
     count++;
@@ -976,16 +1109,16 @@ document.getElementById('viewMap').addEventListener('click', function() {
   document.getElementById('mapButtons').classList.remove('hidden');
   renderMap();
   applyZoom(mapZoom);
-  updateMapSyncBtn();
-  // Scroll so cards are nicely framed: show left buffer without starting at the edge
-  var mapView = document.getElementById('mapView');
-  mapView.scrollLeft = 280;
-  mapView.scrollTop  = 120;
+  updateSyncButtonState();
+  // Defer centering one frame so the browser finishes laying out the new card elements
+  requestAnimationFrame(centerMapOnCards);
   // If there are unsynced cards, prompt the user before organizing
   if (unsyncedIds.size > 0) {
     showMapSyncPanel();
   }
 });
+
+// ── 11d: ZOOM ────────────────────────────────────────────────
 
 // applyZoom: scales the map canvas and updates the scroll area + label
 function applyZoom(newZoom) {
@@ -1172,7 +1305,7 @@ function renderMap() {
         item.addEventListener('click', function(e) {
           e.stopPropagation();
           dropdown.classList.remove('open');
-          handleCardTabAction(item.dataset.action, item.dataset.id);
+          handleCardContextMenuAction(item.dataset.action, item.dataset.id);
         });
       });
     });
@@ -1230,8 +1363,8 @@ function makeDraggable(el, cardId) {
       // Divide mouse delta by mapZoom so the card follows the cursor
       // correctly at any zoom level (e.g., at 0.5× zoom, mouse moves
       // 100px but we only want the card to move 50px in canvas space)
-      var newX = Math.max(-50, startLeft + (e.clientX - startX) / mapZoom);
-      var newY = Math.max(-50, startTop  + (e.clientY - startY) / mapZoom);
+      var newX = Math.max(-50, Math.min(3900, startLeft + (e.clientX - startX) / mapZoom));
+      var newY = Math.max(-50, Math.min(2400, startTop  + (e.clientY - startY) / mapZoom));
       // Preserve saved w/h when updating position
       var existing = cardPositions[cardId] || {};
       cardPositions[cardId] = { x: newX, y: newY, w: existing.w, h: existing.h };
@@ -1375,9 +1508,9 @@ function saveConnections() {
   localStorage.setItem('sf_connections', JSON.stringify(connections));
 }
 
-// handleCardTabAction: called when user picks an option from the ⋮ dropdown on a map card
-async function handleCardTabAction(action, cardId) {
-  var key = apiKey || localStorage.getItem('sf_api_key');
+// handleCardContextMenuAction: called when user picks an option from the ⋮ dropdown on a map card
+async function handleCardContextMenuAction(action, cardId) {
+  var key = getApiKey();
   if (!key) {
     alert('Please set your API key first — click "+ Add Notes" and expand the API Key section.');
     return;
@@ -1458,7 +1591,7 @@ document.getElementById('toggleSummary').addEventListener('click', function() {
 });
 
 async function generateSummary() {
-  var key = apiKey || localStorage.getItem('sf_api_key');
+  var key = getApiKey();
   if (!key) {
     document.getElementById('summaryText').textContent = 'Set your API key to generate a story overview.';
     return;
@@ -1494,7 +1627,7 @@ async function generateSummary() {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-5-20250929',
+        model:      CLAUDE_MODEL,
         max_tokens: 300,
         messages: [{
           role:    'user',
@@ -1625,7 +1758,7 @@ async function sendChatMessage() {
   var msg   = input.value.trim();
   if (!msg) return;
 
-  var key = apiKey || localStorage.getItem('sf_api_key');
+  var key = getApiKey();
   if (!key) {
     appendChatMsg('assistant', 'Please set your API key first — click "+ Add Notes" and expand the API Key section.');
     return;
@@ -1659,7 +1792,7 @@ async function sendChatMessage() {
             'anthropic-dangerous-direct-browser-access': 'true'
           },
           body: JSON.stringify({
-            model:      'claude-sonnet-4-5-20250929',
+            model:      CLAUDE_MODEL,
             max_tokens: 200,
             messages: [{
               role:    'user',
@@ -1713,7 +1846,7 @@ async function sendChatMessage() {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-5-20250929',
+        model:      CLAUDE_MODEL,
         max_tokens: 1024,
         system:     systemPrompt,
         messages:   messages
@@ -1759,11 +1892,11 @@ function appendChatMsg(role, text, id) {
 // saveUnsyncedIds: persists unsynced card IDs to localStorage
 function saveUnsyncedIds() {
   localStorage.setItem('sf_unsynced_ids', JSON.stringify(Array.from(unsyncedIds)));
-  updateMapSyncBtn();
+  updateSyncButtonState();
 }
 
-// updateMapSyncBtn: updates the Sync Map button appearance
-function updateMapSyncBtn() {
+// updateSyncButtonState: updates the Sync Map button appearance
+function updateSyncButtonState() {
   var btn = document.getElementById('mapSyncBtn');
   if (!btn) return;
   var count = unsyncedIds.size;
@@ -1796,23 +1929,64 @@ function showChatNotif() {
 
 // callClaudeForCard: lightweight Claude API call for single-card actions (no system prompt)
 async function callClaudeForCard(key, prompt, maxTokens) {
-  var res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type':                              'application/json',
-      'x-api-key':                                 key,
-      'anthropic-version':                         '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model:      'claude-sonnet-4-5-20250929',
-      max_tokens: maxTokens || 300,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  var data = await res.json();
+  var res, data;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':                              'application/json',
+        'x-api-key':                                 key,
+        'anthropic-version':                         '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model:      CLAUDE_MODEL,
+        max_tokens: maxTokens || 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    data = await res.json();
+  } catch (e) {
+    throw new Error('Network error: ' + e.message);
+  }
   if (!res.ok) throw new Error(data?.error?.message || 'API error (status ' + res.status + ')');
   return (data.content?.[0]?.text || '').trim();
+}
+
+// centerMapOnCards: scrolls the map viewport so the card cluster is centered.
+// Falls back to a sensible default if there are no positioned cards.
+function centerMapOnCards() {
+  var mapView = document.getElementById('mapView');
+  if (!mapView) return;
+
+  var positions = Object.values(cardPositions);
+  if (positions.length === 0) {
+    // No cards yet — scroll to where new cards will appear
+    mapView.scrollLeft = 280;
+    mapView.scrollTop  = 120;
+    return;
+  }
+
+  // Find the bounding box of all card positions
+  var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  positions.forEach(function(p) {
+    var x = p.x || 0, y = p.y || 0;
+    var w = p.w || 210, h = p.h || 140; // 210 matches default CSS .map-card width
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x + w > maxX) maxX = x + w;
+    if (y + h > maxY) maxY = y + h;
+  });
+
+  // Center of all cards in canvas space
+  var centerX = (minX + maxX) / 2;
+  var centerY = (minY + maxY) / 2;
+
+  // Scroll so that point is in the middle of the visible viewport, accounting for zoom
+  var vpW = mapView.clientWidth;
+  var vpH = mapView.clientHeight;
+  mapView.scrollLeft = Math.max(0, centerX * mapZoom - vpW / 2);
+  mapView.scrollTop  = Math.max(0, centerY * mapZoom - vpH / 2);
 }
 
 // ── 14a: MAP PANNING ─────────────────────────────────────────
@@ -1865,7 +2039,7 @@ function makeMapPannable() {
 // Column math: colX = START_X + colIndex * (CARD_W + COL_GAP)
 //   e.g. character at 400, world at 730, arc at 1060, quote at 1390, idea at 1720
 function autoOrganizeMap() {
-  var TYPE_ORDER = ['character', 'world', 'arc', 'quote', 'idea'];
+  var TYPE_ORDER = VALID_CARD_TYPES; // character → world → arc → quote → idea
   var CARD_W     = 210; // card width
   var COL_GAP    = 120; // gap between columns (total column stride = 330px)
   var START_X    = 400; // left offset — gives 400px of left scroll buffer
@@ -1908,12 +2082,8 @@ function autoOrganizeMap() {
   saveCardPositions();
   saveConnections();
 
-  // Re-frame the viewport so the organized layout is visible from the left
-  var mapViewEl = document.getElementById('mapView');
-  if (mapViewEl) {
-    mapViewEl.scrollLeft = 280;
-    mapViewEl.scrollTop  = 120;
-  }
+  // Defer centering one frame so the browser finishes laying out the reorganized cards
+  requestAnimationFrame(centerMapOnCards);
 }
 
 // ── 14c: COMBINE CARDS ───────────────────────────────────────
@@ -1992,7 +2162,7 @@ function hideMapSyncPanel() {
 document.getElementById('combineCancelBtn').addEventListener('click', hideCombinePanel);
 
 document.getElementById('combineConfirmBtn').addEventListener('click', async function() {
-  var key = apiKey || localStorage.getItem('sf_api_key');
+  var key = getApiKey();
   if (!key) {
     document.getElementById('combineStatusMsg').textContent = '⚠️ Set your API key first.';
     return;
@@ -2020,8 +2190,7 @@ document.getElementById('combineConfirmBtn').addEventListener('click', async fun
     var raw = await callClaudeForCard(key, combinePrompt, 300);
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     var newCard = JSON.parse(raw);
-    var validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
-    if (newCard && newCard.title && validTypes.includes(newCard.type)) {
+    if (newCard && newCard.title && VALID_CARD_TYPES.includes(newCard.type)) {
       addCard(newCard.type, newCard.title, newCard.content || '');
       hideCombinePanel();
       showToast('✅ Created "' + newCard.title + '" (' + newCard.type + ')');
@@ -2029,10 +2198,12 @@ document.getElementById('combineConfirmBtn').addEventListener('click', async fun
       throw new Error('Unexpected response format');
     }
   } catch (err) {
-    document.getElementById('combineStatusMsg').textContent = '❌ ' + err.message;
+    document.getElementById('combineStatusMsg').textContent = '❌ ' + err.message + ' — try again';
     document.getElementById('combineConfirmBtn').disabled = false;
   }
 });
+
+// ── 14d: MAP SYNC PANEL ──────────────────────────────────────
 
 // Wire up map sync panel buttons
 document.getElementById('mapSyncSkipBtn').addEventListener('click', function() {
@@ -2044,7 +2215,7 @@ document.getElementById('mapSyncSkipBtn').addEventListener('click', function() {
 });
 
 document.getElementById('mapSyncConfirmBtn').addEventListener('click', async function() {
-  var key = apiKey || localStorage.getItem('sf_api_key');
+  var key = getApiKey();
   if (!key) {
     document.getElementById('mapSyncStatusMsg').textContent = '⚠️ Set your API key first.';
     return;
@@ -2080,11 +2251,10 @@ document.getElementById('mapSyncConfirmBtn').addEventListener('click', async fun
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     var improved = JSON.parse(raw);
     if (Array.isArray(improved)) {
-      var validTypes = ['character', 'world', 'arc', 'quote', 'idea'];
       improved.forEach(function(item) {
         if (!item.id || !item.title) return;
         var card = cards.find(function(c) { return c.id === item.id; });
-        if (card && validTypes.includes(item.type)) {
+        if (card && VALID_CARD_TYPES.includes(item.type)) {
           card.title   = item.title;
           card.content = item.content || card.content;
         }
@@ -2125,3 +2295,4 @@ document.getElementById('reorgBtn').addEventListener('click', function() {
 // INITIALIZE — runs when the page first loads
 // ============================================================
 renderCards();
+initApiKeyUx(); // async: loads key from file → localStorage → shows banner if missing

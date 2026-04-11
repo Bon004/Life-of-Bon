@@ -22,20 +22,21 @@ storyforge/
 ```
 
 ## My Environment
-- Machine: Windows 11, user is `egarza`
-- Project path: `C:\Users\egarza\Master File for code stuff\Life-of-Bon`
+- Machine: Windows 10, user is `esteb`
+- Project path: `C:\Users\esteb\Documents\Story website`
+- Shell: **PowerShell** — always use PowerShell-compatible syntax (`;` instead of `&&`, no bash-only constructs like `||`, avoid backtick quoting differences)
 - Paths with spaces: always quote them in terminal commands
-- Work laptop: requires admin approval to install software — flag any suggestion that needs admin rights so the user can plan ahead
 - Home machine: no restrictions, full admin access
 - No build steps — open index.html directly or use Live Server
-- Testing: manually in browser (no test runner)
+- Browser testing: manually in browser for UI/DOM features
+- Unit testing: `npm test` (vitest) for pure utility functions in `story-utils.js`
 
 ## How to Work on This Project
 
 ### Local Development
-1. Open terminal and navigate to the project folder:
+1. Open **PowerShell** and navigate to the project folder:
    ```
-   cd "C:\Users\egarza\Master File for code stuff\Life-of-Bon"
+   cd "C:\Users\esteb\Documents\Story website"
    ```
 2. Start Live Server:
    ```
@@ -94,9 +95,18 @@ storyforge/
 
 1. **Always read the file first** before making changes
 2. **Keep it simple** — no over-engineering, one feature at a time
-3. **Test in browser** before committing
+3. **Test in browser** before committing (for DOM/UI changes)
 4. **Explain like a beginner** — comments should be clear and helpful
 5. **No deleting features** — if something isn't working, debug it instead
+
+### TDD for Utility Functions
+Pure functions in `story-utils.js` (no DOM, no API, no localStorage) should follow the TDD loop:
+1. Write the test in `tests/story-utils.test.js` first
+2. Run `npm test` — confirm it fails
+3. Implement the function in `story-utils.js`
+4. Run `npm test` — confirm it passes
+
+DOM-dependent code in `app.js` stays as manual browser testing only.
 
 ## What NOT to Do
 - Don't suggest npm packages, webpack, React, or any build tools — plain HTML/JS only
@@ -131,3 +141,8 @@ storyforge/
 - Check `localStorage` in DevTools to see saved data
 - Test with small files first before uploading large PDFs
 - Refresh page (`F5`) if something looks stuck
+
+### Debugging Approach
+- **Trust the user's description.** If the user says something is broken, do NOT assume it works — inspect the actual failure first.
+- When a bug is reported, reproduce or identify the root cause before proposing a fix.
+- Check the browser Console for errors before reading code.
