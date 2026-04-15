@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Report — 2026-04-15 (Run 2) · StoryForge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f17;
+      --surface:    #131620;
+      --surface-2:  #181c2a;
+      --border:     #1e2338;
+      --border-2:   #262b42;
+      --text:       #dde3f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4e5670;
+      --accent:     #60a5fa;
+      --accent-dim: #122140;
+      --green:      #34d399;
+      --green-dim:  #0d3327;
+      --amber:      #fbbf24;
+      --amber-dim:  #3a2a08;
+      --red:        #f87171;
+      --red-dim:    #3a1212;
+      --purple:     #c084fc;
+      --purple-dim: #2d1a4a;
+      --mono:       'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 20px;
+      margin-bottom: 40px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.02em;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    .meta-item { font-size: 12.5px; color: var(--text-muted); }
+    .meta-item strong { color: var(--text); font-weight: 500; }
+    .meta-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      padding: 4px 12px; border-radius: 20px;
+      color: var(--accent); background: var(--accent-dim);
+      border: 1px solid rgba(96,165,250,.25);
+    }
+
+    /* ── Section headers ────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 44px 0 16px;
+    }
+    .section-header h2 {
+      font-size: 13px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted); white-space: nowrap;
+    }
+    .section-header::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Stats row ──────────────────────────────── */
+    .stats-row {
+      display: flex; gap: 32px; flex-wrap: wrap;
+      padding: 20px 0; margin-bottom: 8px;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-family: var(--mono); font-size: 22px; font-weight: 700; color: #fff; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-top: 4px; }
+
+    /* ── At-a-glance quad ───────────────────────── */
+    .glance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .glance-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .glance-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+    }
+    .glance-label.green  { color: var(--green); }
+    .glance-label.amber  { color: var(--amber); }
+    .glance-label.blue   { color: var(--accent); }
+    .glance-label.purple { color: var(--purple); }
+    .glance-text { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+
+    /* ── Tables ─────────────────────────────────── */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      font-size: 13.5px;
+    }
+    .data-table thead tr { background: var(--surface-2); }
+    .data-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 16px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--text); font-weight: 500; }
+    .count-badge {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    /* ── Feature cards ──────────────────────────── */
+    .feature-block { display: flex; flex-direction: column; gap: 12px; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .feature-card-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 26px; height: 26px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .feature-card-title { font-size: 15px; font-weight: 600; color: #fff; }
+    .feature-card-body { padding: 16px 20px; }
+    .detail-intro { font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.6; }
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .bullet-list li {
+      font-size: 13px; color: var(--text-muted);
+      padding-left: 14px; position: relative;
+    }
+    .bullet-list li::before {
+      content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+    }
+
+    code {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px; color: var(--text);
+    }
+    pre {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 10px 14px; border-radius: 6px; color: var(--text-muted);
+      overflow-x: auto; line-height: 1.6; margin-top: 8px;
+      white-space: pre-wrap;
+    }
+
+    /* ── Risk / amber cards ─────────────────────── */
+    .risk-block { display: flex; flex-direction: column; gap: 10px; }
+    .risk-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0; padding: 14px 18px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+    .risk-item strong { color: var(--text); display: block; margin-bottom: 4px; }
+    .risk-item ul { margin-top: 8px; }
+
+    /* ── Win cards ──────────────────────────────── */
+    .win-block { display: flex; flex-direction: column; gap: 10px; }
+    .win-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 0 8px 8px 0; padding: 14px 18px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+    .win-card strong { color: var(--green); display: block; margin-bottom: 4px; }
+
+    /* ── Next steps / patterns ──────────────────── */
+    .next-block { display: flex; flex-direction: column; gap: 10px; }
+    .next-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .next-num {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .next-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+    .next-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-bottom: 6px; }
+    .prompt-block {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px 12px; margin-top: 6px;
+    }
+    .prompt-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--text-dim); margin-bottom: 6px;
+    }
+    .prompt-block code {
+      font-size: 11.5px; color: var(--text-muted); background: none;
+      border: none; padding: 0; display: block; white-space: pre-wrap; line-height: 1.6;
+    }
+
+    /* ── Horizon cards ──────────────────────────── */
+    .horizon-block { display: flex; flex-direction: column; gap: 14px; }
+    .horizon-card {
+      background: linear-gradient(135deg, var(--purple-dim) 0%, var(--surface) 100%);
+      border: 1px solid rgba(192,132,252,.2);
+      border-radius: 10px; padding: 18px 20px;
+    }
+    .horizon-title { font-size: 15px; font-weight: 600; color: var(--purple); margin-bottom: 8px; }
+    .horizon-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+    .horizon-tip {
+      font-size: 12.5px; color: var(--text-dim);
+      background: rgba(255,255,255,.04); padding: 8px 12px; border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .horizon-tip strong { color: var(--purple); }
+
+    /* ── Highlight callout ──────────────────────── */
+    .highlight-card {
+      background: var(--surface-2); border: 1px solid var(--border-2);
+      border-radius: 10px; padding: 20px 24px;
+    }
+    .highlight-headline {
+      font-size: 16px; font-weight: 600; color: #fff;
+      margin-bottom: 10px; line-height: 1.4;
+    }
+    .highlight-detail { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Footer ─────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .glance-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">Session Report · StoryForge / Life of Bon</div>
+    <h1>2026-04-15 (Run 2) · Claude Code Usage Insights</h1>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Sessions analyzed:</strong> 3 of 6</div>
+      <div class="meta-item"><strong>Date range:</strong> 2026-04-08 to 2026-04-15</div>
+      <div class="meta-item"><strong>Messages:</strong> 43 &nbsp;·&nbsp; <strong>Hours:</strong> 2 &nbsp;·&nbsp; <strong>Commits:</strong> 1</div>
+      <div class="meta-badge">Usage Analytics</div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-value">43</div>
+      <div class="stat-label">Messages</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">2h</div>
+      <div class="stat-label">Duration</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">3</div>
+      <div class="stat-label">Sessions Analyzed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">6</div>
+      <div class="stat-label">Total Sessions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">1</div>
+      <div class="stat-label">Commits</div>
+    </div>
+  </div>
+
+  <!-- At a Glance -->
+  <div class="section-header"><h2>At a Glance</h2></div>
+  <div class="glance-grid">
+    <div class="glance-card">
+      <div class="glance-label green">What's Working</div>
+      <div class="glance-text">You give clear directional feedback on design work — steering a palette from orange/black toward violet/navy — and stage bigger changes into sequential passes so partial progress still lands cleanly in your repo. You also showed good instincts by cutting losses on an intractable environment setup rather than sinking more hours into it.</div>
+    </div>
+    <div class="glance-card">
+      <div class="glance-label amber">What's Hindering</div>
+      <div class="glance-text">A "bolder redesign" request got interpreted as a color tweak instead of a layout overhaul, and guidance on the locked-down Node.js install kept pushing forward when the environment was clearly a dead end. Being more explicit upfront about structural vs. cosmetic scope — and flagging admin-rights constraints early — would help Claude pick the right approach the first time.</div>
+    </div>
+    <div class="glance-card">
+      <div class="glance-label blue">Quick Wins to Try</div>
+      <div class="glance-text">Ask Claude to produce a quick plan (and use ExitPlanMode) before redesign work so you can confirm scope before any files change. For environment setup on restricted machines, ask Claude to generate a devcontainer or Codespaces config instead of wrestling with local installs.</div>
+    </div>
+    <div class="glance-card">
+      <div class="glance-label purple">Ambitious Workflows</div>
+      <div class="glance-text">Spawn parallel subagents that each build a different theme variant on its own branch, capture Playwright screenshots, and present a visual gallery for one-click selection. Or move toward a visual regression loop where an agent iterates on CSS until snapshot and accessibility checks pass, committing only green states automatically.</div>
+    </div>
+  </div>
+
+  <!-- Project Areas -->
+  <div class="section-header"><h2>Project Areas</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Area</th>
+        <th>Sessions</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>UI Theme &amp; Color Redesign</td>
+        <td><span class="count-badge">2</span></td>
+        <td>Iterated on dark color palettes, moving away from orange/black toward violet/navy and teal/blue schemes. Claude used Edit and Write tools heavily on CSS files to swap color variables and commit changes via Bash.</td>
+      </tr>
+      <tr>
+        <td>Layout &amp; Visual Redesign</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Requested a bolder UI redesign beyond simple color tweaks. Claude performed multi-file CSS edits for the layout pass, though follow-up color adjustments were blocked by API errors.</td>
+      </tr>
+      <tr>
+        <td>Next.js Dev Environment Setup</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Attempted to run a Next.js site on a locked-down work computer without admin rights. Claude walked through manual Node.js installation via Bash, but PATH issues and execution policies caused repeated failures — eventually abandoned.</td>
+      </tr>
+      <tr>
+        <td>Git &amp; Version Control</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Committed styling changes to the repository after successful theme updates. Claude used Bash for git operations to finalize and persist the color palette work.</td>
+      </tr>
+      <tr>
+        <td>Session Management &amp; Debugging</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Invoked /debug and /compact commands without specific issues described. Claude appropriately asked for clarification rather than fabricating problems to solve.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Interaction Style -->
+  <div class="section-header"><h2>Interaction Style</h2></div>
+  <div class="feature-card">
+    <div class="feature-card-body">
+      <p class="detail-intro">You work in <strong style="color:var(--text)">short, iterative bursts of visual feedback</strong>, especially on styling. Rather than writing detailed specs upfront, you give Claude directional prompts like "make it bolder" or "swap to teal/blue" and then react to what lands. This shows up clearly in sessions where you asked for a redesign, saw the result was mostly color tweaks, and immediately pivoted to request layout changes and another palette shift.</p>
+      <p class="detail-intro">You <strong style="color:var(--text)">let Claude drive long procedural tasks without interrupting</strong>, sometimes to your detriment. The 90-minute Node.js setup saga on a locked-down work machine is the clearest example: you followed along through PATH issues, execution policy errors, and paths-with-spaces problems before finally calling it.</p>
+      <p class="detail-intro" style="margin-bottom:0">Your instructions tend to be <strong style="color:var(--text)">terse and outcome-focused</strong> rather than prescriptive, which works great when Claude guesses right (violet/navy palette, committed cleanly) but leaves room for misfires when it doesn't. Think of it as an art-director style: you point at a direction and expect Claude to fill in the details correctly.</p>
+    </div>
+  </div>
+
+  <!-- What Worked Well -->
+  <div class="section-header"><h2>What Worked Well</h2></div>
+  <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.6">Three sessions focused on UI theming and environment setup, with CSS work dominating.</p>
+  <div class="win-block">
+    <div class="win-card">
+      <strong>Decisive Theme Overhaul</strong>
+      You gave clear directional feedback — moving away from orange/black toward a violet/navy palette — and let Claude execute a cohesive swap across multiple CSS variables. You followed through by committing the changes immediately, keeping your repo history clean.
+    </div>
+    <div class="win-card">
+      <strong>Staged Redesign Passes</strong>
+      You broke a bolder UI redesign into sequential passes: layout first, then accent color tuning toward teal/blue. This staged approach let the layout changes land successfully even when later steps hit API issues.
+    </div>
+    <div class="win-card">
+      <strong>Knowing When to Stop</strong>
+      When a locked-down work machine made Node.js setup intractable after 90 minutes, you cut your losses and decided to work from home instead. Recognizing environmental dead-ends rather than sinking more time into them is a valuable engineering instinct.
+    </div>
+  </div>
+
+  <!-- Where Things Went Wrong -->
+  <div class="section-header"><h2>Where Things Went Wrong</h2></div>
+  <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.6">Sessions were repeatedly derailed by API errors and approach mismatches, leaving work half-finished even on small styling tasks.</p>
+  <div class="risk-block">
+    <div class="risk-item">
+      <strong>API 500 errors blocking progress</strong>
+      Recurring API 500 errors interrupt sessions mid-task, especially during iterative styling changes. Consider saving your intent as a clear prompt you can retry, or batching changes so a single successful call completes the work.
+      <ul class="bullet-list" style="margin-top:8px">
+        <li>The teal/blue accent swap never completed because repeated 500s killed follow-up requests, leaving the redesign partially done</li>
+        <li>The dark theme session was blocked by API errors before Claude could even start, wasting time before the violet/navy palette eventually landed</li>
+      </ul>
+    </div>
+    <div class="risk-item">
+      <strong>Scope misalignment on UI requests</strong>
+      When you ask for a "bolder redesign," Claude delivers color tweaks instead of layout changes. Being explicit upfront about structural vs. cosmetic changes — or asking for a plan first — prevents wasted passes.
+      <ul class="bullet-list" style="margin-top:8px">
+        <li>The redesign request produced only color adjustments, forcing a follow-up that then failed to complete</li>
+        <li>The theme change went through multiple rounds before landing on violet/navy, suggesting the initial direction wasn't pinned down</li>
+      </ul>
+    </div>
+    <div class="risk-item">
+      <strong>Fighting environment constraints</strong>
+      90 minutes were spent trying to install Node.js on a locked-down work machine before giving up. Recognizing admin-rights blockers earlier — or pivoting to portable/containerized/cloud alternatives — would save substantial time.
+      <ul class="bullet-list" style="margin-top:8px">
+        <li>Next.js setup on the work computer failed through repeated PATH and execution policy issues, ending with a decision to work from home instead</li>
+        <li>Paths with spaces compounded the Node.js setup failures rather than triggering an earlier pivot to a different approach</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Features to Try -->
+  <div class="section-header"><h2>Features to Try</h2></div>
+  <div class="feature-block">
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">1</div>
+        <div class="feature-card-title">Custom Skills — /redesign workflow</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Reusable slash commands stored as markdown. A <code>/redesign</code> skill could enforce "change layout AND colors, confirm palette first" so bold redesigns don't degrade to color-only tweaks.</p>
+        <pre>mkdir -p .claude/skills/redesign
+echo '# Redesign
+
+Ask which: layout, palette, or both. Current palette: violet/navy.
+Make substantive spacing/typography changes, not just colors.' > .claude/skills/redesign/SKILL.md</pre>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">2</div>
+        <div class="feature-card-title">Hooks — auto-format after CSS edits</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Auto-run shell commands at lifecycle events. With 26+ CSS edits per session, a PostToolUse hook running prettier would keep styles clean automatically.</p>
+        <pre>// .claude/settings.json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Edit|Write",
+      "hooks": [{"type": "command", "command": "npx prettier --write $CLAUDE_FILE_PATHS"}]
+    }]
+  }
+}</pre>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">3</div>
+        <div class="feature-card-title">Task Agents — map before redesigning</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Before UI redesigns, an agent can map all component and CSS files first so the redesign covers layout holistically instead of single-file color edits.</p>
+        <pre>Ask: "Use an agent to map every component and CSS file involved
+in the homepage layout before we redesign."</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Patterns -->
+  <div class="section-header"><h2>Usage Pattern Tips</h2></div>
+  <div class="next-block">
+    <div class="next-item">
+      <div class="next-num">1</div>
+      <div>
+        <div class="next-title">Specify redesign scope upfront</div>
+        <div class="next-desc">Distinguish "palette swap" from "layout redesign" explicitly in your first message. Stating scope (layout, spacing, typography, components) prevents a wasted pass and a second frustrated request.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">Copyable prompt</div>
+          <code>I want a BOLD redesign of the homepage — this means layout, spacing, typography, and component structure, NOT just colors. Keep the current violet/navy palette. Show me a plan before editing.</code>
+        </div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">2</div>
+      <div>
+        <div class="next-title">Bail out of environment rabbit holes faster</div>
+        <div class="next-desc">Set a time/attempt budget when setting up tooling on restricted machines. Tell Claude upfront about admin/PATH constraints and cap attempts, so it pivots to portable Node, Docker, or a cloud IDE early.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">Copyable prompt</div>
+          <code>I'm on a locked-down Windows work machine, no admin, paths have spaces. If standard Node install fails once, immediately pivot to a portable/no-install option or tell me to use a different machine.</code>
+        </div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">3</div>
+      <div>
+        <div class="next-title">Retry strategy for API 500s</div>
+        <div class="next-desc">When API errors hit mid-task, resume with explicit state so Claude doesn't re-plan from scratch. Restate the exact target state when picking back up.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">Copyable prompt</div>
+          <code>Resuming after API error. Current state: layout redesign landed, palette still orange/black. Target: teal/blue accents across all CSS files. List files you'll touch, then apply.</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- On the Horizon -->
+  <div class="section-header"><h2>On the Horizon</h2></div>
+  <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.6">CSS tweaks and color swaps could evolve into fully autonomous design iteration loops where agents explore, test, and ship UI variants in parallel.</p>
+  <div class="horizon-block">
+    <div class="horizon-card">
+      <div class="horizon-title">Parallel Design Variant Exploration</div>
+      <div class="horizon-desc">Instead of iterating one color palette at a time through API errors, spawn parallel subagents that each generate a distinct theme variant (violet/navy, teal/blue, forest/cream) on separate git branches. Screenshot each with Playwright and present a visual gallery for one-click selection and merge.</div>
+      <div class="horizon-tip"><strong>How to try:</strong> Use the Task tool to launch parallel subagents, each working on its own worktree, with Playwright MCP for automated screenshots.</div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copyable prompt</div>
+        <code>Spawn 4 parallel subagents using the Task tool. Each should create a git worktree, implement a distinct dark theme variant (propose 4 palettes first), run the dev server, and capture full-page screenshots at desktop and mobile widths. Collect all screenshots into a /theme-gallery folder with a markdown comparison doc, then wait for my selection before merging the winner.</code>
+      </div>
+    </div>
+    <div class="horizon-card">
+      <div class="horizon-title">Portable Dev Environment Via Containers</div>
+      <div class="horizon-desc">Never lose 90 minutes to locked-down Node installs again. An agent can detect environment constraints, auto-generate a devcontainer or GitHub Codespaces config, and bootstrap a fully portable workspace that runs identically on any machine without admin rights.</div>
+      <div class="horizon-tip"><strong>How to try:</strong> Ask Claude Code to scaffold a .devcontainer directory and push to GitHub for Codespaces, bypassing local install entirely.</div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copyable prompt</div>
+        <code>Create a complete .devcontainer/devcontainer.json setup plus a GitHub Codespaces config so I can develop this anywhere without installing Node locally. Include the correct Node version, VS Code extensions, port forwarding for the dev server, and a postCreateCommand that installs deps. Then commit and push so I can launch a Codespace from my locked-down work machine.</code>
+      </div>
+    </div>
+    <div class="horizon-card">
+      <div class="horizon-title">Visual Regression Test Loop</div>
+      <div class="horizon-desc">Turn UI redesigns into a test-driven loop: the agent iterates on CSS/layout changes until Playwright visual snapshots and accessibility audits pass defined thresholds, automatically retrying on API errors and committing only green states.</div>
+      <div class="horizon-tip"><strong>How to try:</strong> Combine Playwright MCP with a baseline screenshot suite and have Claude iterate autonomously against the tests.</div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copyable prompt</div>
+        <code>Set up Playwright visual regression tests covering homepage, nav, and key components at 3 viewports. Then iterate autonomously on a bolder UI redesign: make a change, run visual tests and an axe-core accessibility scan, and keep refining until contrast ratios pass WCAG AA and the layout meaningfully differs from baseline. Commit each successful iteration with a descriptive message.</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Highlight -->
+  <div class="section-header"><h2>Session Highlight</h2></div>
+  <div class="highlight-card">
+    <div class="highlight-headline">90 minutes fighting a locked-down work laptop before surrendering to "I'll just work from home"</div>
+    <div class="highlight-detail">An attempt to run a Next.js site on a work computer without admin rights spiraled into a PATH-and-execution-policy nightmare with spaces in directory paths. After an hour and a half of install failures, the pragmatic call was made: close the laptop and pick it back up on the home machine.</div>
+  </div>
+
+  <div class="doc-footer">StoryForge · Session Report · 2026-04-15 (Run 2) · Claude Code Usage Insights</div>
+
+</div>
+</body>
+</html>

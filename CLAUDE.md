@@ -175,7 +175,10 @@ Every `/insights` run must produce **two outputs**:
 
 **Same-day second run:** If a `session-report-YYYY-MM-DD.html` already exists for today, ask the user whether to update/append the existing file or create a new file (`session-report-YYYY-MM-DD-2.html`, etc.). Never ask on the first run of a day — just create the file.
 
-**Save path (always):** `C:\Users\esteb\Documents\Story website\Web Build Notes\session-reports\`
+**Save path (always):** Detect the active machine by checking the working directory, then save to the matching path:
+- **Home machine (esteb):** `C:\Users\esteb\Documents\Story website\Web Build Notes\session-reports\`
+- **Work laptop (egarza):** `C:\Users\egarza\Master File for code stuff\Life-of-Bon\Web Build Notes\session-reports\`
+
 Never save to `.claude/usage-data/` or any other location. If a report ends up anywhere else, it is in the wrong place.
 
 ## When Editing Code
