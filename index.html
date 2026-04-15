@@ -27,14 +27,31 @@
       <span class="app-subtitle">Life of Bon</span>
     </div>
     <div class="header-right">
+      <button class="btn-archive-toggle" id="archiveBtn" title="Browse archived cards">📦 Archive</button>
       <button class="btn-sync-notes" id="syncNotesBtn">↻ Sync Notes</button>
       <button class="btn-add-notes" id="openNotesModal">+ Add Notes</button>
     </div>
   </header>
 
+  <!-- ARCHIVE PANEL (left slide-in) -->
+  <div class="archive-panel" id="archivePanel">
+    <div class="archive-panel-header">
+      <div class="archive-panel-title">
+        📦 Archive
+        <span class="archive-count-badge" id="archiveCount">0</span>
+      </div>
+      <button class="archive-panel-close" id="archivePanelClose">✕</button>
+    </div>
+    <div class="archive-panel-body" id="archivePanelBody">
+      <div class="archive-empty" id="archiveEmpty">No archived cards yet.</div>
+    </div>
+  </div>
+  <div class="archive-overlay hidden" id="archiveOverlay"></div>
+
   <!-- TAB BAR -->
   <nav class="tab-bar">
-    <button class="tab-btn active" data-tab="canvas">Story Canvas</button>
+    <button class="tab-btn active" data-tab="home">Home</button>
+    <button class="tab-btn" data-tab="canvas">Story Canvas</button>
     <button class="tab-btn" data-tab="writing">Writing</button>
     <button class="tab-btn" data-tab="characters">Characters</button>
     <button class="tab-btn" data-tab="arcs">Arcs & Timeline</button>
@@ -49,8 +66,74 @@
   <!-- MAIN -->
   <main class="app-main">
 
+    <!-- TAB 0: HOME -->
+    <section class="tab-panel active" id="panel-home">
+      <div class="home-layout">
+
+        <!-- LEFT: Brand + stats + CTA -->
+        <div class="home-left">
+          <div class="home-brand">
+            <div class="home-logo-mark">⚔️</div>
+            <h1 class="home-title">StoryForge</h1>
+            <p class="home-project-name">Life of Bon</p>
+            <p class="home-subtitle">Your world. Your arcs. Your story.</p>
+          </div>
+
+          <div class="home-stats" id="homeStats">
+            <div class="home-stat-item" id="homeStatCards">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">cards</span>
+            </div>
+            <div class="home-stat-item" id="homeStatChars">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">characters</span>
+            </div>
+            <div class="home-stat-item" id="homeStatArcs">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">arcs</span>
+            </div>
+            <div class="home-stat-item" id="homeStatWords">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">words written</span>
+            </div>
+          </div>
+
+          <button class="btn-get-started" id="btnGetStarted">Open Story Canvas →</button>
+        </div>
+
+        <!-- RIGHT: Nav tiles + recent cards -->
+        <div class="home-right">
+          <div class="home-nav-grid">
+            <button class="home-nav-btn" data-tab="canvas" data-color="var(--color-arc)">
+              <span class="home-nav-icon">🗂️</span>
+              <span class="home-nav-label">Story Canvas</span>
+              <span class="home-nav-desc">Cards, map, board view</span>
+            </button>
+            <button class="home-nav-btn" data-tab="writing" data-color="var(--color-quote)">
+              <span class="home-nav-icon">✍️</span>
+              <span class="home-nav-label">Writing</span>
+              <span class="home-nav-desc">Draft and edit chapters</span>
+            </button>
+            <button class="home-nav-btn" data-tab="characters" data-color="var(--color-character)">
+              <span class="home-nav-icon">👤</span>
+              <span class="home-nav-label">Characters</span>
+              <span class="home-nav-desc">Profiles and arcs</span>
+            </button>
+            <button class="home-nav-btn" data-tab="arcs" data-color="var(--color-world)">
+              <span class="home-nav-icon">📖</span>
+              <span class="home-nav-label">Arcs & Timeline</span>
+              <span class="home-nav-desc">Plot structure and ideas</span>
+            </button>
+          </div>
+
+          <div class="home-recent" id="homeRecent"></div>
+        </div>
+
+      </div>
+    </section>
+
     <!-- TAB 1: STORY CANVAS -->
-    <section class="tab-panel active" id="panel-canvas">
+    <section class="tab-panel" id="panel-canvas">
 
       <!-- Toolbar: view toggle -->
       <div class="canvas-toolbar">
@@ -166,28 +249,127 @@
 
     <!-- TAB 2: WRITING -->
     <section class="tab-panel" id="panel-writing">
-      <div class="coming-soon">
-        <div class="coming-soon-icon">✍️</div>
-        <h2>Writing Editor</h2>
-        <p>Chapter editor, word count, and AI writing assistant — coming next.</p>
+
+      <div class="writing-toolbar">
+        <div class="writing-toolbar-left">
+          <span class="writing-wc-label">Working Copy</span>
+          <span class="pane-wc" id="copyWc">0 words</span>
+        </div>
+        <div class="writing-toolbar-right">
+          <button class="btn-writing-draft-toggle" id="draftToggleBtn">Show Draft ▶</button>
+          <div class="writing-ai-menu-wrap">
+            <button class="btn-writing-ai" id="writingAiBtn">AI ▾</button>
+            <div class="writing-ai-dropdown hidden" id="writingAiDropdown">
+              <button data-action="generate">Generate Draft from Notes</button>
+              <button data-action="continue">Continue Writing</button>
+              <button data-action="improve">Improve This</button>
+              <button data-action="consistency">Check Story Consistency</button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Rich text formatting toolbar (above the working copy pane) -->
+      <div class="writing-format-toolbar" id="writingToolbar">
+        <button class="fmt-btn" data-cmd="bold"                title="Bold (Ctrl+B)"><b>B</b></button>
+        <button class="fmt-btn" data-cmd="italic"              title="Italic (Ctrl+I)"><i>I</i></button>
+        <button class="fmt-btn" data-cmd="underline"           title="Underline (Ctrl+U)"><u>U</u></button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="formatBlock" data-val="h1" title="Heading 1">H1</button>
+        <button class="fmt-btn" data-cmd="formatBlock" data-val="h2" title="Heading 2">H2</button>
+        <button class="fmt-btn" data-cmd="formatBlock" data-val="p"  title="Paragraph">¶</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="insertUnorderedList"   title="Bullet list">• List</button>
+        <button class="fmt-btn" data-cmd="insertOrderedList"     title="Numbered list">1. List</button>
+        <button class="fmt-btn" data-cmd="insertHorizontalRule"  title="Divider">─</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn fmt-btn-clear" data-cmd="removeFormat" title="Clear formatting">✕ Clear</button>
+      </div>
+
+      <div class="writing-panes" id="writingPanes">
+        <div class="writing-pane pane-copy" id="writingCopyPane">
+          <div class="writing-page-wrap">
+            <div class="writing-editor rich-editor" id="writingCopyEditor" contenteditable="true" spellcheck="true" data-placeholder="Start writing Life of Bon..."></div>
+          </div>
+        </div>
+        <div class="writing-resize-handle hidden" id="writingResizeHandle"></div>
+        <div class="writing-pane pane-draft hidden" id="writingDraftPane">
+          <div class="draft-pane-header">
+            <span class="draft-label">Draft &nbsp;<span class="pane-wc" id="draftWc">0 words</span></span>
+            <button class="btn-promote" id="promoteBtn">← Promote to Working Copy</button>
+          </div>
+          <div class="writing-page-wrap">
+            <div class="writing-editor rich-editor draft-editor" id="writingDraftEditor" contenteditable="true" spellcheck="true" data-placeholder="AI-generated drafts and explorations appear here..."></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="writing-ai-result hidden" id="writingAiResult">
+        <div class="ai-result-header">
+          <span>AI Notes</span>
+          <button class="ai-result-close" id="closeAiResult">✕</button>
+        </div>
+        <div class="ai-result-body" id="writingAiResultBody"></div>
+      </div>
+
     </section>
 
     <!-- TAB 3: CHARACTERS -->
     <section class="tab-panel" id="panel-characters">
-      <div class="coming-soon">
-        <div class="coming-soon-icon">👤</div>
-        <h2>Characters</h2>
-        <p>Full character profile sheets for every person in your story — coming next.</p>
+      <div class="characters-layout">
+
+        <div class="char-sidebar" id="charSidebar">
+          <div class="char-sidebar-header">
+            Characters <span class="char-count-badge" id="charCount">0</span>
+          </div>
+          <div class="char-list" id="charList"></div>
+        </div>
+
+        <div class="char-profile-panel" id="charProfilePanel">
+          <div class="char-empty-state" id="charEmptyState">
+            <div class="char-empty-icon">👤</div>
+            <p>Select a character to view or edit their profile.</p>
+            <p class="hint">Characters come from your Story Canvas cards.</p>
+          </div>
+          <div class="char-profile hidden" id="charProfile">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
       </div>
     </section>
 
     <!-- TAB 4: ARCS -->
     <section class="tab-panel" id="panel-arcs">
-      <div class="coming-soon">
-        <div class="coming-soon-icon">📖</div>
-        <h2>Arcs & Timeline</h2>
-        <p>Visual story arc timeline with events and beats — coming next.</p>
+      <div class="arcs-layout">
+
+        <div class="arcs-timeline-section">
+          <div class="arcs-section-label">Arc Timeline <span class="arc-count-badge" id="arcCount">0 arcs</span></div>
+          <div class="arcs-timeline-strip" id="arcsTimeline">
+            <div class="arc-timeline-empty" id="arcTimelineEmpty">No arc cards yet — add some in Story Canvas.</div>
+          </div>
+        </div>
+
+        <div class="arcs-brainstorm-section">
+          <div class="brainstorm-subtabs">
+            <button class="brainstorm-tab active" data-btab="situations">36 Dramatic Situations</button>
+            <button class="brainstorm-tab" data-btab="sequences">8-Sequence Structure</button>
+          </div>
+          <div class="brainstorm-panel" id="brainstormSituations"></div>
+          <div class="brainstorm-panel hidden" id="brainstormSequences"></div>
+        </div>
+
+        <div class="arcs-ideas-section">
+          <div class="ideas-header">✦ What Could Happen Next?</div>
+          <textarea class="ideas-context" id="ideasContext" placeholder="Optional: describe the direction you're exploring..."></textarea>
+          <div class="ideas-selected-situation hidden" id="ideasSelectedSituation"></div>
+          <div class="ideas-actions">
+            <button class="btn-map-arcs" id="mapArcsBtn">Map Arcs to Sequences</button>
+            <button class="btn-generate-ideas" id="generateIdeasBtn">Generate 3 Ideas ▶</button>
+          </div>
+          <div class="ideas-result hidden" id="ideasResult"></div>
+        </div>
+
       </div>
     </section>
 
@@ -289,14 +471,36 @@
       </div>
       <button class="chat-close" id="chatClose">✕</button>
     </div>
-    <div class="chat-messages" id="chatMessages">
-      <div class="chat-msg assistant">
-        <p>Hi! I'm here to help with "Life of Bon". Ask me about characters, plot, dialogue, world-building — anything.</p>
+
+    <!-- Sub-tab bar: Chat | Suggestions + Canon Review shortcut -->
+    <div class="chat-subtabs">
+      <button class="chat-subtab active" id="chatSubTabChat" data-subtab="chat">Chat</button>
+      <button class="chat-subtab" id="chatSubTabSuggestions" data-subtab="suggestions">
+        Suggestions<span class="suggestions-count-badge" id="suggestionsCountBadge" style="display:none"></span>
+      </button>
+      <button class="chat-review-btn" id="canonReviewBtn" title="Ask Claude to review all your notes for conflicts, gaps, and outdated ideas">🔍 Review Notes</button>
+    </div>
+
+    <!-- CHAT VIEW -->
+    <div class="chat-view" id="chatView">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg assistant">
+          <p>Hi! I'm here to help with "Life of Bon". Ask me about characters, plot, dialogue, world-building — anything.</p>
+        </div>
+      </div>
+      <div class="chat-footer">
+        <textarea class="chat-input" id="chatInput" placeholder="Ask about your story..." rows="1"></textarea>
+        <button class="chat-send" id="chatSend">↑</button>
       </div>
     </div>
-    <div class="chat-footer">
-      <textarea class="chat-input" id="chatInput" placeholder="Ask about your story..." rows="1"></textarea>
-      <button class="chat-send" id="chatSend">↑</button>
+
+    <!-- SUGGESTIONS VIEW -->
+    <div class="chat-view hidden" id="suggestionsView">
+      <div class="suggestions-empty" id="suggestionsEmpty">
+        <p>No suggestions yet.</p>
+        <p>Click <strong>🔍 Review Notes</strong> to ask Claude to analyze your story notes, then save the results here.</p>
+      </div>
+      <div class="suggestions-list" id="suggestionsList"></div>
     </div>
   </div>
 

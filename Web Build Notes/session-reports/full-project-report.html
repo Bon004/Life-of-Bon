@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StoryForge — Full Project Report (All Sessions)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f17;
+      --surface:    #131620;
+      --surface-2:  #181c2a;
+      --border:     #1e2338;
+      --border-2:   #262b42;
+      --text:       #dde3f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4e5670;
+      --accent:     #818cf8;
+      --accent-dim: #2d3168;
+      --green:      #34d399;
+      --green-dim:  #0d3327;
+      --amber:      #fbbf24;
+      --amber-dim:  #3a2a08;
+      --red:        #f87171;
+      --red-dim:    #3a1212;
+      --purple:     #c084fc;
+      --purple-dim: #2d1a4a;
+      --blue:       #60a5fa;
+      --blue-dim:   #122140;
+      --mono:       'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 20px;
+      margin-bottom: 40px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.02em;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; }
+    .meta-item { font-size: 12.5px; color: var(--text-muted); }
+    .meta-item strong { color: var(--text); font-weight: 500; }
+
+    /* ── Section headers ────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 44px 0 16px;
+    }
+    .section-header h2 {
+      font-size: 13px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted); white-space: nowrap;
+    }
+    .section-header::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Feature inventory cards ────────────────── */
+    .feature-grid { display: flex; flex-direction: column; gap: 12px; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .feature-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-card-title { font-size: 15px; font-weight: 600; color: #fff; }
+    .badge-complete {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      color: var(--green); background: var(--green-dim);
+      border: 1px solid rgba(52,211,153,.25);
+      padding: 2px 9px; border-radius: 20px;
+    }
+    .feature-card-body { padding: 14px 20px; }
+    .feature-desc { font-size: 13.5px; color: var(--text-muted); margin-bottom: 10px; }
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .bullet-list li {
+      font-size: 13px; color: var(--text-muted);
+      padding-left: 14px; position: relative;
+    }
+    .bullet-list li::before {
+      content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+    }
+
+    code {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px; color: var(--text);
+    }
+
+    /* ── Tables ─────────────────────────────────── */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      font-size: 13.5px;
+    }
+    .data-table thead tr { background: var(--surface-2); }
+    .data-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 16px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--text); font-weight: 500; }
+    .data-table td code { font-size: 11px; }
+
+    /* ── Rules list ─────────────────────────────── */
+    .rules-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .rule-item {
+      font-size: 13.5px; color: var(--text-muted);
+      padding-left: 16px; position: relative; line-height: 1.5;
+    }
+    .rule-item::before {
+      content: '→'; position: absolute; left: 0;
+      color: var(--accent); font-weight: 600;
+    }
+    .rule-item strong { color: var(--text); }
+
+    /* ── Open questions ─────────────────────────── */
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    .question-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0; padding: 12px 16px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+    .question-item strong { color: var(--text); display: block; margin-bottom: 3px; }
+
+    /* ── Next steps ─────────────────────────────── */
+    .next-block { display: flex; flex-direction: column; gap: 10px; }
+    .next-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .next-num {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .next-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .next-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* ── How to start a session ─────────────────── */
+    .start-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px;
+      counter-reset: step;
+    }
+    .start-step {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .start-step:last-child { border-bottom: none; padding-bottom: 0; }
+    .start-step-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      min-width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .start-step-text { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+    .start-step-text strong { color: var(--text); }
+
+    /* ── Footer ─────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">StoryForge / Life of Bon · Living Document</div>
+    <h1>Full Project Report — All Sessions</h1>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Last updated:</strong> 2026-04-13</div>
+      <div class="meta-item"><strong>Purpose:</strong> Orient at the start of any session — current state, rules, open questions, next priorities</div>
+      <div class="meta-item"><strong>Git remote:</strong> github.com/Bon004/Life-of-Bon</div>
+    </div>
+  </div>
+
+  <!-- What This Project Is -->
+  <div class="section-header"><h2>What This Project Is</h2></div>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px;">
+    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px;">
+      StoryForge is a personal web app for organising and writing an isekai/anime story called <strong style="color: var(--text)">Life of Bon</strong>.
+      The main character gets reincarnated. The app lets you capture story notes, auto-categorise them into cards using Claude AI, view them on a Story Canvas, and write and plan using dedicated workspace tabs.
+    </p>
+    <table class="data-table" style="margin-top: 4px;">
+      <thead><tr><th>Property</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Stack</td><td>Plain HTML + CSS + JS — no frameworks, no build tools</td></tr>
+        <tr><td>Persistence</td><td><code>localStorage</code> only — no server, no accounts</td></tr>
+        <tr><td>AI</td><td>Claude API called directly from browser (<code>anthropic-dangerous-direct-browser-access</code> header)</td></tr>
+        <tr><td>Model</td><td><code>claude-sonnet-4-5-20250929</code></td></tr>
+        <tr><td>Project path</td><td><code>C:\Users\esteb\Documents\Story website</code></td></tr>
+        <tr><td>Main branch</td><td><code>main</code> — keep stable at all times</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Feature Inventory -->
+  <div class="section-header"><h2>Feature Inventory — What Has Been Built</h2></div>
+  <div class="feature-grid">
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-card-title">Home Page Tab</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="feature-desc">Added 2026-04-12. Landing screen shown on app load.</p>
+        <ul class="bullet-list">
+          <li>Hero with gradient "StoryForge" title, subtitle, live stat chips</li>
+          <li>Prominent "Get Started →" CTA navigates to Story Canvas</li>
+          <li>4 secondary nav tiles (Story Canvas, Writing, Characters, Arcs)</li>
+          <li>Recent cards strip — last 5 cards added</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-card-title">Story Canvas Tab</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="feature-desc">Main card-based workspace. Core tab since pre-2026-04-11.</p>
+        <ul class="bullet-list">
+          <li>5 card types: character, world, arc, quote, idea</li>
+          <li>Board view (columns by type) + Map view (drag, drop, resize, connect, zoom)</li>
+          <li>AI organisation: upload .txt/.md/.docx/.pdf/.jpg/.png/.heic → Claude extracts and categorises cards</li>
+          <li>Folder sync: watches <code>story-notes/</code>; new/changed files auto-processed</li>
+          <li>Per-card AI Actions dropdown (Archive, Combine, Generate Related, etc.)</li>
+          <li>Story Summary bar: AI-generated overview, collapsible</li>
+          <li>Map card ✎ Edit button for explicit inline editing (added 2026-04-12)</li>
+          <li>Archive system: archived cards hidden from board/map; browseable in left Archive panel (added 2026-04-12)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-card-title">Claude Chat Panel</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="feature-desc">Persistent right-side sidebar. Core feature since pre-2026-04-11.</p>
+        <ul class="bullet-list">
+          <li>Chat with Claude about your story; full card list + summary + chat memory passed as context</li>
+          <li>Chat memory summarised across sessions (<code>sf_chat_memory</code>, max 3000 chars)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-card-title">Writing Tab</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="feature-desc">Split-pane writing environment. Implemented 2026-04-11; rich text upgrade 2026-04-12.</p>
+        <ul class="bullet-list">
+          <li>Working Copy (left, 60%): official story text — now a <code>contenteditable</code> rich editor</li>
+          <li>Formatting toolbar: B, I, U, H1, H2, bullet list, numbered list, HR divider, clear (added 2026-04-12)</li>
+          <li>Content saved as <code>innerHTML</code>; AI receives <code>textContent</code> (plain text)</li>
+          <li>Draft pane (right, 40%): AI-assisted scratchpad; "← Promote to Working Copy" button</li>
+          <li>Live word counts on both panes; auto-save to <code>localStorage</code></li>
+          <li>AI actions: Generate Draft from Notes | Continue Writing | Improve This | Check Story Consistency</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-card-title">Characters Tab</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="feature-desc">Profile workspace. Implemented 2026-04-11; name grouping added 2026-04-12.</p>
+        <ul class="bullet-list">
+          <li>Sidebar groups character cards by root name (e.g., "Bon", "Bon - Child" → group "Bon (2)") — added 2026-04-12</li>
+          <li>Profile sheet: Role, Enneagram type (with description card), Core Goal, Core Fear, Arc, Notes</li>
+          <li>Related Cards section shows all cards in a group — added 2026-04-12</li>
+          <li>All fields auto-save per character card to <code>sf_character_profiles</code></li>
+          <li>AI "Generate Profile" fills empty fields only — never overwrites user content</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-card-title">Arcs &amp; Timeline Tab</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="feature-desc">Arc planning workspace. Implemented 2026-04-11; editing + reorder added 2026-04-12.</p>
+        <ul class="bullet-list">
+          <li>Timeline strip: arc cards as horizontal scrollable nodes with ‹ ✎ › toolbar (reorder + edit) — ‹ › added 2026-04-12</li>
+          <li>Arc order saved to <code>sf_arc_order</code>; persists on reload — added 2026-04-12</li>
+          <li>36 Dramatic Situations: 2-column scrollable list with ▲▼ reorder — reorder added 2026-04-12</li>
+          <li>Situation order saved to <code>sf_situation_order</code> — added 2026-04-12</li>
+          <li>8-Sequence Structure viewer: AI can map arc cards to sequence slots</li>
+          <li>AI Ideas Generator: 3 "What if..." plot directions from context + selected situation</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Architecture Decisions -->
+  <div class="section-header"><h2>Architecture Decisions</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Decision</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>No frameworks</td><td>User wants simple, maintainable code. No npm, no build step. Open with Live Server and go.</td></tr>
+      <tr><td>Single files (index.html, style.css, app.js)</td><td>CLAUDE.md rule: don't add new files. Everything in 3 files.</td></tr>
+      <tr><td><code>localStorage</code> only</td><td>No server, no accounts. Personal use only. Data is local.</td></tr>
+      <tr><td>Claude API in browser</td><td>Convenient for personal use. Uses <code>anthropic-dangerous-direct-browser-access</code> header. Not suitable for public deployment.</td></tr>
+      <tr><td><code>story-utils.js</code> exception</td><td>Pure utility functions go in <code>story-utils.js</code> for unit testability (vitest). DOM code stays in <code>app.js</code>.</td></tr>
+      <tr><td>Static data as JS constants</td><td>Enneagram types, 36 Situations, 8 Sequences — embedded in <code>app.js</code> rather than fetched, for simplicity.</td></tr>
+      <tr><td><code>document.execCommand()</code> for rich text</td><td>Deprecated but fully functional; Selection API would add 200+ lines for no user-visible gain in a plain-JS personal app.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- localStorage Reference -->
+  <div class="section-header"><h2>localStorage Key Reference</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Key</th><th>What It Stores</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sf_cards</code></td><td>All card objects (id, type, title, content, status, createdAt)</td></tr>
+      <tr><td><code>sf_api_key</code></td><td>User's Anthropic API key</td></tr>
+      <tr><td><code>sf_positions</code></td><td>Map view card positions <code>{[cardId]: {x, y, w, h}}</code></td></tr>
+      <tr><td><code>sf_connections</code></td><td>Connection lines <code>{id, from, to, auto}</code></td></tr>
+      <tr><td><code>sf_zoom</code></td><td>Map zoom level (float)</td></tr>
+      <tr><td><code>sf_chat_memory</code></td><td>Summarised chat memory string (max 3000 chars)</td></tr>
+      <tr><td><code>sf_summary</code></td><td>Cached story summary text</td></tr>
+      <tr><td><code>sf_synced_files</code></td><td>Synced file keys for folder sync</td></tr>
+      <tr><td><code>sf_unsynced_ids</code></td><td>Card IDs added since last map sync</td></tr>
+      <tr><td><code>sf_suggestions</code></td><td>AI suggestion objects</td></tr>
+      <tr><td><code>sf_writing_copy</code></td><td>Writing tab: working copy content (HTML from rich editor)</td></tr>
+      <tr><td><code>sf_writing_draft</code></td><td>Writing tab: draft content (plain text)</td></tr>
+      <tr><td><code>sf_character_profiles</code></td><td><code>{ [cardId]: { role, enneagram, goal, fear, arc, notes } }</code></td></tr>
+      <tr><td><code>sf_arc_sequence_map</code></td><td><code>{ [sequenceNumber]: [arcCardId, ...] }</code></td></tr>
+      <tr><td><code>sf_arc_order</code></td><td>Arc timeline sort order — <code>[arcCardId, ...]</code></td></tr>
+      <tr><td><code>sf_situation_order</code></td><td>36 Dramatic Situations display order — <code>[1, 2, ... 36]</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Workflow Rules -->
+  <div class="section-header"><h2>Workflow Rules</h2></div>
+  <div class="rules-block">
+    <div class="rule-item"><strong>Read files before editing</strong> — never propose changes to code that hasn't been read</div>
+    <div class="rule-item"><strong>Plan first for major features</strong> — user wants to review a roadmap before implementation starts</div>
+    <div class="rule-item"><strong>No commits without explicit user request</strong> — never push to GitHub autonomously</div>
+    <div class="rule-item"><strong>Browser testing after DOM changes</strong> — manual only, no automated DOM tests</div>
+    <div class="rule-item"><strong>TDD for pure functions</strong> — write test first in <code>story-utils.test.js</code>, then implement in <code>story-utils.js</code></div>
+    <div class="rule-item"><strong>Token optimisation</strong> — caps on <code>sf_chat_memory</code> (3000 chars), paste input, Related action, chatHistory</div>
+    <div class="rule-item"><strong>No overwriting user content with AI</strong> — AI fills empty fields only (Characters tab Generate Profile)</div>
+    <div class="rule-item"><strong>Trunk-based git</strong> — <code>main</code> branch should always be stable; feature branches for experiments</div>
+    <div class="rule-item"><strong>/insights generates two outputs</strong> — a session-specific report + updated full-project report (this file)</div>
+  </div>
+
+  <!-- Open Questions -->
+  <div class="section-header"><h2>Open Questions &amp; Unresolved Decisions</h2></div>
+  <div class="question-block">
+    <div class="question-item">
+      <strong>Should the Writing tab support multiple chapters/scenes or stay single-file?</strong>
+      Not decided — current implementation is one flat rich-text pane per Working Copy.
+    </div>
+    <div class="question-item">
+      <strong>Should export/import (Phase 4b) replace or merge cards on import?</strong>
+      Not decided — needs UI design for the confirmation/choice dialog.
+    </div>
+    <div class="question-item">
+      <strong>iPad layout breakpoints — what screen width triggers narrow layout?</strong>
+      Not defined yet — Phase 4c work will establish this.
+    </div>
+    <div class="question-item">
+      <strong>Character root-name grouping refinement</strong>
+      Currently uses first token. Unrelated characters with matching first tokens (e.g., "Bon" + "Bonwick") would be incorrectly grouped. May need explicit card-linking UI in future.
+    </div>
+  </div>
+
+  <!-- What Still Needs to Be Built -->
+  <div class="section-header"><h2>What Still Needs to Be Built</h2></div>
+  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">See <a href="../roadmaps/roadmap-future-features.html" style="color: var(--accent)">roadmap-future-features.html</a> for the full prioritised list.</p>
+  <div class="next-block">
+    <div class="next-item">
+      <div class="next-num">1</div>
+      <div>
+        <div class="next-title">Browser-test all changes from 2026-04-12 session</div>
+        <div class="next-desc">Verify 7 UI changes work before building further on top of them</div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">2</div>
+      <div>
+        <div class="next-title">Phase 4b — Export / Import Data</div>
+        <div class="next-desc">Download <code>sf_cards</code> as JSON; re-import with merge or replace; data safety before new features</div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">3</div>
+      <div>
+        <div class="next-title">Phase 4c — iPad / Mobile Layout</div>
+        <div class="next-desc">Responsive breakpoints, touch targets, single-pane writing on narrow screens</div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">4</div>
+      <div>
+        <div class="next-title">Phase 5 or 6 — Writing depth or Characters depth</div>
+        <div class="next-desc">Choose based on current story priorities: character name highlights / scene links vs relationship web / emoji picker</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session History -->
+  <div class="section-header"><h2>Session History</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Date</th><th>What Was Built</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Pre-2026-04-11</td>
+        <td>Story Canvas (board + map view), AI card organisation, file upload (.txt/.md/.docx/.pdf/images), connection lines, folder sync, Claude chat panel, chat memory, token optimisation, per-card AI actions, Story Summary bar</td>
+      </tr>
+      <tr>
+        <td>2026-04-11</td>
+        <td>Writing tab (split-pane editor, word count, AI actions), Characters tab (profile sheets + Enneagram), Arcs &amp; Timeline tab (36 Situations grid, 8-Sequence viewer, Ideas Generator); documentation folder structure created</td>
+      </tr>
+      <tr>
+        <td>2026-04-12</td>
+        <td>FAB overlap fix; Archive left panel (cards hidden from board/map, left slide-in with Restore); Home page tab (hero, stats, CTA, nav tiles, recent cards); Writing rich text toolbar (B/I/U/H1/H2/list/HR); Character name grouping; Arc timeline ‹ ✎ › reorder + edit; Map card ✎ Edit button; 36 Situations ▲▼ reorder; <code>/insights</code> two-output command documented in CLAUDE.md</td>
+      </tr>
+      <tr>
+        <td>2026-04-13</td>
+        <td>Ran <code>/insights</code> — generated Claude Code usage analytics report covering sessions 2026-04-07 to 2026-04-10 (4 of 12 sessions, 21 messages, 25h, 1 commit); saved as <code>session-report-2026-04-13.html</code>; introduced session-report immutability rule and same-day numbering convention; documented in CLAUDE.md</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- How to Start a New Session -->
+  <div class="section-header"><h2>How to Start a New Session</h2></div>
+  <div class="start-block">
+    <div class="start-step">
+      <div class="start-step-num">1</div>
+      <div class="start-step-text">Read this file and <a href="../roadmaps/roadmap-future-features.html" style="color: var(--accent)">roadmap-future-features.html</a></div>
+    </div>
+    <div class="start-step">
+      <div class="start-step-num">2</div>
+      <div class="start-step-text">Run <code>git status</code> and <code>git log --oneline -10</code> to see current branch state</div>
+    </div>
+    <div class="start-step">
+      <div class="start-step-num">3</div>
+      <div class="start-step-text">If browser testing is pending (see latest session report), do that first before building anything new</div>
+    </div>
+    <div class="start-step">
+      <div class="start-step-num">4</div>
+      <div class="start-step-text">Continue from the "Recommended Next Session Order" in the roadmap</div>
+    </div>
+    <div class="start-step">
+      <div class="start-step-num">5</div>
+      <div class="start-step-text">At session end, run <code>/insights</code> — it generates a new session report + updates this file</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">StoryForge · Life of Bon · Full Project Report · Last updated 2026-04-12</div>
+
+</div>
+</body>
+</html>

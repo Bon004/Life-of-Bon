@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StoryForge — Future Features Roadmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f17;
+      --surface:    #131620;
+      --surface-2:  #181c2a;
+      --border:     #1e2338;
+      --border-2:   #262b42;
+      --text:       #dde3f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4e5670;
+      --accent:     #818cf8;
+      --accent-dim: #2d3168;
+      --green:      #34d399;
+      --green-dim:  #0d3327;
+      --amber:      #fbbf24;
+      --amber-dim:  #3a2a08;
+      --red:        #f87171;
+      --red-dim:    #3a1212;
+      --blue:       #60a5fa;
+      --blue-dim:   #122140;
+      --purple:     #c084fc;
+      --purple-dim: #2d1a4a;
+      --mono:       'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ─────────────────────────────────── */
+    .page { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 20px;
+      margin-bottom: 40px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.02em;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; }
+    .meta-item { font-size: 12.5px; color: var(--text-muted); }
+    .meta-item strong { color: var(--text); font-weight: 500; }
+
+    /* ── Section headers ────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 44px 0 16px;
+    }
+    .section-header h2 {
+      font-size: 13px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+    .section-header::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Status grid (current state) ────────────── */
+    .status-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+      margin-bottom: 8px;
+    }
+    .status-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .status-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--green-dim); border: 1px solid var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; margin-top: 2px;
+    }
+    .status-card-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .status-card-desc  { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+    .badge-complete {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      color: var(--green); background: var(--green-dim);
+      border: 1px solid rgba(52,211,153,.25);
+      padding: 2px 8px; border-radius: 20px; margin-top: 8px;
+    }
+
+    /* ── Phase block ────────────────────────────── */
+    .phase-block { margin-bottom: 12px; }
+    .phase-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 14px; padding-left: 2px;
+    }
+
+    /* ── Feature card ───────────────────────────── */
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px; margin-bottom: 12px;
+    }
+    .feature-card:hover { border-color: var(--border-2); }
+    .feature-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 12px; margin-bottom: 10px;
+    }
+    .feature-title { font-size: 15px; font-weight: 600; color: #fff; }
+    .feature-id {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: var(--accent); background: var(--accent-dim);
+      padding: 3px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+    }
+    .feature-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+    }
+    .badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      padding: 3px 9px; border-radius: 20px; border: 1px solid transparent;
+    }
+    .badge-high   { color: var(--amber); background: var(--amber-dim); border-color: rgba(251,191,36,.2); }
+    .badge-medium { color: var(--blue);  background: var(--blue-dim);  border-color: rgba(96,165,250,.2); }
+    .badge-low    { color: var(--text-muted); background: var(--surface-2); border-color: var(--border); }
+    .badge-dep    { color: var(--purple); background: var(--purple-dim); border-color: rgba(192,132,252,.2); }
+
+    .done-when {
+      font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;
+      padding: 8px 12px; background: var(--surface-2);
+      border-left: 2px solid var(--border-2); border-radius: 0 6px 6px 0;
+    }
+    .done-when strong { color: var(--text); font-weight: 500; }
+
+    .task-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .task-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13.5px; color: var(--text-muted);
+    }
+    .task-list li::before {
+      content: ''; width: 15px; height: 15px; flex-shrink: 0;
+      border: 1.5px solid var(--border-2); border-radius: 4px; margin-top: 2px;
+    }
+    .dep-note {
+      font-size: 12px; color: var(--text-dim); margin-top: 12px;
+      padding-top: 12px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dep-note::before { content: '↳'; color: var(--purple); font-weight: 600; }
+
+    /* ── Dependency map ─────────────────────────── */
+    .dep-map {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px;
+    }
+    .dep-row {
+      display: flex; align-items: center; gap: 0;
+      padding: 7px 0; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .dep-row:last-child { border-bottom: none; }
+    .dep-row-name {
+      font-family: var(--mono); font-size: 12px; font-weight: 500;
+      color: var(--accent); min-width: 200px; flex-shrink: 0;
+    }
+    .dep-row-line {
+      flex: 1; height: 1px; background: var(--border);
+      margin: 0 12px; position: relative;
+    }
+    .dep-row-line::after {
+      content: ''; position: absolute; right: -4px; top: -3px;
+      border: 3px solid transparent; border-left-color: var(--border);
+    }
+    .dep-row-desc { font-size: 12.5px; color: var(--text-muted); }
+    .dep-row-desc .check { color: var(--green); }
+
+    /* ── Next session list ───────────────────────── */
+    .next-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .next-list li {
+      display: flex; align-items: flex-start; gap: 14px;
+      font-size: 14px; color: var(--text);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 16px;
+    }
+    .next-num {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 24px; height: 24px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ── Not planned ─────────────────────────────── */
+    .not-planned-list {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 20px;
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+    }
+    .not-planned-list li {
+      font-size: 13.5px; color: var(--text-muted);
+      padding-left: 16px; position: relative;
+    }
+    .not-planned-list li::before {
+      content: '—'; position: absolute; left: 0; color: var(--text-dim);
+    }
+
+    /* ── Footer ─────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); text-align: center;
+    }
+
+    code {
+      font-family: var(--mono); font-size: 12px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px; color: var(--text);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">StoryForge / Life of Bon</div>
+    <h1>Future Features Roadmap</h1>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Last updated:</strong> 2026-04-12</div>
+      <div class="meta-item"><strong>Stack:</strong> Plain HTML + CSS + JS · localStorage · no build tools</div>
+      <div class="meta-item"><strong>Status:</strong> Phase 4a complete — next: 4b (Export/Import) and 4c (Mobile)</div>
+    </div>
+  </div>
+
+  <!-- Current State -->
+  <div class="section-header"><h2>Current State</h2></div>
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="status-icon">✓</div>
+      <div>
+        <div class="status-card-title">Home Page Tab</div>
+        <div class="status-card-desc">Hero, live stats, "Get Started →" CTA, nav tiles, recent cards strip — added 2026-04-12</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+    </div>
+    <div class="status-card">
+      <div class="status-icon">✓</div>
+      <div>
+        <div class="status-card-title">Story Canvas</div>
+        <div class="status-card-desc">Board + Map view, AI card organization, file upload, connections, folder sync, Archive panel</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+    </div>
+    <div class="status-card">
+      <div class="status-icon">✓</div>
+      <div>
+        <div class="status-card-title">Writing Tab</div>
+        <div class="status-card-desc">Rich text editor (B/I/U/H1/H2/list/HR toolbar), draft pane, word count, AI writing actions</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+    </div>
+    <div class="status-card">
+      <div class="status-icon">✓</div>
+      <div>
+        <div class="status-card-title">Characters Tab</div>
+        <div class="status-card-desc">Profile sheets, Enneagram picker, AI Generate Profile, name grouping with Related Cards</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+    </div>
+    <div class="status-card">
+      <div class="status-icon">✓</div>
+      <div>
+        <div class="status-card-title">Arcs &amp; Timeline</div>
+        <div class="status-card-desc">Timeline strip with ‹ ✎ › reorder + edit, 36 Situations ▲▼ reorder, 8-Sequence viewer, AI Ideas Generator</div>
+        <div class="badge-complete">✓ Complete</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="section-header"><h2>Phase 4 — Polish &amp; Core UX</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Ready to build now · No major design decisions needed</div>
+
+    <div class="feature-card" style="border-color: var(--green-dim);">
+      <div class="feature-header">
+        <div class="feature-title">Homepage Design Polish</div>
+        <div class="feature-id" style="color: var(--green); background: var(--green-dim);">4a ✓</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge-complete">✓ Complete — 2026-04-12</span>
+      </div>
+      <div class="done-when"><strong>Shipped:</strong> Home tab with hero, gradient title, live stats, "Get Started →" CTA, 4 nav tiles, recent cards strip</div>
+      <ul class="task-list">
+        <li style="color: var(--text-dim); text-decoration: line-through;">Hero section: title, subtitle, visible "Add Notes" CTA button above the fold</li>
+        <li style="color: var(--text-dim); text-decoration: line-through;">Consistent card shadows and hover states across all card types</li>
+        <li style="color: var(--text-dim);">Tab bar visual improvements — still available as polish work</li>
+        <li style="color: var(--text-dim);">Empty state screens for Story Canvas — still available as polish work</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Export / Import Data</div>
+        <div class="feature-id">4b</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can download all cards as JSON and re-import them</div>
+      <ul class="task-list">
+        <li>Export button: downloads <code>sf_cards</code> as a <code>.json</code> file</li>
+        <li>Import button: reads a <code>.json</code> file and merges or replaces cards</li>
+        <li>Warning dialog before import (overwrites existing data)</li>
+        <li>Optional: export Writing tab content as <code>.txt</code></li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Mobile / iPad Refinements</div>
+        <div class="feature-id">4c</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> All 4 tabs usable on iPad without horizontal scrolling</div>
+      <ul class="task-list">
+        <li>Responsive layout for Story Canvas (single-column board on mobile)</li>
+        <li>Characters tab sidebar collapses on narrow screens</li>
+        <li>Arcs tab 36 Situations grid scales down (6-col → 3-col on tablet)</li>
+        <li>Writing tab: single-pane by default on mobile (no split view)</li>
+        <li>Touch-friendly tap targets (min 44px)</li>
+      </ul>
+      <div class="dep-note">Phase 4a (polish) should be done first</div>
+    </div>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="section-header"><h2>Phase 5 — Writing Tab Depth</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Deepen writing tab once basic editor is proven stable</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Character Name Auto-Highlight</div>
+        <div class="feature-id">5a</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Character names in the working copy are highlighted as you type</div>
+      <ul class="task-list">
+        <li>After each keypress, scan working copy for known character names</li>
+        <li>Wrap matches in a highlight span with tooltip showing card summary</li>
+        <li>Toggle on/off via toolbar checkbox</li>
+      </ul>
+      <div class="dep-note">Requires Characters tab with populated profiles (Phase 3 ✓)</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Link Scenes to Cards</div>
+        <div class="feature-id">5b</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Selected text can be tagged as "about" a specific arc or character card</div>
+      <ul class="task-list">
+        <li>Right-click on selected text → "Link to Card" → card picker</li>
+        <li>Linked segments highlighted with the card's type color</li>
+        <li>Clicking a highlight opens the card in a side panel</li>
+      </ul>
+      <div class="dep-note">Requires 5a (highlight infrastructure)</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Draft Version History</div>
+        <div class="feature-id">5c</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can step back through the last 5 AI-generated drafts</div>
+      <ul class="task-list">
+        <li>Push old draft to <code>sf_draft_history</code> array (max 5) on each generation</li>
+        <li>"History ▾" button in draft pane toolbar shows timestamped list</li>
+        <li>Clicking a history entry restores that draft into the draft pane</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Phase 6 -->
+  <div class="section-header"><h2>Phase 6 — Characters Tab Depth</h2></div>
+  <div class="phase-block">
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Character Relationship Web</div>
+        <div class="feature-id">6a</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> A visual graph shows connections between character cards</div>
+      <ul class="task-list">
+        <li>"Relationships" button on each character profile opens a mini map</li>
+        <li>User can draw edges and label them (enemy, ally, mentor, etc.)</li>
+        <li>Stored in <code>sf_char_relationships</code> localStorage key</li>
+      </ul>
+      <div class="dep-note">Requires Characters tab (Phase 3 ✓)</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Emoji / Avatar Picker</div>
+        <div class="feature-id">6b</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Each character has an emoji avatar visible in sidebar and Story Canvas</div>
+      <ul class="task-list">
+        <li>Emoji picker grid accessible from character profile</li>
+        <li>Selected emoji stored in <code>sf_character_profiles[id].avatar</code></li>
+        <li>Avatar shown in: character sidebar list item, Story Canvas card header</li>
+      </ul>
+      <div class="dep-note">Requires Characters tab (Phase 3 ✓)</div>
+    </div>
+  </div>
+
+  <!-- Phase 7 -->
+  <div class="section-header"><h2>Phase 7 — Arcs Tab Depth</h2></div>
+  <div class="phase-block">
+
+    <div class="feature-card" style="border-color: var(--green-dim);">
+      <div class="feature-header">
+        <div class="feature-title">Drag-to-Reorder Timeline Events</div>
+        <div class="feature-id" style="color: var(--green); background: var(--green-dim);">7a ✓</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge-complete">✓ Complete — 2026-04-12</span>
+      </div>
+      <div class="done-when"><strong>Shipped:</strong> ‹ › arrow buttons reorder arc nodes; ✎ enables inline edit; order saved to <code>sf_arc_order</code> and persists on reload. Also: 36 Situations ▲▼ reorder with <code>sf_situation_order</code>.</div>
+      <ul class="task-list">
+        <li style="color: var(--text-dim); text-decoration: line-through;">HTML5 drag-and-drop on arc node elements</li>
+        <li style="color: var(--text-dim); text-decoration: line-through;">Order persisted in <code>sf_arc_order</code> localStorage key</li>
+        <li style="color: var(--text-dim); text-decoration: line-through;">Timeline re-renders on page load using saved order</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Chapter / Scene Breakdown per Arc</div>
+        <div class="feature-id">7b</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Each arc card can have a list of sub-events or scenes attached</div>
+      <ul class="task-list">
+        <li>Expanding an arc node on the timeline shows a sub-event list</li>
+        <li>User can add/remove sub-events (text label + status)</li>
+        <li>Stored in <code>sf_arc_events</code> localStorage key</li>
+      </ul>
+      <div class="dep-note">7a recommended first</div>
+    </div>
+  </div>
+
+  <!-- Phase 8 -->
+  <div class="section-header"><h2>Phase 8 — Settings &amp; Backup</h2></div>
+  <div class="phase-block">
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Settings Panel</div>
+        <div class="feature-id">8a</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can manage API key, view storage usage, and clear data safely</div>
+      <ul class="task-list">
+        <li>Settings tab or slide-out drawer</li>
+        <li>API key field (pre-filled, obscured)</li>
+        <li>localStorage usage meter (KB used)</li>
+        <li>"Clear all data" button with confirmation dialog</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Dependency Map -->
+  <div class="section-header"><h2>Dependency Map</h2></div>
+  <div class="dep-map">
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 4a (Homepage)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc"><span class="check">✓ Complete 2026-04-12</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 4b/c (Export, Mobile)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — start anytime</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 5a (Highlights)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Characters tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 5b (Scene Links)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires 5a</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 5c (Draft History)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Writing tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 6a (Relationship Web)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Characters tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 6b (Emoji Picker)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Characters tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 7a (Drag Reorder)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc"><span class="check">✓ Complete 2026-04-12</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 7b (Scene Breakdown)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires 7a</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">Phase 8 (Settings)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — start anytime</div>
+    </div>
+  </div>
+
+  <!-- Next Session -->
+  <div class="section-header"><h2>Recommended Next Session Order</h2></div>
+  <ol class="next-list">
+    <li><div class="next-num">1</div><div><strong>Browser-test all 2026-04-12 changes</strong> — 7 UI improvements need manual verification in Live Server before building on top.</div></li>
+    <li><div class="next-num">2</div><div><strong>Phase 4b</strong> — Export / Import data. Download <code>sf_cards</code> as JSON; re-import with merge or replace. Data safety before new features.</div></li>
+    <li><div class="next-num">3</div><div><strong>Phase 4c</strong> — iPad / mobile layout adjustments. Responsive breakpoints, touch targets.</div></li>
+    <li><div class="next-num">4</div><div>Choose: <strong>Phase 5</strong> (Writing depth — character name highlights, scene links) or <strong>Phase 6</strong> (Characters depth — relationship web, emoji picker) based on current story priorities.</div></li>
+    <li><div class="next-num">5</div><div><strong>Phase 7b</strong> — Chapter/scene breakdown per arc (sub-events on timeline nodes).</div></li>
+  </ol>
+
+  <!-- Not Planned -->
+  <div class="section-header"><h2>Intentionally Out of Scope</h2></div>
+  <ul class="not-planned-list">
+    <li>Server-side storage — stays localStorage by design</li>
+    <li>User accounts or multi-user collaboration</li>
+    <li>Build tools, bundlers, or npm packages — plain HTML/JS only per project rules</li>
+    <li>Real-time sync across devices</li>
+  </ul>
+
+  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-12</div>
+
+</div>
+</body>
+</html>

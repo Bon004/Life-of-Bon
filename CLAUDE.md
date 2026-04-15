@@ -52,6 +52,7 @@ storyforge/
   type:      "character",  // character | world | arc | quote | idea
   title:     "Bon",
   content:   "Main character who gets reincarnated...",
+  status:    "active",     // "active" | "archived"
   createdAt: "2026-04-07T12:00:00Z"
 }
 ```
@@ -87,9 +88,92 @@ storyforge/
 - No server required
 
 ### localStorage Keys
-- `sf_cards` — array of all card objects
+- `sf_cards` — array of all card objects (each card has: id, type, title, content, status, createdAt)
 - `sf_api_key` — user's Anthropic API key (string)
+- `sf_positions` — map card positions `{[cardId]: {x, y, w, h}}`
+- `sf_connections` — array of connection objects `{id, from, to, auto}`
+- `sf_zoom` — current map zoom level (float)
+- `sf_chat_memory` — summarized chat memory from past sessions (string, max 3000 chars)
+- `sf_summary` — cached story summary text (string)
+- `sf_synced_files` — array of synced file keys (name + lastModified) for folder sync
+- `sf_unsynced_ids` — Set of card IDs added since last map sync
+- `sf_suggestions` — array of AI suggestion objects `{id, source, text, status, createdAt, notes}`
+- `sf_writing_copy` — Writing tab: working copy content (plain text)
+- `sf_writing_draft` — Writing tab: draft/exploration content (plain text)
+- `sf_character_profiles` — Characters tab: `{ [cardId]: { role, enneagram, goal, fear, arc, notes } }`
+- `sf_arc_sequence_map` — Arcs tab: `{ [sequenceNumber]: [arcCardId, ...] }` — AI-mapped arcs to 8-sequence slots
+- `sf_arc_order` — Arcs tab: `[arcCardId, ...]` — user-defined sort order for the timeline strip
+- `sf_situation_order` — Arcs tab: `[1, 2, ... 36]` — user-defined display order for the 36 Dramatic Situations
+- `sf_writing_copy` — Writing tab: working copy content (now stored as HTML from rich text editor)
 - Do NOT add new keys without listing them here first
+
+### Card Status Field
+Each card has a `status` field: `"active"` (default) or `"archived"` (superseded/no longer relevant).
+- Archive/Restore via the ⋮ AI Actions dropdown on any map card or the Archive panel
+- Archived cards are hidden from board and map views; browse them in the Archive left panel
+
+## Claude Code Commands
+
+These are commands typed in the **Claude Code chat** (not inside the StoryForge app itself).
+
+### `/insights` — Story & Project Report
+
+When the user types `/insights`, generate a structured report in this exact 8-section format. Read the current card data from context, or ask the user to paste relevant info if needed.
+
+```
+## StoryForge Insights Report — [Date]
+
+### 1. Story Overview
+- Total active cards by type (character / world / arc / quote / idea)
+- Archived vs active count
+- Brief story logline derived from card content
+
+### 2. Character Analysis
+- Named characters identified (group multiple cards by character name)
+- Arc status per main character: what's established, what's missing
+- Characters with multiple cards — list and flag contradictions or gaps
+
+### 3. Plot & Arc Structure
+- Active arc cards and their position in the 8-sequence structure (if mapped)
+- Which of the 36 Dramatic Situations are selected / in use
+- Identified plot gaps or unresolved setups
+
+### 4. World-Building Status
+- What's established (from world cards)
+- Obvious gaps (e.g., magic system defined but society not)
+- Consistency issues between world cards
+
+### 5. Writing Progress
+- Word count in Working Copy (if known)
+- Current stage (outline / draft / revision)
+
+### 6. UI & Feature Progress
+Track build status of pending improvements:
+- [ ] Archive sidebar (left panel)
+- [ ] Home page / landing screen
+- [ ] Writing tab rich text toolbar
+- [ ] Character grouping by name
+- [ ] Arcs tab: drag-to-reorder + edit buttons
+- [ ] 36 Dramatic Situations: reorderable list
+
+### 7. Open Questions & Gaps
+- Story threads set up but not resolved
+- Characters needing more development
+- World rules mentioned but not defined
+
+### 8. Recommended Next Actions
+- Top 3 story-side priorities
+- Top 1–2 build tasks to tackle next
+```
+
+### Session Report Rules
+Every `/insights` run must produce **two outputs**:
+1. A new `session-report-YYYY-MM-DD.html` in `Web Build Notes/session-reports/`
+2. An updated `full-project-report.html` in the same folder (add a row to Session History + update the "Last updated" date)
+
+**Immutability:** Each `session-report-YYYY-MM-DD.html` is created once and never modified again. Only `full-project-report.html` is updated over time.
+
+**Same-day second run:** If a `session-report-YYYY-MM-DD.html` already exists for today, ask the user whether to update/append the existing file or create a new file (`session-report-YYYY-MM-DD-2.html`, etc.). Never ask on the first run of a day — just create the file.
 
 ## When Editing Code
 

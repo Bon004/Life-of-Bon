@@ -55,6 +55,10 @@ try { connections   = JSON.parse(localStorage.getItem('sf_connections') || '[]')
 // Map zoom level (0.1 = very far out, 5.0 = very zoomed in)
 var mapZoom = parseFloat(localStorage.getItem('sf_zoom') || '1.0');
 
+// Visual translate applied to mapInner so cards are centered when zoom is too low
+// for scroll-centering alone (scroll can't go negative). Reset by centerMapOnCards().
+var mapTranslateX = 0, mapTranslateY = 0;
+
 // Selection state for the combine-two-cards flow
 var selectedCardsForCombine = [];
 var wasDragging = false;
@@ -82,6 +86,73 @@ const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
 const VALID_CARD_TYPES = ['character', 'world', 'arc', 'quote', 'idea'];
 
 // ============================================================
+// STATIC STORY DATA — Enneagram, 36 Situations, 8 Sequences
+// Used by the Characters tab and Arcs & Timeline tab.
+// ============================================================
+
+const ENNEAGRAM_TYPES = [
+  { id: 1, name: 'The Reformer',    coreDesire: 'To be good, right, and virtuous',                 coreFear: 'Being corrupt or defective',              keyTraits: ['Principled', 'Responsible', 'Idealistic', 'Self-disciplined'] },
+  { id: 2, name: 'The Helper',      coreDesire: 'To be loved and needed',                          coreFear: 'Being unloved or unwanted',                keyTraits: ['Generous', 'Empathetic', 'Warm', 'Relationship-focused'] },
+  { id: 3, name: 'The Achiever',    coreDesire: 'To be valuable and admired',                      coreFear: 'Being worthless or a failure',             keyTraits: ['Ambitious', 'Adaptable', 'Driven', 'Image-conscious'] },
+  { id: 4, name: 'The Individualist', coreDesire: 'To be authentic and significant',               coreFear: 'Being ordinary or without identity',       keyTraits: ['Creative', 'Introspective', 'Sensitive', 'Melancholic'] },
+  { id: 5, name: 'The Investigator', coreDesire: 'To be competent and knowledgeable',              coreFear: 'Being incompetent or helpless',            keyTraits: ['Analytical', 'Observant', 'Independent', 'Curious'] },
+  { id: 6, name: 'The Loyalist',    coreDesire: 'To have security and trusted support',            coreFear: 'Being abandoned or without support',       keyTraits: ['Trustworthy', 'Responsible', 'Skeptical', 'Committed'] },
+  { id: 7, name: 'The Enthusiast',  coreDesire: 'To be satisfied and experience all possibilities', coreFear: 'Being trapped or deprived',               keyTraits: ['Optimistic', 'Spontaneous', 'Adventurous', 'Scattered'] },
+  { id: 8, name: 'The Challenger',  coreDesire: 'To be independent and in control',                coreFear: 'Being controlled or powerless',            keyTraits: ['Dominant', 'Assertive', 'Protective', 'Strong-willed'] },
+  { id: 9, name: 'The Peacemaker',  coreDesire: 'To be at peace and in harmony',                   coreFear: 'Being separated or in conflict',           keyTraits: ['Accepting', 'Easygoing', 'Mediating', 'Passive'] }
+];
+
+const DRAMATIC_SITUATIONS = [
+  { id:  1, name: 'Supplication',                      description: 'A supplicant begs a powerful figure for help or mercy.' },
+  { id:  2, name: 'Deliverance',                       description: 'A character is rescued from a dangerous or oppressive situation.' },
+  { id:  3, name: 'Crime Pursued by Vengeance',        description: 'A crime is committed and the criminal is hunted down.' },
+  { id:  4, name: 'Vengeance Taken for Kin',           description: 'One family member seeks revenge against another.' },
+  { id:  5, name: 'Pursuit',                           description: 'One character pursues another across distance or obstacles.' },
+  { id:  6, name: 'Disaster',                          description: 'A calamity strikes a character or community, causing widespread suffering.' },
+  { id:  7, name: 'Falling Prey to Cruelty',           description: 'An innocent character suffers at the hands of another or through misfortune.' },
+  { id:  8, name: 'Revolt',                            description: 'A character rebels against authority, oppression, or an unjust system.' },
+  { id:  9, name: 'Daring Enterprise',                 description: 'A character attempts a bold, dangerous, or ambitious undertaking.' },
+  { id: 10, name: 'Abduction',                         description: 'A character is kidnapped or taken against their will.' },
+  { id: 11, name: 'The Enigma',                        description: 'A character must solve a mystery or discover a hidden secret.' },
+  { id: 12, name: 'Obtaining',                         description: 'A character struggles to acquire something desired or necessary.' },
+  { id: 13, name: 'Enmity of Kin',                     description: 'Conflict or hatred arises between family members.' },
+  { id: 14, name: 'Rivalry of Kin',                    description: 'Siblings or family members compete for power, love, or resources.' },
+  { id: 15, name: 'Murderous Adultery',                description: 'A spouse commits murder to enable or as a result of adultery.' },
+  { id: 16, name: 'Madness',                           description: 'A character descends into insanity or psychological breakdown.' },
+  { id: 17, name: 'Fatal Imprudence',                  description: 'A character\'s recklessness leads to their downfall or death.' },
+  { id: 18, name: 'Involuntary Crimes of Love',        description: 'A character commits a crime unwillingly due to passion.' },
+  { id: 19, name: 'Slaying of Kin Unrecognized',       description: 'A character kills a family member without knowing their identity.' },
+  { id: 20, name: 'Self-Sacrifice for an Ideal',       description: 'A character sacrifices themselves for a principle or greater cause.' },
+  { id: 21, name: 'Self-Sacrifice for Kin',            description: 'A character sacrifices themselves for the welfare of family.' },
+  { id: 22, name: 'All Sacrificed for Passion',        description: 'A character abandons everything — family, duty, morality — for love or desire.' },
+  { id: 23, name: 'Necessity of Sacrificing Loved Ones', description: 'A character must harm a loved one to achieve their goal.' },
+  { id: 24, name: 'Rivalry of Superior vs. Inferior',  description: 'Conflict arises between characters of vastly different standing.' },
+  { id: 25, name: 'Adultery',                          description: 'Infidelity creates conflict and complications in a relationship.' },
+  { id: 26, name: 'Crimes of Love',                    description: 'A character commits a crime motivated by romantic passion or jealousy.' },
+  { id: 27, name: 'Discovery of Dishonor of a Loved One', description: 'A character learns that someone they love has done something shameful.' },
+  { id: 28, name: 'Obstacles to Love',                 description: 'External or internal forces prevent two characters from being together.' },
+  { id: 29, name: 'An Enemy Loved',                    description: 'A character discovers they have fallen in love with their enemy.' },
+  { id: 30, name: 'Ambition',                          description: 'A character pursues power or success, often at great cost to others.' },
+  { id: 31, name: 'Conflict with a God',               description: 'A character struggles against divine will, fate, or a supernatural force.' },
+  { id: 32, name: 'Mistaken Jealousy',                 description: 'Jealousy based on false assumptions causes conflict.' },
+  { id: 33, name: 'Erroneous Judgment',                description: 'A character makes a wrong decision with serious consequences.' },
+  { id: 34, name: 'Remorse',                           description: 'A character is consumed by guilt and seeks redemption for past wrongs.' },
+  { id: 35, name: 'Recovery of a Lost One',            description: 'A character searches for and attempts to recover someone or something lost.' },
+  { id: 36, name: 'Loss of Loved Ones',                description: 'A character experiences the death or permanent loss of someone dear.' }
+];
+
+const EIGHT_SEQUENCES = [
+  { number: 1, act: 'Act 1', name: 'Status Quo & Inciting Incident',  description: 'Introduce the protagonist in their ordinary world. Establish tone and hook. Present the event that kicks off the story.' },
+  { number: 2, act: 'Act 1', name: 'Predicament & Lock In',           description: 'The central conflict comes into focus. The protagonist resists or accepts the call until a point of no return locks them in.' },
+  { number: 3, act: 'Act 2', name: 'First Obstacle & Raising Stakes', description: 'The protagonist faces initial challenges they cannot escape. Early setback. Stakes escalate for main and subplots.' },
+  { number: 4, act: 'Act 2', name: 'Midpoint Revelation',             description: 'Tension peaks at the story\'s midpoint. The protagonist gains a new understanding that shifts their approach or goal.' },
+  { number: 5, act: 'Act 2', name: 'Subplot & Rising Action',         description: 'Subplots deepen complications while tension builds. The protagonist pursues conflicting goals, intensifying drama.' },
+  { number: 6, act: 'Act 2', name: 'All Is Lost',                     description: 'The biggest obstacle and lowest point. Stakes, tension, and drama peak — readers doubt a positive outcome is possible.' },
+  { number: 7, act: 'Act 3', name: 'New Tension & Twist',             description: 'Faster-paced action with a new twist or revelation. The protagonist revises their goal with renewed energy.' },
+  { number: 8, act: 'Act 3', name: 'Resolution & Finale',             description: 'The final confrontation. All loose threads are tied up. Character arcs resolved. A new status quo is established.' }
+];
+
+// ============================================================
 // SECTION 2: CARD HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────
 // What it does: Core CRUD operations for cards. All changes go
@@ -107,13 +178,37 @@ function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// buildPrompt: returns the Claude prompt for the "Organize with AI" button
-function buildPrompt(existingTitles) {
+// placeCaretAtEnd: moves the cursor to the end of a contenteditable element
+function placeCaretAtEnd(el) {
+  var range = document.createRange();
+  var sel   = window.getSelection();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// buildExistingCardsContext: returns a compact summary of up to 20 existing cards
+// so Claude can detect conflicts or superseded information in new notes.
+function buildExistingCardsContext(existingCards) {
+  if (!existingCards || existingCards.length === 0) return '';
+  var sample = existingCards.slice(-20); // most recent 20
+  var lines = sample.map(function(c) {
+    return '[' + c.type + '] ' + c.title + ': ' + (c.content || '').slice(0, 90);
+  });
+  return 'Existing story cards (for conflict detection):\n' + lines.join('\n');
+}
+
+// buildPrompt: returns the Claude prompt for the "Organize with AI" button.
+// existingTitles — array of strings to skip (duplicate prevention)
+// existingCards  — array of card objects to check for conflicts (optional)
+function buildPrompt(existingTitles, existingCards) {
   const skipLine = existingTitles && existingTitles.length > 0
     ? 'Skip anything matching these already-existing titles: ' + existingTitles.join(', ') + '.'
     : '';
+  const existingContext = buildExistingCardsContext(existingCards);
   return [
-    'You are a story organization assistant. Read the notes below and extract story elements.',
+    'You are a story editor and organization assistant. Read the notes below and extract story elements.',
     'Return a JSON array of objects. Each object must have exactly these fields:',
     '  "type"    — one of: character, world, arc, quote, idea',
     '  "title"   — short name or label (max 6 words)',
@@ -124,20 +219,25 @@ function buildPrompt(existingTitles) {
     '  world     = locations, lore, magic systems, world rules',
     '  arc       = plot beats, story events, narrative arcs',
     '  quote     = memorable dialogue or lines',
-    '  idea      = themes, concepts, future plans',
+    '  idea      = themes, concepts, future plans (prefix title with "[Idea]" for speculative/exploratory content)',
     '',
+    existingContext,
+    existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
     skipLine,
     'Return only the JSON array, nothing else.'
   ].filter(Boolean).join('\n');
 }
 
 // buildSyncPrompt: same as buildPrompt but used for the Sync Notes batch job
-function buildSyncPrompt(existingTitles) {
+// existingTitles — array of strings to skip
+// existingCards  — array of card objects to check for conflicts (optional)
+function buildSyncPrompt(existingTitles, existingCards) {
   const skipLine = existingTitles && existingTitles.length > 0
     ? 'Skip anything matching these already-existing titles: ' + existingTitles.join(', ') + '.'
     : '';
+  const existingContext = buildExistingCardsContext(existingCards);
   return [
-    'You are a story organization assistant. Read the content below and extract story elements.',
+    'You are a story editor and organization assistant. Read the content below and extract story elements.',
     'IMPORTANT: If the content is NOT related to a story, characters, plot, or worldbuilding, return an empty array [].',
     'Return a JSON array of objects. Each object must have exactly these fields:',
     '  "type"    — one of: character, world, arc, quote, idea',
@@ -149,8 +249,10 @@ function buildSyncPrompt(existingTitles) {
     '  world     = locations, lore, magic systems, world rules',
     '  arc       = plot beats, story events, narrative arcs',
     '  quote     = memorable dialogue or lines',
-    '  idea      = themes, concepts, future plans',
+    '  idea      = themes, concepts, future plans (prefix title with "[Idea]" for speculative/exploratory content)',
     '',
+    existingContext,
+    existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
     skipLine,
     '- Maximum 15 new cards per file',
     'Return only the JSON array, nothing else.'
@@ -164,6 +266,7 @@ function addCard(type, title, content) {
     type:      type,
     title:     title || 'Untitled',
     content:   content || '',
+    status:    'active',       // 'active' | 'archived'
     createdAt: new Date().toISOString()
   };
   cards.push(card);
@@ -171,6 +274,7 @@ function addCard(type, title, content) {
   unsyncedIds.add(card.id);
   saveUnsyncedIds();
   renderCards();
+  renderHomePage();
 }
 
 // deleteCard: removes a card by its id
@@ -178,6 +282,7 @@ function deleteCard(id) {
   cards = cards.filter(function(c) { return c.id !== id; });
   saveCards();
   renderCards();
+  renderHomePage();
 }
 
 // renderCards: redraws all cards — both board view and map view (if active)
@@ -186,10 +291,10 @@ function renderCards() {
     const col = document.getElementById('cards-' + type);
     col.innerHTML = ''; // clear the column
 
-    // Get only the cards that belong to this column
-    const colCards = cards.filter(function(c) { return c.type === type; });
+    // Get only the active cards that belong to this column (archived cards go to archive panel)
+    const colCards = cards.filter(function(c) { return c.type === type && c.status !== 'archived'; });
 
-    // Update count badge
+    // Update count badge (active only)
     const countEl = document.getElementById('count-' + type);
     if (countEl) countEl.textContent = colCards.length;
 
@@ -198,7 +303,7 @@ function renderCards() {
       return;
     }
 
-    // Build an HTML element for each card
+    // Build an HTML element for each card (all are active at this point)
     colCards.forEach(function(card) {
       const el = document.createElement('div');
       el.className = 'story-card';
@@ -295,8 +400,195 @@ tabButtons.forEach(function(button) {
     button.classList.add('active');
     const panel = document.getElementById('panel-' + targetTab);
     if (panel) panel.classList.add('active');
+
+    // Refresh Characters sidebar when switching to that tab
+    if (targetTab === 'characters') renderCharacterSidebar();
+    // Refresh Arcs timeline when switching to that tab
+    if (targetTab === 'arcs') renderArcsTimeline();
+    // Refresh home page stats when switching to home
+    if (targetTab === 'home') renderHomePage();
   });
 });
+
+// Helper: switch to a tab by name (used by home page nav buttons)
+function switchToTab(tabName) {
+  var btn = document.querySelector('.tab-btn[data-tab="' + tabName + '"]');
+  if (btn) btn.click();
+}
+
+// ============================================================
+// SECTION 4b: HOME PAGE
+// ─────────────────────────────────────────────────────────────
+// Renders the home page stats and recent cards strip.
+// Called on load and whenever cards change.
+// ============================================================
+
+function renderHomePage() {
+  var activeCards = cards.filter(function(c) { return c.status !== 'archived'; });
+  var charCards   = activeCards.filter(function(c) { return c.type === 'character'; });
+  var arcCards    = activeCards.filter(function(c) { return c.type === 'arc'; });
+
+  // Update stat items — set .home-stat-num inside each container
+  function setStatNum(id, num) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var numEl = el.querySelector('.home-stat-num');
+    if (numEl) numEl.textContent = num.toLocaleString();
+  }
+  setStatNum('homeStatCards', activeCards.length);
+  setStatNum('homeStatChars', charCards.length);
+  setStatNum('homeStatArcs',  arcCards.length);
+
+  // Word count from writing copy (rich editor div — use textContent)
+  var writingEl = document.getElementById('writingCopyEditor');
+  var wordCount = 0;
+  if (writingEl) {
+    var text = (writingEl.textContent || '').trim();
+    wordCount = text ? text.split(/\s+/).length : 0;
+  }
+  setStatNum('homeStatWords', wordCount);
+
+  // Apply accent colors to nav tiles via JS (CSS attr() not supported for custom props)
+  document.querySelectorAll('.home-nav-btn[data-color]').forEach(function(btn) {
+    btn.style.borderLeftColor = btn.getAttribute('data-color');
+  });
+
+  // Recent cards grid — last 6 active cards by date
+  var recentEl = document.getElementById('homeRecent');
+  if (!recentEl) return;
+  var recent = activeCards.slice().sort(function(a, b) {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  }).slice(0, 6);
+
+  if (recent.length === 0) {
+    recentEl.innerHTML = '';
+    return;
+  }
+
+  var typeColors = {
+    character: 'var(--color-character)', world: 'var(--color-world)',
+    arc: 'var(--color-arc)', quote: 'var(--color-quote)', idea: 'var(--color-idea)'
+  };
+
+  recentEl.innerHTML =
+    '<div class="home-recent-label">Recently Added</div>' +
+    '<div class="home-recent-cards">' +
+    recent.map(function(card) {
+      return '<div class="home-recent-card" style="border-left: 3px solid ' + (typeColors[card.type] || '#666') + '">' +
+        '<div class="home-recent-card-type" style="color:' + (typeColors[card.type] || '#666') + '">' + card.type + '</div>' +
+        '<div class="home-recent-card-title">' + escapeHtml(card.title) + '</div>' +
+        '</div>';
+    }).join('') +
+    '</div>';
+
+  // Clicking a recent card goes to Story Canvas
+  recentEl.querySelectorAll('.home-recent-card').forEach(function(el) {
+    el.addEventListener('click', function() { switchToTab('canvas'); });
+  });
+}
+
+// Wire up the "Get Started" button and home nav buttons
+document.getElementById('btnGetStarted').addEventListener('click', function() {
+  switchToTab('canvas');
+});
+document.querySelectorAll('.home-nav-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    switchToTab(btn.getAttribute('data-tab'));
+  });
+});
+
+// ============================================================
+// SECTION 4c: ARCHIVE PANEL
+// ─────────────────────────────────────────────────────────────
+// Collapsible left panel showing all archived cards.
+// Cards can be restored from here back to active status.
+// ============================================================
+
+var archivePanelOpen = false;
+
+function toggleArchivePanel() {
+  archivePanelOpen = !archivePanelOpen;
+  var panel   = document.getElementById('archivePanel');
+  var overlay = document.getElementById('archiveOverlay');
+  var btn     = document.getElementById('archiveBtn');
+  if (archivePanelOpen) {
+    panel.classList.add('open');
+    overlay.classList.remove('hidden');
+    btn.classList.add('active');
+    renderArchivePanel();
+  } else {
+    closeArchivePanel();
+  }
+}
+
+function closeArchivePanel() {
+  archivePanelOpen = false;
+  document.getElementById('archivePanel').classList.remove('open');
+  document.getElementById('archiveOverlay').classList.add('hidden');
+  var btn = document.getElementById('archiveBtn');
+  if (btn) btn.classList.remove('active');
+}
+
+// Renders archive panel contents grouped by type
+function renderArchivePanel() {
+  var archivedCards = cards.filter(function(c) { return c.status === 'archived'; });
+  var countEl = document.getElementById('archiveCount');
+  if (countEl) countEl.textContent = archivedCards.length;
+
+  var bodyEl = document.getElementById('archivePanelBody');
+  if (!bodyEl) return;
+
+  if (archivedCards.length === 0) {
+    bodyEl.innerHTML = '<div class="archive-empty">No archived cards yet.</div>';
+    return;
+  }
+
+  var typeOrder = ['character', 'world', 'arc', 'quote', 'idea'];
+  var typeLabels = { character: 'Characters', world: 'World Building', arc: 'Plot & Arcs', quote: 'Key Quotes', idea: 'Ideas' };
+  var html = '';
+
+  typeOrder.forEach(function(type) {
+    var group = archivedCards.filter(function(c) { return c.type === type; });
+    if (group.length === 0) return;
+    html += '<div class="archive-type-group">' +
+      '<div class="archive-type-label">' + typeLabels[type] + ' (' + group.length + ')</div>';
+    group.forEach(function(card) {
+      html += '<div class="archive-card-item" data-type="' + card.type + '" data-id="' + card.id + '">' +
+        '<div class="archive-card-info">' +
+          '<div class="archive-card-title">' + escapeHtml(card.title) + '</div>' +
+          (card.content ? '<div class="archive-card-preview">' + escapeHtml(card.content) + '</div>' : '') +
+        '</div>' +
+        '<button class="archive-restore-btn" data-id="' + card.id + '">♻️</button>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+
+  bodyEl.innerHTML = html;
+
+  // Wire up restore buttons
+  bodyEl.querySelectorAll('.archive-restore-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var id = btn.getAttribute('data-id');
+      var card = cards.find(function(c) { return c.id === id; });
+      if (card) {
+        card.status = 'active';
+        saveCards();
+        renderCards();
+        if (viewMode === 'map') renderMap();
+        renderArchivePanel();
+        renderHomePage();
+        showToast('♻️ Card restored');
+      }
+    });
+  });
+}
+
+// Wire up archive toggle button and close button
+document.getElementById('archiveBtn').addEventListener('click', toggleArchivePanel);
+document.getElementById('archivePanelClose').addEventListener('click', closeArchivePanel);
+document.getElementById('archiveOverlay').addEventListener('click', closeArchivePanel);
 
 
 // ============================================================
@@ -710,7 +1002,7 @@ async function organizeWithAI() {
   const existingTitles = getExistingTitles();
 
   // --- Build the prompt we'll send to Claude ---
-  const prompt = buildPrompt(existingTitles);
+  const prompt = buildPrompt(existingTitles, cards);
 
   // --- Build the message content for the API ---
   // For text: just append the notes to the prompt
@@ -946,23 +1238,23 @@ async function syncStoryNotes() {
         });
         messageContent = [
           { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
-          { type: 'text',  text: buildSyncPrompt(existingTitlesNow) + '\n\nExtract any story elements from this image.' }
+          { type: 'text',  text: buildSyncPrompt(existingTitlesNow, cards) + '\n\nExtract any story elements from this image.' }
         ];
 
       } else if (ext === 'pdf') {
         const buffer = await file.arrayBuffer();
         const text   = await extractTextFromPdfBuffer(buffer);
-        messageContent = buildSyncPrompt(existingTitlesNow) + '\n\nContent to organize:\n' + text.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + text.slice(0, 8000);
 
       } else if (ext === 'docx') {
         const buffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-        messageContent = buildSyncPrompt(existingTitlesNow) + '\n\nContent to organize:\n' + result.value.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + result.value.slice(0, 8000);
 
       } else {
         // txt / md — read directly from the File object (no fetch needed)
         const text = await file.text();
-        messageContent = buildSyncPrompt(existingTitlesNow) + '\n\nContent to organize:\n' + text.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + text.slice(0, 8000);
       }
 
       btn.textContent = '✨ Organizing ' + name + '...';
@@ -1131,34 +1423,62 @@ function applyZoom(newZoom) {
   var mapInner  = document.getElementById('mapInner');
   var mapScaler = document.getElementById('mapScaler');
 
-  // Scale the canvas visually (transform-origin: 0 0 set in CSS)
-  mapInner.style.transform = 'scale(' + mapZoom + ')';
+  // Scale the canvas visually (transform-origin: 0 0 set in CSS).
+  // Includes the centering translate set by centerMapOnCards().
+  mapInner.style.transform = 'translate(' + mapTranslateX + 'px,' + mapTranslateY + 'px) scale(' + mapZoom + ')';
 
-  // Resize the scaler wrapper so the scroll container knows the full extent
-  mapScaler.style.width  = (4000 * mapZoom) + 'px';
-  mapScaler.style.height = (2500 * mapZoom) + 'px';
+  // Resize the scaler wrapper so the scroll container knows the full extent.
+  // Add one full viewport width/height so that canvas edges are always scrollable
+  // to the center of the screen — without this, zoomed-out cards at the far edge
+  // fall beyond scrollLeft's max and become unreachable.
+  var mapView = document.getElementById('mapView');
+  var viewW = (mapView && mapView.clientWidth)  || 1200;
+  var viewH = (mapView && mapView.clientHeight) || 800;
+  mapScaler.style.width  = Math.max(6000 * mapZoom + viewW,  viewW  * 1.5) + 'px';
+  mapScaler.style.height = Math.max(4000 * mapZoom + viewH,  viewH  * 1.5) + 'px';
 
   // Update zoom label
   var label = document.getElementById('zoomLabel');
   if (label) label.textContent = Math.round(mapZoom * 100) + '%';
 }
 
-// Scroll wheel on the map → zoom in/out
+// Scroll wheel on the map → smooth zoom centered on the cursor position
 document.getElementById('mapView').addEventListener('wheel', function(e) {
   e.preventDefault();
-  var direction = e.deltaY > 0 ? -0.1 : 0.1;
-  applyZoom(mapZoom + direction);
+  var mapView = document.getElementById('mapView');
+  var rect = mapView.getBoundingClientRect();
+
+  // Where is the cursor inside the scroll viewport?
+  var mouseX = e.clientX - rect.left;
+  var mouseY = e.clientY - rect.top;
+
+  // Which canvas coordinates are currently under the cursor?
+  // Subtract mapTranslateX/Y because mapInner may be offset from mapScaler's origin.
+  var canvasX = (mapView.scrollLeft + mouseX - mapTranslateX) / mapZoom;
+  var canvasY = (mapView.scrollTop  + mouseY - mapTranslateY) / mapZoom;
+
+  // Zoom by a proportional factor (feels smoother than fixed ±0.1 steps)
+  var factor = e.deltaY > 0 ? 0.92 : 1.08;
+  applyZoom(mapZoom * factor);
+
+  // Re-anchor scroll so the same canvas point stays under the cursor.
+  // Add mapTranslateX/Y back because canvas→visual conversion includes the offset.
+  mapView.scrollLeft = canvasX * mapZoom + mapTranslateX - mouseX;
+  mapView.scrollTop  = canvasY * mapZoom + mapTranslateY - mouseY;
 }, { passive: false });
 
-// Zoom + / − / reset buttons
+// Zoom + / − / reset buttons — re-center after each change so cards stay in view
 document.getElementById('zoomIn').addEventListener('click', function() {
   applyZoom(mapZoom + 0.1);
+  centerMapOnCards();
 });
 document.getElementById('zoomOut').addEventListener('click', function() {
   applyZoom(mapZoom - 0.1);
+  centerMapOnCards();
 });
 document.getElementById('zoomLabel').addEventListener('click', function() {
   applyZoom(1.0); // click the percentage label to reset to 100%
+  centerMapOnCards();
 });
 
 // Escape cancels connection mode and closes floating panels
@@ -1187,7 +1507,7 @@ function renderMap() {
   };
   var typeCounters = { character: 0, world: 0, arc: 0, quote: 0, idea: 0 };
 
-  cards.forEach(function(card) {
+  cards.filter(function(card) { return card.status !== 'archived'; }).forEach(function(card) {
     if (!cardPositions[card.id]) {
       var col = typeOffsets[card.type] || 400;
       var row = typeCounters[card.type] || 0;
@@ -1199,8 +1519,8 @@ function renderMap() {
     typeCounters[card.type] = (typeCounters[card.type] || 0) + 1;
   });
 
-  // Render each card
-  cards.forEach(function(card) {
+  // Render each active card (archived cards are hidden from the map)
+  cards.filter(function(card) { return card.status !== 'archived'; }).forEach(function(card) {
     var pos   = cardPositions[card.id];
     var color = TYPE_COLORS[card.type] || '#94a3b8';
 
@@ -1219,10 +1539,11 @@ function renderMap() {
       '<div class="card-tab-dropdown" data-id="' + card.id + '"></div>' +
       '<div class="map-card-header">' +
         '<span class="col-dot" style="background:' + color + ';flex-shrink:0"></span>' +
-        '<div class="map-card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
+        '<div class="map-card-title" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
       '</div>' +
-      '<div class="map-card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>' +
+      '<div class="map-card-content" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>' +
       '<div class="map-card-actions">' +
+        '<button class="map-action-btn edit"    data-id="' + card.id + '" title="Edit card">✎</button>' +
         '<button class="map-action-btn connect" data-id="' + card.id + '" title="Connect">⊕</button>' +
         '<button class="map-action-btn delete"  data-id="' + card.id + '" title="Delete">✕</button>' +
       '</div>';
@@ -1256,6 +1577,17 @@ function renderMap() {
   });
 
   // Wire up buttons
+  mapInner.querySelectorAll('.map-action-btn.edit').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // Enter explicit edit mode: make title + content editable
+      var cardEl = mapInner.querySelector('.map-card[data-id="' + btn.dataset.id + '"]');
+      if (cardEl) {
+        enterMapCardEditMode(cardEl);
+      }
+    });
+  });
+
   mapInner.querySelectorAll('.map-action-btn.connect').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1287,6 +1619,8 @@ function renderMap() {
       var hasConnections = connections.some(function(c) {
         return c.from === cardId || c.to === cardId;
       });
+      var thisCard = cards.find(function(c) { return c.id === cardId; });
+      var isArchived = thisCard && thisCard.status === 'archived';
       dropdown.innerHTML =
         '<div class="dropdown-section">AI Actions</div>' +
         '<button data-action="summarize" data-id="' + cardId + '">📝 Summarize Card</button>' +
@@ -1296,6 +1630,9 @@ function renderMap() {
           ? '<button data-action="sync"    data-id="' + cardId + '">🔀 Sync with Connected</button>'
           : '') +
         '<div class="dropdown-section">Card</div>' +
+        (isArchived
+          ? '<button data-action="restore" data-id="' + cardId + '">♻️ Restore Card</button>'
+          : '<button data-action="archive" data-id="' + cardId + '">📦 Archive Card</button>') +
         '<button data-action="delete" data-id="' + cardId + '" class="danger">✕ Delete Card</button>';
 
       dropdown.classList.toggle('open');
@@ -1318,17 +1655,8 @@ function renderMap() {
     });
   }, { once: false, capture: false });
 
-  // Inline editing in map cards
-  mapInner.querySelectorAll('[contenteditable="true"]').forEach(function(el) {
-    el.addEventListener('blur', function() {
-      var id    = el.dataset.id;
-      var field = el.dataset.field;
-      var card  = cards.find(function(c) { return c.id === id; });
-      if (card) { card[field] = el.textContent.trim(); saveCards(); }
-    });
-    // Prevent drag when editing
-    el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-  });
+  // No contenteditable on map cards by default — edit mode entered via edit button
+  // (see enterMapCardEditMode / exitMapCardEditMode below)
 
   drawConnections();
   makeMapPannable();
@@ -1363,8 +1691,8 @@ function makeDraggable(el, cardId) {
       // Divide mouse delta by mapZoom so the card follows the cursor
       // correctly at any zoom level (e.g., at 0.5× zoom, mouse moves
       // 100px but we only want the card to move 50px in canvas space)
-      var newX = Math.max(-50, Math.min(3900, startLeft + (e.clientX - startX) / mapZoom));
-      var newY = Math.max(-50, Math.min(2400, startTop  + (e.clientY - startY) / mapZoom));
+      var newX = Math.max(50, Math.min(5700, startLeft + (e.clientX - startX) / mapZoom));
+      var newY = Math.max(50, Math.min(3800, startTop  + (e.clientY - startY) / mapZoom));
       // Preserve saved w/h when updating position
       var existing = cardPositions[cardId] || {};
       cardPositions[cardId] = { x: newX, y: newY, w: existing.w, h: existing.h };
@@ -1384,6 +1712,59 @@ function makeDraggable(el, cardId) {
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   });
+}
+
+// ── 11b2: MAP CARD EDIT MODE ──────────────────────────────────
+
+// enterMapCardEditMode: make a map card's title + content editable
+function enterMapCardEditMode(cardEl) {
+  if (cardEl.classList.contains('is-editing')) return; // already editing
+  var titleEl   = cardEl.querySelector('.map-card-title');
+  var contentEl = cardEl.querySelector('.map-card-content');
+  if (!titleEl || !contentEl) return;
+
+  cardEl.classList.add('is-editing');
+  titleEl.contentEditable   = 'true';
+  contentEl.contentEditable = 'true';
+
+  // Prevent drag while editing
+  titleEl.addEventListener('mousedown',   function(e) { e.stopPropagation(); });
+  contentEl.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+
+  // Exit edit mode when focus leaves both editables
+  function handleBlur() {
+    // Wait a tick so we can check if focus moved to the sibling editable
+    setTimeout(function() {
+      var active = document.activeElement;
+      if (active === titleEl || active === contentEl) return; // still editing
+      exitMapCardEditMode(cardEl);
+    }, 0);
+  }
+  titleEl.addEventListener('blur',   handleBlur);
+  contentEl.addEventListener('blur', handleBlur);
+
+  // Focus title and place cursor at end
+  titleEl.focus();
+  placeCaretAtEnd(titleEl);
+}
+
+// exitMapCardEditMode: save and remove edit mode from a map card
+function exitMapCardEditMode(cardEl) {
+  if (!cardEl.classList.contains('is-editing')) return;
+  var titleEl   = cardEl.querySelector('.map-card-title');
+  var contentEl = cardEl.querySelector('.map-card-content');
+  var cardId    = cardEl.dataset.id;
+  var card      = cards.find(function(c) { return c.id === cardId; });
+
+  if (card) {
+    if (titleEl)   card.title   = titleEl.textContent.trim();
+    if (contentEl) card.content = contentEl.textContent.trim();
+    saveCards();
+  }
+
+  if (titleEl)   titleEl.removeAttribute('contenteditable');
+  if (contentEl) contentEl.removeAttribute('contenteditable');
+  cardEl.classList.remove('is-editing');
 }
 
 // ── 11c: CONNECT CARDS & DRAW SVG LINES ─────────────────────
@@ -1518,6 +1899,20 @@ async function handleCardContextMenuAction(action, cardId) {
 
   if (action === 'delete') {
     deleteCard(cardId);
+    return;
+  }
+
+  if (action === 'archive' || action === 'restore') {
+    var target = cards.find(function(c) { return c.id === cardId; });
+    if (target) {
+      target.status = action === 'archive' ? 'archived' : 'active';
+      saveCards();
+      renderCards();
+      if (viewMode === 'map') renderMap();
+      renderArchivePanel();
+      renderHomePage();
+      showToast(action === 'archive' ? '📦 Card archived' : '♻️ Card restored');
+    }
     return;
   }
 
@@ -1722,27 +2117,197 @@ function closeChat() {
   document.getElementById('chatPanel').classList.remove('open');
 }
 
+// ── CHAT SUB-TABS (Chat | Suggestions) ───────────────────────
+
+var activeChatSubTab = 'chat';
+
+document.getElementById('chatSubTabChat').addEventListener('click', function() {
+  switchChatSubTab('chat');
+});
+document.getElementById('chatSubTabSuggestions').addEventListener('click', function() {
+  switchChatSubTab('suggestions');
+  renderSuggestions();
+});
+
+function switchChatSubTab(tab) {
+  activeChatSubTab = tab;
+  document.getElementById('chatSubTabChat').classList.toggle('active', tab === 'chat');
+  document.getElementById('chatSubTabSuggestions').classList.toggle('active', tab === 'suggestions');
+  document.getElementById('chatView').classList.toggle('hidden', tab !== 'chat');
+  document.getElementById('suggestionsView').classList.toggle('hidden', tab !== 'suggestions');
+}
+
+// ── CANON REVIEW BUTTON ───────────────────────────────────────
+
+var lastMessageWasCanonReview = false;
+
+document.getElementById('canonReviewBtn').addEventListener('click', function() {
+  if (!chatIsOpen) openChat();
+  switchChatSubTab('chat');
+  var reviewPrompt =
+    'Please act as my story editor and review all my current story cards. Identify:\n' +
+    '1. Any conflicts or contradictions between cards\n' +
+    '2. Ideas that may have been superseded by newer or conflicting cards\n' +
+    '3. Major gaps in the story (missing character motivations, unexplained world rules, unresolved plot points)\n' +
+    '4. Anything that no longer fits the current direction of the story\n\n' +
+    'For each issue you find, be specific about which cards are involved.';
+  document.getElementById('chatInput').value = reviewPrompt;
+  lastMessageWasCanonReview = true;
+  sendChatMessage();
+});
+
+// ── SUGGESTION MEMORY ─────────────────────────────────────────
+
+var suggestions = JSON.parse(localStorage.getItem('sf_suggestions') || '[]');
+
+function saveSuggestions() {
+  localStorage.setItem('sf_suggestions', JSON.stringify(suggestions));
+  updateSuggestionsCountBadge();
+}
+
+function updateSuggestionsCountBadge() {
+  var badge = document.getElementById('suggestionsCountBadge');
+  var pending = suggestions.filter(function(s) { return s.status === 'pending'; }).length;
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// generateId is already defined globally — reuse it for suggestion IDs
+
+function addSuggestion(text, source) {
+  var sug = {
+    id:        generateId(),
+    source:    source || 'chat',
+    text:      text,
+    status:    'pending',
+    createdAt: new Date().toISOString(),
+    notes:     ''
+  };
+  suggestions.unshift(sug); // newest first
+  saveSuggestions();
+  renderSuggestions();
+  return sug;
+}
+
+function renderSuggestions() {
+  var list  = document.getElementById('suggestionsList');
+  var empty = document.getElementById('suggestionsEmpty');
+  if (!list) return;
+
+  if (suggestions.length === 0) {
+    empty.style.display = '';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = suggestions.map(function(s) {
+    var date = new Date(s.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    var sourceLabel = s.source === 'canon_review' ? '🔍 Review' : '💬 Chat';
+    var statuses = ['pending', 'accepted', 'rejected', 'outdated', 'useful-later'];
+    var statusBtns = statuses.map(function(st) {
+      return '<button class="suggestion-status-btn' + (s.status === st ? ' active' : '') + '" ' +
+             'data-id="' + s.id + '" data-status="' + st + '">' + st + '</button>';
+    }).join('');
+    var shortText = s.text.length > 300 ? s.text.slice(0, 300) + '…' : s.text;
+    return (
+      '<div class="suggestion-card" data-id="' + s.id + '">' +
+        '<div class="suggestion-card-meta">' +
+          '<span class="suggestion-status-badge ' + s.status + '">' + s.status + '</span>' +
+          '<span class="suggestion-source-label">' + sourceLabel + '</span>' +
+          '<span class="suggestion-date-label">' + date + '</span>' +
+        '</div>' +
+        '<div class="suggestion-text" id="sugText_' + s.id + '">' + escapeHtml(shortText) + '</div>' +
+        (s.text.length > 300 ? '<button class="suggestion-expand-btn" data-id="' + s.id + '">Show full ▾</button>' : '') +
+        '<div class="suggestion-actions">' + statusBtns +
+          '<button class="suggestion-delete-btn" data-id="' + s.id + '" title="Remove">✕</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+
+  // Wire up status buttons
+  list.querySelectorAll('.suggestion-status-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var sug = suggestions.find(function(s) { return s.id === btn.dataset.id; });
+      if (sug) {
+        sug.status = btn.dataset.status;
+        saveSuggestions();
+        renderSuggestions();
+      }
+    });
+  });
+
+  // Wire up delete buttons
+  list.querySelectorAll('.suggestion-delete-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      suggestions = suggestions.filter(function(s) { return s.id !== btn.dataset.id; });
+      saveSuggestions();
+      renderSuggestions();
+    });
+  });
+
+  // Wire up expand buttons
+  list.querySelectorAll('.suggestion-expand-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var sug = suggestions.find(function(s) { return s.id === btn.dataset.id; });
+      if (!sug) return;
+      var textEl = document.getElementById('sugText_' + btn.dataset.id);
+      if (textEl) textEl.textContent = sug.text;
+      btn.remove();
+    });
+  });
+}
+
+// buildSuggestionsContext: injects accepted + pending suggestions into AI system prompt
+function buildSuggestionsContext() {
+  var relevant = suggestions.filter(function(s) {
+    return s.status === 'accepted' || s.status === 'pending';
+  });
+  if (relevant.length === 0) return '';
+  var lines = relevant.slice(0, 8).map(function(s) {
+    return '[' + s.status.toUpperCase() + '] ' + s.text.slice(0, 120);
+  });
+  return 'Previously flagged story review notes:\n' + lines.join('\n');
+}
+
+// Initialize badge on load
+updateSuggestionsCountBadge();
+
 // buildStoryContext: summarises all cards for Claude's system context.
-// To reduce token usage: sends full content only for the 5 most recently added cards;
-// all other cards send title + type only.
+// Full content for the 15 most recent cards (including createdAt date);
+// title + type only for older cards to stay within token budget.
 function buildStoryContext() {
   if (cards.length === 0) return 'No story notes added yet.';
 
-  // Sort by createdAt to find the most recent
+  // Count summary so the AI has a sense of scale
+  var counts = {};
+  cards.forEach(function(c) { counts[c.type] = (counts[c.type] || 0) + 1; });
+  var countSummary = Object.keys(counts).map(function(t) {
+    return counts[t] + ' ' + t;
+  }).join(', ');
+
+  // Sort by createdAt descending — most recent first
   var sorted = cards.slice().sort(function(a, b) {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
-  var recentIds = sorted.slice(0, 5).map(function(c) { return c.id; });
+  var recentIds = sorted.slice(0, 15).map(function(c) { return c.id; });
 
   var byType = {};
   cards.forEach(function(c) {
     if (!byType[c.type]) byType[c.type] = [];
     var isRecent = recentIds.includes(c.id);
-    // Full content for recent cards; title only for the rest (saves tokens)
-    byType[c.type].push('• ' + c.title + (isRecent && c.content ? ': ' + c.content : ''));
+    var date = isRecent ? ' [' + new Date(c.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ']' : '';
+    var status = (c.status === 'archived') ? ' [ARCHIVED]' : '';
+    // Full content for recent cards; title only for older ones (saves tokens)
+    byType[c.type].push('• ' + c.title + status + date + (isRecent && c.content ? ': ' + c.content : ''));
   });
 
-  var ctx = 'Current story notes for "Life of Bon":\n\n';
+  var ctx = 'Story notes for "Life of Bon" (' + countSummary + '):\n\n';
   var labels = { character: 'Characters', world: 'World Building', arc: 'Plot & Arcs', quote: 'Key Quotes', idea: 'Ideas' };
   Object.keys(byType).forEach(function(type) {
     ctx += (labels[type] || type) + ':\n' + byType[type].join('\n') + '\n\n';
@@ -1814,12 +2379,13 @@ async function sendChatMessage() {
       } catch (_) { /* memory summarization is best-effort */ }
     }
 
-    // Build system prompt, injecting stored memory if available
+    // Build system prompt, injecting stored memory and saved suggestions if available
     var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.';
     var storedMemory = localStorage.getItem('sf_chat_memory');
-    var systemPrompt = storedMemory
-      ? baseSystem + '\n\nStory planning memory from earlier in this session:\n' + storedMemory
-      : baseSystem;
+    var suggestionsCtx = buildSuggestionsContext();
+    var systemPrompt = baseSystem;
+    if (storedMemory) systemPrompt += '\n\nStory planning memory from earlier in this session:\n' + storedMemory;
+    if (suggestionsCtx) systemPrompt += '\n\n' + suggestionsCtx;
 
     // Build messages: if first turn, prepend a context exchange
     var messages = [];
@@ -1862,6 +2428,27 @@ async function sendChatMessage() {
 
     appendChatMsg('assistant', reply);
     chatHistory.push({ role: 'assistant', content: reply });
+
+    // If this was a Canon Review, append a "Save Suggestions" button to the message
+    if (lastMessageWasCanonReview) {
+      lastMessageWasCanonReview = false;
+      var msgs = document.getElementById('chatMessages');
+      var lastMsg = msgs.lastElementChild;
+      if (lastMsg) {
+        var saveBtn = document.createElement('button');
+        saveBtn.className = 'save-suggestions-btn';
+        saveBtn.textContent = '💾 Save to Suggestions';
+        var capturedReply = reply;
+        saveBtn.addEventListener('click', function() {
+          addSuggestion(capturedReply, 'canon_review');
+          saveBtn.textContent = '✓ Saved';
+          saveBtn.disabled = true;
+          showToast('Suggestions saved — open the Suggestions tab to review them.');
+          updateSuggestionsCountBadge();
+        });
+        lastMsg.appendChild(saveBtn);
+      }
+    }
 
   } catch (err) {
     var typingEl = document.getElementById(typingId);
@@ -1982,29 +2569,47 @@ function centerMapOnCards() {
   var centerX = (minX + maxX) / 2;
   var centerY = (minY + maxY) / 2;
 
-  // Scroll so that point is in the middle of the visible viewport, accounting for zoom
+  // Scroll so that point is in the middle of the visible viewport, accounting for zoom.
   var vpW = mapView.clientWidth;
   var vpH = mapView.clientHeight;
-  mapView.scrollLeft = Math.max(0, centerX * mapZoom - vpW / 2);
-  mapView.scrollTop  = Math.max(0, centerY * mapZoom - vpH / 2);
+
+  var desiredScrollLeft = centerX * mapZoom - vpW / 2;
+  var desiredScrollTop  = centerY * mapZoom - vpH / 2;
+
+  // If the card cluster is smaller than the viewport (desired scroll is negative),
+  // we can't center purely via scroll (scrollLeft can't go negative). Instead, apply
+  // a CSS translate offset to mapInner so the cards appear centered despite scroll = 0.
+  mapTranslateX = desiredScrollLeft < 0 ? Math.round(-desiredScrollLeft) : 0;
+  mapTranslateY = desiredScrollTop  < 0 ? Math.round(-desiredScrollTop)  : 0;
+
+  var mapInner = document.getElementById('mapInner');
+  if (mapInner) {
+    mapInner.style.transform = 'translate(' + mapTranslateX + 'px,' + mapTranslateY + 'px) scale(' + mapZoom + ')';
+  }
+
+  mapView.scrollLeft = Math.max(0, desiredScrollLeft);
+  mapView.scrollTop  = Math.max(0, desiredScrollTop);
 }
 
 // ── 14a: MAP PANNING ─────────────────────────────────────────
 
-// makeMapPannable: enables click+drag on the empty canvas to pan the map view
+// makeMapPannable: enables click+drag anywhere in the map viewport to pan.
+// The listener lives on mapView (the scroll container) rather than mapInner so
+// that panning works even when the cursor is in the empty space beyond mapInner's
+// visual extent (which shrinks when zoomed out).
 function makeMapPannable() {
-  var mapView  = document.getElementById('mapView');
-  var mapInner = document.getElementById('mapInner');
-  if (!mapInner) return;
+  var mapView = document.getElementById('mapView');
+  if (!mapView) return;
 
   // Remove previous listener before re-attaching (renderMap is called multiple times)
-  if (mapInner._panHandler) {
-    mapInner.removeEventListener('mousedown', mapInner._panHandler);
+  if (mapView._panHandler) {
+    mapView.removeEventListener('mousedown', mapView._panHandler);
   }
 
-  mapInner._panHandler = function(e) {
-    // Only fire when clicking directly on mapInner (card mousedown calls stopPropagation)
-    if (e.target !== mapInner) return;
+  mapView._panHandler = function(e) {
+    // Only pan on left-button clicks that aren't on a card, button, or interactive element
+    if (e.button !== 0) return;
+    if (e.target.closest('.map-card')) return;
     if (connectingFrom) return;
     // Clicking empty canvas also clears card selection
     hideCombinePanel();
@@ -2014,7 +2619,7 @@ function makeMapPannable() {
     var startX = e.clientX;
     var startY = e.clientY;
 
-    mapInner.style.cursor = 'grabbing';
+    mapView.style.cursor = 'grabbing';
     e.preventDefault();
 
     function onMove(e) {
@@ -2022,7 +2627,7 @@ function makeMapPannable() {
       mapView.scrollTop  = startScrollTop  - (e.clientY - startY);
     }
     function onUp() {
-      mapInner.style.cursor = '';
+      mapView.style.cursor = '';
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     }
@@ -2030,19 +2635,19 @@ function makeMapPannable() {
     document.addEventListener('mouseup', onUp);
   };
 
-  mapInner.addEventListener('mousedown', mapInner._panHandler);
+  mapView.addEventListener('mousedown', mapView._panHandler);
 }
 
 // ── 14b: AUTO-ORGANIZE MAP ───────────────────────────────────
 
 // autoOrganizeMap: arranges all cards in columns by type, auto-connects within each column
 // Column math: colX = START_X + colIndex * (CARD_W + COL_GAP)
-//   e.g. character at 400, world at 730, arc at 1060, quote at 1390, idea at 1720
+//   e.g. character at 200, world at 530, arc at 860, quote at 1190, idea at 1520
 function autoOrganizeMap() {
   var TYPE_ORDER = VALID_CARD_TYPES; // character → world → arc → quote → idea
   var CARD_W     = 210; // card width
   var COL_GAP    = 120; // gap between columns (total column stride = 330px)
-  var START_X    = 400; // left offset — gives 400px of left scroll buffer
+  var START_X    = 200; // left offset — cards always within scroll range (no negatives)
   var START_Y    = 200; // top offset — gives breathing room above the first card
   var ROW_GAP    = 200; // vertical gap between cards in a column
 
@@ -2292,7 +2897,996 @@ document.getElementById('reorgBtn').addEventListener('click', function() {
 
 
 // ============================================================
+// SECTION 15: WRITING TAB
+// ─────────────────────────────────────────────────────────────
+// What it does: A split-pane writing workspace. The left pane
+// is the official "Working Copy", the right pane is a "Draft"
+// for AI-generated content and exploration. Both auto-save.
+//
+// AI actions: Generate Draft, Continue Writing, Improve This,
+//             Check Story Consistency
+//
+// localStorage keys:
+//   sf_writing_copy  — working copy content
+//   sf_writing_draft — draft content
+// ============================================================
+
+var writingDraftVisible = false;
+
+function countWords(text) {
+  var trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+function updateWritingWordCounts() {
+  var copyEl  = document.getElementById('writingCopyEditor');
+  var draftEl = document.getElementById('writingDraftEditor');
+  var copyWcEl  = document.getElementById('copyWc');
+  var draftWcEl = document.getElementById('draftWc');
+  // Both editors are now contenteditable divs — use textContent
+  if (copyEl && copyWcEl)   copyWcEl.textContent  = countWords(copyEl.textContent)  + ' words';
+  if (draftEl && draftWcEl) draftWcEl.textContent = countWords(draftEl.textContent) + ' words';
+}
+
+function toggleWritingDraft() {
+  writingDraftVisible = !writingDraftVisible;
+  var draftPane    = document.getElementById('writingDraftPane');
+  var resizeHandle = document.getElementById('writingResizeHandle');
+  var toggleBtn    = document.getElementById('draftToggleBtn');
+  if (writingDraftVisible) {
+    draftPane.classList.remove('hidden');
+    if (resizeHandle) resizeHandle.classList.remove('hidden');
+    toggleBtn.textContent = 'Hide Draft ◀';
+    toggleBtn.classList.add('active');
+    applyWritingSplitRatio();
+  } else {
+    draftPane.classList.add('hidden');
+    if (resizeHandle) resizeHandle.classList.add('hidden');
+    toggleBtn.textContent = 'Show Draft ▶';
+    toggleBtn.classList.remove('active');
+    // Remove fixed flex-basis so copy pane expands fully
+    var copyPane = document.getElementById('writingCopyPane');
+    if (copyPane) copyPane.style.flexBasis = '';
+  }
+}
+
+function applyWritingSplitRatio() {
+  var ratio = parseFloat(localStorage.getItem('sf_writing_split_ratio') || '0.62');
+  var copyPane  = document.getElementById('writingCopyPane');
+  var draftPane = document.getElementById('writingDraftPane');
+  if (copyPane)  copyPane.style.flexBasis  = (ratio * 100) + '%';
+  if (draftPane) draftPane.style.flexBasis = ((1 - ratio) * 100) + '%';
+}
+
+// Auto-save writing content on every input
+(function() {
+  var copyEditor  = document.getElementById('writingCopyEditor'); // contenteditable div
+  var draftEditor = document.getElementById('writingDraftEditor'); // contenteditable div
+
+  // Load saved content — both editors store HTML
+  copyEditor.innerHTML  = localStorage.getItem('sf_writing_copy')  || '';
+  draftEditor.innerHTML = localStorage.getItem('sf_writing_draft') || '';
+  updateWritingWordCounts();
+
+  // Auto-save on input — store innerHTML (preserves formatting)
+  copyEditor.addEventListener('input', function() {
+    localStorage.setItem('sf_writing_copy', copyEditor.innerHTML);
+    updateWritingWordCounts();
+    renderHomePage(); // keep word count on home page in sync
+  });
+  draftEditor.addEventListener('input', function() {
+    localStorage.setItem('sf_writing_draft', draftEditor.innerHTML);
+    updateWritingWordCounts();
+  });
+
+  // ── Formatting toolbar wiring ──────────────────────────────
+  // mousedown (not click) prevents editor from losing focus before execCommand
+  document.querySelectorAll('.fmt-btn').forEach(function(btn) {
+    btn.addEventListener('mousedown', function(e) {
+      e.preventDefault(); // keep focus in editor
+      var cmd = btn.getAttribute('data-cmd');
+      var val = btn.getAttribute('data-val') || null;
+      document.execCommand(cmd, false, val);
+      // Re-focus whichever editor was last active
+      var active = document.activeElement;
+      if (active !== copyEditor && active !== draftEditor) copyEditor.focus();
+    });
+  });
+
+  // Draft toggle button
+  document.getElementById('draftToggleBtn').addEventListener('click', toggleWritingDraft);
+
+  // Promote draft → working copy
+  document.getElementById('promoteBtn').addEventListener('click', function() {
+    var draft = draftEditor.innerHTML;
+    if (!draftEditor.textContent.trim()) return;
+    if (confirm('Replace Working Copy with Draft content?')) {
+      copyEditor.innerHTML = draft;
+      localStorage.setItem('sf_writing_copy', copyEditor.innerHTML);
+      updateWritingWordCounts();
+    }
+  });
+
+  // ── Resize handle ──────────────────────────────────────────
+  var resizeHandle = document.getElementById('writingResizeHandle');
+  var writingPanes = document.getElementById('writingPanes');
+  if (resizeHandle && writingPanes) {
+    resizeHandle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      resizeHandle.classList.add('dragging');
+      var startX     = e.clientX;
+      var totalW     = writingPanes.offsetWidth;
+      var copyPane   = document.getElementById('writingCopyPane');
+      var draftPane  = document.getElementById('writingDraftPane');
+      var startRatio = parseFloat(localStorage.getItem('sf_writing_split_ratio') || '0.62');
+      var startCopyW = totalW * startRatio;
+
+      function onMove(e) {
+        var newCopyW = startCopyW + (e.clientX - startX);
+        var ratio    = Math.min(0.85, Math.max(0.15, newCopyW / totalW));
+        if (copyPane)  copyPane.style.flexBasis  = (ratio * 100) + '%';
+        if (draftPane) draftPane.style.flexBasis = ((1 - ratio) * 100) + '%';
+        localStorage.setItem('sf_writing_split_ratio', String(ratio));
+      }
+      function onUp() {
+        resizeHandle.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
+    });
+  }
+
+  // Close AI result panel
+  document.getElementById('closeAiResult').addEventListener('click', function() {
+    document.getElementById('writingAiResult').classList.add('hidden');
+  });
+
+  // AI dropdown toggle
+  var aiBtn      = document.getElementById('writingAiBtn');
+  var aiDropdown = document.getElementById('writingAiDropdown');
+  aiBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    aiDropdown.classList.toggle('hidden');
+  });
+  document.addEventListener('click', function() {
+    aiDropdown.classList.add('hidden');
+  });
+
+  // AI action buttons
+  aiDropdown.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    aiDropdown.classList.add('hidden');
+    handleWritingAiAction(btn.getAttribute('data-action'));
+  });
+})();
+
+async function handleWritingAiAction(action) {
+  var key = apiKey || localStorage.getItem('sf_api_key') || '';
+  if (!key) { showToast('⚠️ Set your API key first.'); return; }
+
+  // copyEditor is now a contenteditable div — use textContent for plain text sent to AI
+  var copyContent  = (document.getElementById('writingCopyEditor').textContent || '').trim();
+  var draftEditor  = document.getElementById('writingDraftEditor');
+  var aiResultEl   = document.getElementById('writingAiResult');
+  var aiResultBody = document.getElementById('writingAiResultBody');
+  var aiBtn        = document.getElementById('writingAiBtn');
+
+  // Ensure draft pane is visible for actions that write to it
+  var writesToDraft = ['generate', 'continue', 'improve'];
+  if (writesToDraft.includes(action) && !writingDraftVisible) toggleWritingDraft();
+
+  aiBtn.textContent = '⏳';
+  aiBtn.disabled = true;
+
+  var storyCtx = buildStoryContext();
+  var prompt;
+
+  if (action === 'generate') {
+    prompt = 'You are a creative fiction writer. Using the story notes below, write a compelling narrative opening for "Life of Bon" — approximately 600–1000 words. Stay faithful to the established characters, world, and tone. Write in a vivid, immersive style.\n\n' + storyCtx;
+  } else if (action === 'continue') {
+    if (!copyContent) { showToast('Add some text to your Working Copy first.'); aiBtn.textContent = 'AI ▾'; aiBtn.disabled = false; return; }
+    prompt = 'Continue the story from where this passage ends. Write approximately 300 more words in the same style and voice. Keep it consistent with the story notes.\n\nStory notes:\n' + storyCtx + '\n\nPassage so far:\n' + copyContent.slice(-1500);
+  } else if (action === 'improve') {
+    if (!copyContent) { showToast('Add some text to your Working Copy first.'); aiBtn.textContent = 'AI ▾'; aiBtn.disabled = false; return; }
+    prompt = 'Rewrite the following passage to improve its pacing, clarity, and prose quality. Preserve all plot points, character moments, and key details. Return only the rewritten text, no commentary.\n\n' + copyContent.slice(-2000);
+  } else if (action === 'consistency') {
+    if (!copyContent) { showToast('Add some text to your Working Copy first.'); aiBtn.textContent = 'AI ▾'; aiBtn.disabled = false; return; }
+    prompt = 'Review this story passage against the story notes and identify any contradictions, inconsistencies, or details that conflict with established canon. List each issue clearly.\n\nStory notes:\n' + storyCtx + '\n\nPassage:\n' + copyContent.slice(-2000);
+  }
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await response.json();
+    var result = (data.content?.[0]?.text || '').trim();
+
+    if (writesToDraft.includes(action)) {
+      // Set as plain text (preserving line breaks) into the rich editor div
+      draftEditor.textContent = result;
+      localStorage.setItem('sf_writing_draft', draftEditor.innerHTML);
+      updateWritingWordCounts();
+      showToast('Draft updated!');
+    } else {
+      // Consistency check → show in result panel
+      aiResultBody.textContent = result;
+      aiResultEl.classList.remove('hidden');
+    }
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  }
+
+  aiBtn.textContent = 'AI ▾';
+  aiBtn.disabled = false;
+}
+
+
+// ============================================================
+// SECTION 16: CHARACTERS TAB
+// ─────────────────────────────────────────────────────────────
+// What it does: Displays character cards from the canvas as a
+// profile sheet with Enneagram type, role, goal, fear, arc.
+// AI can generate a profile from the card's story context.
+//
+// localStorage key:
+//   sf_character_profiles — { [cardId]: { role, enneagram, goal, fear, arc, notes } }
+// ============================================================
+
+var characterProfiles = {};
+var selectedCharacterId = null;
+
+try {
+  characterProfiles = JSON.parse(localStorage.getItem('sf_character_profiles') || '{}');
+} catch(e) { characterProfiles = {}; }
+
+function saveCharacterProfiles() {
+  localStorage.setItem('sf_character_profiles', JSON.stringify(characterProfiles));
+}
+
+// groupCharactersByName: groups character cards that share the same root name.
+// "Bon", "Bon - Child", "Young Bon" all map to root "bon".
+// Returns an array of groups: [{ rootName, cards[] }] sorted by group size desc.
+function groupCharactersByName(characterCards) {
+  // Extract the shortest meaningful token from a title
+  function rootName(title) {
+    return title.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')   // strip punctuation
+      .trim()
+      .split(/\s+/)
+      .filter(function(w) { return w.length > 1; }) // skip single letters
+      [0] || title.toLowerCase();     // fallback: first word
+  }
+
+  var groups = {}; // rootName → card[]
+  characterCards.forEach(function(card) {
+    var root = rootName(card.title);
+    if (!groups[root]) groups[root] = [];
+    groups[root].push(card);
+  });
+
+  // Convert to array; single-card groups stay as groups for uniform rendering
+  return Object.keys(groups).map(function(root) {
+    return { rootName: root, cards: groups[root] };
+  }).sort(function(a, b) {
+    // Groups with more cards first, then alphabetical
+    if (b.cards.length !== a.cards.length) return b.cards.length - a.cards.length;
+    return a.rootName.localeCompare(b.rootName);
+  });
+}
+
+function renderCharacterSidebar() {
+  var characterCards = cards.filter(function(c) { return c.type === 'character' && c.status !== 'archived'; });
+  var listEl = document.getElementById('charList');
+  var countEl = document.getElementById('charCount');
+  if (!listEl) return;
+
+  countEl.textContent = characterCards.length;
+  listEl.innerHTML = '';
+
+  if (characterCards.length === 0) {
+    listEl.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:var(--text-light)">No character cards yet.</div>';
+    return;
+  }
+
+  var groups = groupCharactersByName(characterCards);
+
+  groups.forEach(function(group) {
+    if (group.cards.length === 1) {
+      // Single card — render as before
+      var card = group.cards[0];
+      var item = document.createElement('div');
+      item.className = 'char-list-item' + (card.id === selectedCharacterId ? ' active' : '');
+      item.innerHTML = '<span class="char-list-dot"></span>' + escapeHtml(card.title);
+      item.addEventListener('click', function() { selectCharacter(card.id); });
+      listEl.appendChild(item);
+    } else {
+      // Multi-card group — render a header + nested items
+      var groupHeader = document.createElement('div');
+      groupHeader.className = 'char-group-header';
+      // Capitalize root name for display
+      var displayName = group.rootName.charAt(0).toUpperCase() + group.rootName.slice(1);
+      var anyActive = group.cards.some(function(c) { return c.id === selectedCharacterId; });
+      groupHeader.innerHTML =
+        '<span class="char-list-dot"></span>' +
+        '<span class="char-group-name">' + escapeHtml(displayName) + '</span>' +
+        '<span class="char-group-badge">' + group.cards.length + '</span>';
+      if (anyActive) groupHeader.classList.add('active');
+      listEl.appendChild(groupHeader);
+
+      // Nested cards under the group
+      group.cards.forEach(function(card) {
+        var item = document.createElement('div');
+        item.className = 'char-list-item char-list-item-nested' + (card.id === selectedCharacterId ? ' active' : '');
+        item.innerHTML = '<span class="char-list-dot" style="width:5px;height:5px;margin-left:14px"></span>' + escapeHtml(card.title);
+        item.addEventListener('click', function() { selectCharacter(card.id); });
+        listEl.appendChild(item);
+      });
+    }
+  });
+}
+
+function selectCharacter(cardId) {
+  selectedCharacterId = cardId;
+  renderCharacterSidebar();
+  renderCharacterProfile(cardId);
+}
+
+function renderCharacterProfile(cardId) {
+  var card = cards.find(function(c) { return c.id === cardId; });
+  var emptyState = document.getElementById('charEmptyState');
+  var profileEl  = document.getElementById('charProfile');
+  if (!card) { emptyState.classList.remove('hidden'); profileEl.classList.add('hidden'); return; }
+
+  emptyState.classList.add('hidden');
+  profileEl.classList.remove('hidden');
+
+  var profile = characterProfiles[cardId] || {};
+
+  profileEl.innerHTML =
+    '<div class="char-profile-header">' +
+      '<div>' +
+        '<div class="char-profile-name">' + escapeHtml(card.title) + '</div>' +
+        '<div class="char-profile-summary">' + escapeHtml(card.content || '') + '</div>' +
+      '</div>' +
+      '<button class="btn-gen-profile" id="genProfileBtn">✦ Generate Profile</button>' +
+    '</div>' +
+
+    '<div class="char-section-title">Role & Identity</div>' +
+
+    '<div class="char-field-group">' +
+      '<label class="char-field-label">Role in Story</label>' +
+      '<select class="char-field-select" data-field="role">' +
+        '<option value="">— select —</option>' +
+        ['Protagonist','Antagonist','Supporting','Mentor','Unknown'].map(function(r) {
+          return '<option value="' + r + '"' + (profile.role === r ? ' selected' : '') + '>' + r + '</option>';
+        }).join('') +
+      '</select>' +
+    '</div>' +
+
+    '<div class="char-field-group">' +
+      '<label class="char-field-label">Enneagram Type</label>' +
+      '<select class="char-field-select" data-field="enneagram" id="enneagramSelect">' +
+        '<option value="">— select —</option>' +
+        ENNEAGRAM_TYPES.map(function(t) {
+          return '<option value="' + t.id + '"' + (String(profile.enneagram) === String(t.id) ? ' selected' : '') + '>' + t.id + ' · ' + t.name + '</option>';
+        }).join('') +
+      '</select>' +
+      '<div class="enneagram-info hidden" id="enneagramInfo"></div>' +
+    '</div>' +
+
+    '<div class="char-section-title">Psychology</div>' +
+
+    '<div class="char-field-group">' +
+      '<label class="char-field-label">Core Goal</label>' +
+      '<textarea class="char-field-textarea" data-field="goal" rows="2">' + escapeHtml(profile.goal || '') + '</textarea>' +
+    '</div>' +
+    '<div class="char-field-group">' +
+      '<label class="char-field-label">Core Fear</label>' +
+      '<textarea class="char-field-textarea" data-field="fear" rows="2">' + escapeHtml(profile.fear || '') + '</textarea>' +
+    '</div>' +
+    '<div class="char-field-group">' +
+      '<label class="char-field-label">Character Arc</label>' +
+      '<textarea class="char-field-textarea" data-field="arc" rows="3">' + escapeHtml(profile.arc || '') + '</textarea>' +
+    '</div>' +
+    '<div class="char-field-group">' +
+      '<label class="char-field-label">Notes</label>' +
+      '<textarea class="char-field-textarea" data-field="notes" rows="3">' + escapeHtml(profile.notes || '') + '</textarea>' +
+    '</div>';
+
+  // Related cards section — show sibling cards that share the same root name
+  var allCharCards = cards.filter(function(c) { return c.type === 'character' && c.status !== 'archived'; });
+  var groups = groupCharactersByName(allCharCards);
+  var myGroup = groups.find(function(g) { return g.cards.some(function(c) { return c.id === cardId; }); });
+  var siblings = myGroup ? myGroup.cards.filter(function(c) { return c.id !== cardId; }) : [];
+
+  if (siblings.length > 0) {
+    profileEl.innerHTML +=
+      '<div class="char-section-title">Related Cards (' + siblings.length + ')</div>' +
+      '<div class="char-related-cards">' +
+      siblings.map(function(sib) {
+        return '<div class="char-related-card" data-id="' + sib.id + '">' +
+          '<div class="char-related-title">' + escapeHtml(sib.title) + '</div>' +
+          '<div class="char-related-content">' + escapeHtml(sib.content || '') + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>';
+
+    // Clicking a related card opens it
+    profileEl.querySelectorAll('.char-related-card').forEach(function(el) {
+      el.addEventListener('click', function() { selectCharacter(el.getAttribute('data-id')); });
+    });
+  }
+
+  // Show enneagram info if type already selected
+  if (profile.enneagram) showEnneagramInfo(profile.enneagram);
+
+  // Save on change for all fields
+  profileEl.querySelectorAll('[data-field]').forEach(function(el) {
+    el.addEventListener('change', function() { saveProfileField(cardId, el.getAttribute('data-field'), el.value); });
+    if (el.tagName === 'TEXTAREA') el.addEventListener('input', function() { saveProfileField(cardId, el.getAttribute('data-field'), el.value); });
+  });
+
+  // Enneagram info card
+  document.getElementById('enneagramSelect').addEventListener('change', function() {
+    saveProfileField(cardId, 'enneagram', this.value);
+    showEnneagramInfo(this.value);
+  });
+
+  // Generate profile button
+  document.getElementById('genProfileBtn').addEventListener('click', function() {
+    generateCharacterProfile(cardId);
+  });
+}
+
+function saveProfileField(cardId, field, value) {
+  if (!characterProfiles[cardId]) characterProfiles[cardId] = {};
+  characterProfiles[cardId][field] = value;
+  saveCharacterProfiles();
+}
+
+function showEnneagramInfo(typeId) {
+  var infoEl = document.getElementById('enneagramInfo');
+  if (!infoEl) return;
+  var type = ENNEAGRAM_TYPES.find(function(t) { return String(t.id) === String(typeId); });
+  if (!type) { infoEl.classList.add('hidden'); return; }
+
+  infoEl.classList.remove('hidden');
+  infoEl.innerHTML =
+    '<div class="enneagram-info-name">' + type.id + ' · ' + type.name + '</div>' +
+    '<div class="enneagram-info-row"><span class="enneagram-info-row-label">Core Desire:</span><span class="enneagram-info-row-val">' + escapeHtml(type.coreDesire) + '</span></div>' +
+    '<div class="enneagram-info-row"><span class="enneagram-info-row-label">Core Fear:</span><span class="enneagram-info-row-val">' + escapeHtml(type.coreFear) + '</span></div>' +
+    '<div class="enneagram-traits">' +
+      type.keyTraits.map(function(t) { return '<span class="enneagram-trait">' + escapeHtml(t) + '</span>'; }).join('') +
+    '</div>';
+}
+
+async function generateCharacterProfile(cardId) {
+  var key = apiKey || localStorage.getItem('sf_api_key') || '';
+  if (!key) { showToast('⚠️ Set your API key first.'); return; }
+
+  var card = cards.find(function(c) { return c.id === cardId; });
+  if (!card) return;
+
+  var btn = document.getElementById('genProfileBtn');
+  btn.textContent = '⏳ Generating…';
+  btn.disabled = true;
+
+  var existing = characterProfiles[cardId] || {};
+  var storyCtx = buildStoryContext();
+
+  var prompt =
+    'Based on this character and story context, suggest values for any EMPTY fields below. ' +
+    'Return ONLY a valid JSON object with keys: "role", "enneagram" (number 1–9), "goal", "fear", "arc". ' +
+    'Only include keys for fields that are currently empty (do not overwrite existing content). ' +
+    'Empty fields: ' + Object.keys({role:1,enneagram:1,goal:1,fear:1,arc:1}).filter(function(k) { return !existing[k]; }).join(', ') + '\n\n' +
+    'Character: ' + card.title + '\n' + card.content + '\n\n' +
+    'Story context:\n' + storyCtx;
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+    });
+    var data = await response.json();
+    var raw = (data.content?.[0]?.text || '').trim();
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    var suggestions = JSON.parse(raw);
+
+    if (!characterProfiles[cardId]) characterProfiles[cardId] = {};
+    Object.keys(suggestions).forEach(function(k) {
+      if (!characterProfiles[cardId][k]) {
+        characterProfiles[cardId][k] = suggestions[k];
+      }
+    });
+    saveCharacterProfiles();
+    renderCharacterProfile(cardId);
+    showToast('Profile generated!');
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  }
+}
+
+// Hook into tab switching to render the character sidebar when Characters tab opens
+(function() {
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = btn.getAttribute('data-tab');
+      if (tab === 'characters') {
+        renderCharacterSidebar();
+        if (selectedCharacterId) renderCharacterProfile(selectedCharacterId);
+      }
+      if (tab === 'arcs') {
+        renderArcsTab();
+      }
+    });
+  });
+})();
+
+
+// ============================================================
+// SECTION 17: ARCS & TIMELINE TAB
+// ─────────────────────────────────────────────────────────────
+// What it does: Shows arc cards as a horizontal timeline strip.
+// Offers a 36 Dramatic Situations grid and 8-Sequence structure
+// as brainstorming tools. AI "Generate 3 Ideas" button suggests
+// next story directions based on current arcs + story context.
+//
+// localStorage key:
+//   sf_arc_sequence_map — { [sequenceNumber]: [arcCardId, ...] }
+// ============================================================
+
+var arcSequenceMap = {};
+var selectedSituationId = null;
+
+// User-defined arc order for the timeline strip (array of arc card IDs)
+var arcOrder = [];
+try { arcOrder = JSON.parse(localStorage.getItem('sf_arc_order') || '[]'); } catch(e) { arcOrder = []; }
+function saveArcOrder() { localStorage.setItem('sf_arc_order', JSON.stringify(arcOrder)); }
+
+// User-defined situation display order (array of situation IDs 1–36)
+var situationOrder = [];
+try { situationOrder = JSON.parse(localStorage.getItem('sf_situation_order') || '[]'); } catch(e) { situationOrder = []; }
+function saveSituationOrder() { localStorage.setItem('sf_situation_order', JSON.stringify(situationOrder)); }
+
+try {
+  arcSequenceMap = JSON.parse(localStorage.getItem('sf_arc_sequence_map') || '{}');
+} catch(e) { arcSequenceMap = {}; }
+
+function saveArcSequenceMap() {
+  localStorage.setItem('sf_arc_sequence_map', JSON.stringify(arcSequenceMap));
+}
+
+function renderArcsTab() {
+  renderArcsTimeline();
+  renderDramaticSituations();
+  renderEightSequences();
+}
+
+function renderArcsTimeline() {
+  var allArcCards = cards.filter(function(c) { return c.type === 'arc' && c.status !== 'archived'; });
+  var strip   = document.getElementById('arcsTimeline');
+  var emptyEl = document.getElementById('arcTimelineEmpty');
+  var countEl = document.getElementById('arcCount');
+  if (!strip) return;
+
+  countEl.textContent = allArcCards.length + (allArcCards.length === 1 ? ' arc' : ' arcs');
+
+  // Clear non-empty elements
+  Array.from(strip.children).forEach(function(child) {
+    if (!child.classList.contains('arc-timeline-empty')) child.remove();
+  });
+
+  if (allArcCards.length === 0) {
+    emptyEl.style.display = 'flex';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  // Sort arc cards by user-defined arcOrder; any unlisted cards append at end
+  var arcIds = allArcCards.map(function(c) { return c.id; });
+  var orderedIds = arcOrder.filter(function(id) { return arcIds.includes(id); });
+  arcIds.forEach(function(id) { if (!orderedIds.includes(id)) orderedIds.push(id); });
+  var arcCards = orderedIds.map(function(id) { return allArcCards.find(function(c) { return c.id === id; }); }).filter(Boolean);
+
+  arcCards.forEach(function(card, i) {
+    var node = document.createElement('div');
+    node.className = 'arc-node';
+    node.dataset.id = card.id;
+
+    node.innerHTML =
+      '<div class="arc-node-toolbar">' +
+        '<button class="arc-node-move" data-dir="left" data-id="' + card.id + '" title="Move left">‹</button>' +
+        '<button class="arc-node-edit" data-id="' + card.id + '" title="Edit">✎</button>' +
+        '<button class="arc-node-move" data-dir="right" data-id="' + card.id + '" title="Move right">›</button>' +
+      '</div>' +
+      '<div class="arc-node-num">Arc ' + (i + 1) + '</div>' +
+      '<div class="arc-node-title" data-id="' + card.id + '">' + escapeHtml(card.title) + '</div>' +
+      '<div class="arc-node-excerpt" data-id="' + card.id + '">' + escapeHtml((card.content || '').slice(0, 80)) + '</div>';
+
+    strip.appendChild(node);
+  });
+
+  // Move left/right buttons
+  strip.querySelectorAll('.arc-node-move').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var id  = btn.getAttribute('data-id');
+      var dir = btn.getAttribute('data-dir');
+      var allIds = allArcCards.map(function(c) { return c.id; });
+      var order  = arcOrder.filter(function(x) { return allIds.includes(x); });
+      allIds.forEach(function(x) { if (!order.includes(x)) order.push(x); });
+      var idx = order.indexOf(id);
+      if (idx < 0) return;
+      var newIdx = dir === 'left' ? idx - 1 : idx + 1;
+      if (newIdx < 0 || newIdx >= order.length) return;
+      order.splice(idx, 1);
+      order.splice(newIdx, 0, id);
+      arcOrder = order;
+      saveArcOrder();
+      renderArcsTimeline();
+    });
+  });
+
+  // Edit button — makes title and excerpt contenteditable temporarily
+  strip.querySelectorAll('.arc-node-edit').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var id   = btn.getAttribute('data-id');
+      var node = strip.querySelector('.arc-node[data-id="' + id + '"]');
+      var titleEl   = node.querySelector('.arc-node-title');
+      var excerptEl = node.querySelector('.arc-node-excerpt');
+      var card = cards.find(function(c) { return c.id === id; });
+      if (!card || titleEl.contentEditable === 'true') return; // already editing
+
+      // Switch to edit mode
+      titleEl.contentEditable = 'true';
+      excerptEl.contentEditable = 'true';
+      titleEl.style.outline = '1px solid var(--accent)';
+      excerptEl.style.outline = '1px solid var(--border)';
+      excerptEl.style.webkitLineClamp = 'unset'; // show full text while editing
+      titleEl.focus();
+      btn.textContent = '✓';
+
+      function saveEdit() {
+        var newTitle   = titleEl.textContent.trim();
+        var newContent = excerptEl.textContent.trim();
+        if (newTitle) card.title = newTitle;
+        if (newContent) card.content = newContent;
+        saveCards();
+        titleEl.contentEditable = 'false';
+        excerptEl.contentEditable = 'false';
+        titleEl.style.outline = '';
+        excerptEl.style.outline = '';
+        excerptEl.style.webkitLineClamp = '';
+        btn.textContent = '✎';
+        renderArcsTimeline(); // re-render to sync changes
+      }
+
+      btn.onclick = function(ev) { ev.stopPropagation(); saveEdit(); };
+      titleEl.addEventListener('blur', saveEdit, { once: true });
+    });
+  });
+}
+
+function renderDramaticSituations() {
+  var container = document.getElementById('brainstormSituations');
+  if (!container) return;
+  // Always re-render (so reordering is reflected)
+  container.innerHTML = '';
+
+  // Build ordered list of situations
+  var allIds = DRAMATIC_SITUATIONS.map(function(s) { return s.id; });
+  var order  = situationOrder.filter(function(id) { return allIds.includes(id); });
+  allIds.forEach(function(id) { if (!order.includes(id)) order.push(id); });
+  var orderedSits = order.map(function(id) { return DRAMATIC_SITUATIONS.find(function(s) { return s.id === id; }); }).filter(Boolean);
+
+  var grid = document.createElement('div');
+  grid.className = 'situations-grid';
+
+  orderedSits.forEach(function(sit) {
+    var card = document.createElement('div');
+    card.className = 'situation-card' + (selectedSituationId === sit.id ? ' selected' : '');
+    card.dataset.sitId = sit.id;
+    card.innerHTML =
+      '<div class="sit-reorder">' +
+        '<button class="sit-move-btn" data-dir="up" data-id="' + sit.id + '" title="Move up">▲</button>' +
+        '<button class="sit-move-btn" data-dir="down" data-id="' + sit.id + '" title="Move down">▼</button>' +
+      '</div>' +
+      '<div class="situation-num">' + sit.id + '</div>' +
+      '<div class="situation-name">' + escapeHtml(sit.name) + '</div>';
+
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.sit-reorder')) return; // don't select when clicking move btns
+      toggleSituation(sit.id);
+    });
+    grid.appendChild(card);
+  });
+
+  container.appendChild(grid);
+
+  // Wire up move buttons
+  grid.querySelectorAll('.sit-move-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var id  = Number(btn.getAttribute('data-id'));
+      var dir = btn.getAttribute('data-dir');
+      var order2 = situationOrder.filter(function(x) { return allIds.includes(x); });
+      allIds.forEach(function(x) { if (!order2.includes(x)) order2.push(x); });
+      var idx = order2.indexOf(id);
+      if (idx < 0) return;
+      var newIdx = dir === 'up' ? idx - 1 : idx + 1;
+      if (newIdx < 0 || newIdx >= order2.length) return;
+      order2.splice(idx, 1);
+      order2.splice(newIdx, 0, id);
+      situationOrder = order2;
+      saveSituationOrder();
+      renderDramaticSituations();
+    });
+  });
+
+  // Detail card (shows expanded description for selected situation)
+  var detail = document.createElement('div');
+  detail.className = 'situation-detail' + (selectedSituationId ? '' : ' hidden');
+  detail.id = 'situationDetail';
+  if (selectedSituationId) {
+    var sit = DRAMATIC_SITUATIONS.find(function(s) { return s.id === selectedSituationId; });
+    if (sit) {
+      detail.innerHTML =
+        '<div class="situation-detail-text"><strong>' + sit.id + '. ' + escapeHtml(sit.name) + '</strong> — ' + escapeHtml(sit.description) + '</div>' +
+        '<button class="btn-use-situation" id="useSituationBtn">Use in Ideas →</button>';
+    }
+  }
+  container.appendChild(detail);
+
+  if (selectedSituationId) {
+    var usBtn = document.getElementById('useSituationBtn');
+    if (usBtn) {
+      var sit = DRAMATIC_SITUATIONS.find(function(s) { return s.id === selectedSituationId; });
+      if (sit) usBtn.addEventListener('click', function() { setSelectedSituationInGenerator(sit); });
+    }
+  }
+}
+
+function toggleSituation(id) {
+  var allCards = document.querySelectorAll('.situation-card');
+  var detail   = document.getElementById('situationDetail');
+  var sit = DRAMATIC_SITUATIONS.find(function(s) { return s.id === id; });
+
+  if (selectedSituationId === id) {
+    // Deselect
+    selectedSituationId = null;
+    allCards.forEach(function(c) { c.classList.remove('selected'); });
+    detail.classList.add('hidden');
+    clearSelectedSituation();
+    return;
+  }
+
+  selectedSituationId = id;
+  allCards.forEach(function(c) {
+    c.classList.toggle('selected', Number(c.dataset.sitId) === id);
+  });
+
+  detail.classList.remove('hidden');
+  detail.innerHTML =
+    '<div class="situation-detail-text"><strong>' + sit.id + '. ' + escapeHtml(sit.name) + '</strong> — ' + escapeHtml(sit.description) + '</div>' +
+    '<button class="btn-use-situation" id="useSituationBtn">Use in Ideas →</button>';
+
+  document.getElementById('useSituationBtn').addEventListener('click', function() {
+    setSelectedSituationInGenerator(sit);
+  });
+}
+
+function setSelectedSituationInGenerator(sit) {
+  var badge = document.getElementById('ideasSelectedSituation');
+  badge.classList.remove('hidden');
+  badge.innerHTML =
+    '<span>Using: <strong>' + sit.id + '. ' + escapeHtml(sit.name) + '</strong></span>' +
+    '<button class="btn-clear-situation" id="clearSituationBtn">✕</button>';
+  document.getElementById('clearSituationBtn').addEventListener('click', clearSelectedSituation);
+}
+
+function clearSelectedSituation() {
+  selectedSituationId = null;
+  var badge = document.getElementById('ideasSelectedSituation');
+  if (badge) badge.classList.add('hidden');
+  document.querySelectorAll('.situation-card').forEach(function(c) { c.classList.remove('selected'); });
+  var detail = document.getElementById('situationDetail');
+  if (detail) detail.classList.add('hidden');
+}
+
+function renderEightSequences() {
+  var container = document.getElementById('brainstormSequences');
+  if (!container || container.children.length > 0) return; // already rendered
+
+  // Map arcs button at top
+  var mapWrap = document.createElement('div');
+  mapWrap.className = 'sequence-map-btn-wrap';
+  mapWrap.innerHTML = '<button class="btn-map-arcs-sequences" id="mapArcsSequencesBtn">✦ Map My Arcs to Sequences</button>';
+  container.appendChild(mapWrap);
+
+  var list = document.createElement('div');
+  list.className = 'sequence-list';
+  list.id = 'sequenceList';
+
+  EIGHT_SEQUENCES.forEach(function(seq) {
+    var row = document.createElement('div');
+    row.className = 'sequence-row';
+    row.id = 'seq-row-' + seq.number;
+
+    var mappedArcIds = arcSequenceMap[seq.number] || [];
+    var mappedArcCards = mappedArcIds.map(function(id) { return cards.find(function(c) { return c.id === id; }); }).filter(Boolean);
+    var chipsHtml = mappedArcCards.length
+      ? mappedArcCards.map(function(c) { return '<span class="sequence-arc-chip">' + escapeHtml(c.title) + '</span>'; }).join('')
+      : '<span style="font-size:11px;color:var(--text-light)">No arcs mapped</span>';
+
+    row.innerHTML =
+      '<div class="sequence-row-header">' +
+        '<span class="sequence-num">Seq ' + seq.number + '</span>' +
+        '<span class="sequence-act-badge">' + seq.act + '</span>' +
+        '<span class="sequence-name">' + escapeHtml(seq.name) + '</span>' +
+      '</div>' +
+      '<div class="sequence-desc">' + escapeHtml(seq.description) + '</div>' +
+      '<div class="sequence-mapped-arcs">' + chipsHtml + '</div>';
+
+    list.appendChild(row);
+  });
+
+  container.appendChild(list);
+
+  document.getElementById('mapArcsSequencesBtn').addEventListener('click', mapArcsToSequences);
+}
+
+function refreshSequenceList() {
+  var container = document.getElementById('brainstormSequences');
+  if (!container) return;
+  // Clear and re-render
+  while (container.firstChild) container.removeChild(container.firstChild);
+  renderEightSequences();
+}
+
+async function mapArcsToSequences() {
+  var key = apiKey || localStorage.getItem('sf_api_key') || '';
+  if (!key) { showToast('⚠️ Set your API key first.'); return; }
+
+  var arcCards = cards.filter(function(c) { return c.type === 'arc' && c.status !== 'archived'; });
+  if (arcCards.length === 0) { showToast('No arc cards found.'); return; }
+
+  var btn = document.getElementById('mapArcsSequencesBtn');
+  btn.textContent = '⏳ Mapping…';
+  btn.disabled = true;
+
+  var arcList = arcCards.map(function(c) { return '[' + c.id + '] ' + c.title + ' — ' + (c.content || ''); }).join('\n');
+  var seqList = EIGHT_SEQUENCES.map(function(s) { return s.number + '. ' + s.name + ' (' + s.act + ')'; }).join('\n');
+
+  var prompt =
+    'Map each story arc to the most fitting 8-sequence slot.\n' +
+    'Return ONLY a JSON object where keys are sequence numbers (1–8) and values are arrays of arc IDs.\n' +
+    'Only include sequences that have matching arcs. Arc IDs must match exactly.\n\n' +
+    'Sequences:\n' + seqList + '\n\nArcs:\n' + arcList;
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+    });
+    var data = await response.json();
+    var raw = (data.content?.[0]?.text || '').trim();
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    var mapping = JSON.parse(raw);
+    arcSequenceMap = {};
+    Object.keys(mapping).forEach(function(k) {
+      if (Array.isArray(mapping[k])) arcSequenceMap[k] = mapping[k];
+    });
+    saveArcSequenceMap();
+    refreshSequenceList();
+    showToast('Arcs mapped to sequences!');
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  }
+  btn.textContent = '✦ Map My Arcs to Sequences';
+  btn.disabled = false;
+}
+
+// Brainstorm subtab switching
+document.getElementById('panel-arcs').addEventListener('click', function(e) {
+  var tabBtn = e.target.closest('.brainstorm-tab');
+  if (!tabBtn) return;
+  var targetTab = tabBtn.getAttribute('data-btab');
+  document.querySelectorAll('.brainstorm-tab').forEach(function(b) { b.classList.remove('active'); });
+  tabBtn.classList.add('active');
+  document.getElementById('brainstormSituations').classList.toggle('hidden', targetTab !== 'situations');
+  document.getElementById('brainstormSequences').classList.toggle('hidden', targetTab !== 'sequences');
+});
+
+// Map arcs button (bottom ideas section)
+document.getElementById('mapArcsBtn').addEventListener('click', mapArcsToSequences);
+
+// Ideas generator
+document.getElementById('generateIdeasBtn').addEventListener('click', generateStoryIdeas);
+
+async function generateStoryIdeas() {
+  var key = apiKey || localStorage.getItem('sf_api_key') || '';
+  if (!key) { showToast('⚠️ Set your API key first.'); return; }
+
+  var btn       = document.getElementById('generateIdeasBtn');
+  var resultEl  = document.getElementById('ideasResult');
+  var contextNote = document.getElementById('ideasContext').value.trim();
+  var sit = selectedSituationId ? DRAMATIC_SITUATIONS.find(function(s) { return s.id === selectedSituationId; }) : null;
+
+  btn.textContent = '⏳ Generating…';
+  btn.disabled = true;
+  resultEl.classList.add('hidden');
+
+  var storyCtx = buildStoryContext();
+  var arcCards = cards.filter(function(c) { return c.type === 'arc' && c.status !== 'archived'; });
+  var arcSummary = arcCards.length
+    ? 'Current arcs:\n' + arcCards.map(function(c) { return '- ' + c.title + ': ' + (c.content || ''); }).join('\n')
+    : 'No arc cards yet.';
+
+  var sitNote = sit ? '\n\nFocus the ideas around this dramatic situation: ' + sit.id + '. ' + sit.name + ' — ' + sit.description : '';
+  var directionNote = contextNote ? '\n\nUser direction: ' + contextNote : '';
+
+  var prompt =
+    'You are a story development assistant for an isekai/anime story called "Life of Bon".\n' +
+    'Based on the story so far, generate exactly 3 distinct "What if..." story ideas for what could happen next.\n' +
+    'Each idea should be 2–3 sentences. Number them 1, 2, 3. Make them varied and interesting.\n\n' +
+    storyCtx + '\n\n' + arcSummary + sitNote + directionNote;
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+    });
+    var data = await response.json();
+    var result = (data.content?.[0]?.text || '').trim();
+    resultEl.textContent = result;
+    resultEl.classList.remove('hidden');
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  }
+  btn.textContent = 'Generate 3 Ideas ▶';
+  btn.disabled = false;
+}
+
+
+// ============================================================
 // INITIALIZE — runs when the page first loads
 // ============================================================
 renderCards();
+renderHomePage();
+renderArchivePanel();
 initApiKeyUx(); // async: loads key from file → localStorage → shows banner if missing

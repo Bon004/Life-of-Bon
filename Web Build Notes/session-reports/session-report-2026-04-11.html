@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Report — 2026-04-11 · StoryForge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f17;
+      --surface:    #131620;
+      --surface-2:  #181c2a;
+      --border:     #1e2338;
+      --border-2:   #262b42;
+      --text:       #dde3f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4e5670;
+      --accent:     #60a5fa;
+      --accent-dim: #122140;
+      --green:      #34d399;
+      --green-dim:  #0d3327;
+      --amber:      #fbbf24;
+      --amber-dim:  #3a2a08;
+      --red:        #f87171;
+      --red-dim:    #3a1212;
+      --purple:     #c084fc;
+      --purple-dim: #2d1a4a;
+      --mono:       'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 20px;
+      margin-bottom: 40px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.02em;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    .meta-item { font-size: 12.5px; color: var(--text-muted); }
+    .meta-item strong { color: var(--text); font-weight: 500; }
+    .meta-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      padding: 4px 12px; border-radius: 20px;
+      color: var(--accent); background: var(--accent-dim);
+      border: 1px solid rgba(96,165,250,.25);
+    }
+
+    /* ── Section headers ────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 44px 0 16px;
+    }
+    .section-header h2 {
+      font-size: 13px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted); white-space: nowrap;
+    }
+    .section-header::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Feature cards (what we built) ──────────── */
+    .feature-block {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .feature-card-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 26px; height: 26px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .feature-card-title { font-size: 15px; font-weight: 600; color: #fff; }
+    .feature-card-body { padding: 16px 20px; }
+
+    .detail-intro { font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px; }
+
+    .sub-feature { margin-bottom: 14px; }
+    .sub-feature-title {
+      font-size: 12.5px; font-weight: 600; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .bullet-list li {
+      font-size: 13px; color: var(--text-muted);
+      padding-left: 14px; position: relative;
+    }
+    .bullet-list li::before {
+      content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+    }
+
+    code {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px; color: var(--text);
+    }
+
+    /* ── Tables ─────────────────────────────────── */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      font-size: 13.5px;
+    }
+    .data-table thead tr {
+      background: var(--surface-2);
+    }
+    .data-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 16px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--text); font-weight: 500; }
+    .data-table td code { font-size: 11px; }
+
+    /* ── Pending cards ──────────────────────────── */
+    .pending-block { display: flex; flex-direction: column; gap: 10px; }
+    .pending-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .pending-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-top: 6px; flex-shrink: 0;
+    }
+    .pending-dot.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+    .pending-dot.blue  { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .pending-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .pending-desc  { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Risk cards ─────────────────────────────── */
+    .risk-block { display: flex; flex-direction: column; gap: 10px; }
+    .risk-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0; padding: 12px 16px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+
+    /* ── Next steps ─────────────────────────────── */
+    .next-block { display: flex; flex-direction: column; gap: 10px; }
+    .next-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .next-num {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .next-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+    .next-sub {
+      list-style: none; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;
+    }
+    .next-sub li {
+      font-size: 12.5px; color: var(--text-dim);
+      padding-left: 12px; position: relative;
+    }
+    .next-sub li::before { content: '→'; position: absolute; left: 0; color: var(--text-dim); }
+
+    /* ── Footer ─────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">Session Report · StoryForge / Life of Bon</div>
+    <h1>2026-04-11</h1>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Focus:</strong> Implementing three placeholder tabs as full working features</div>
+      <div class="meta-badge">3 tabs shipped</div>
+    </div>
+  </div>
+
+  <!-- What We Worked On -->
+  <div class="section-header"><h2>What We Built</h2></div>
+  <div class="feature-block">
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">1</div>
+        <div class="feature-card-title">Writing Tab</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">A Word-style writing environment with two clearly separated panes — one for the official story, one for AI-assisted exploration.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Panes &amp; Layout</div>
+          <ul class="bullet-list">
+            <li><strong>Working Copy</strong> — the canonical, official version of the story (left, 60%)</li>
+            <li><strong>Draft pane</strong> — AI-assisted scratchpad toggled by button (right, 40%)</li>
+            <li>"← Promote to Working Copy" button copies draft content over</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Features</div>
+          <ul class="bullet-list">
+            <li>Live word count on both panes</li>
+            <li>Auto-save to <code>localStorage</code> (<code>sf_writing_copy</code>, <code>sf_writing_draft</code>)</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">AI Actions (dropdown)</div>
+          <ul class="bullet-list">
+            <li><strong>Generate Draft from Notes</strong> — writes ~600–1200-word narrative from story cards → draft pane</li>
+            <li><strong>Continue Writing</strong> — appends ~300 words from current content → draft pane</li>
+            <li><strong>Improve This</strong> — rewrites working copy for clarity &amp; pacing → draft pane</li>
+            <li><strong>Check Story Consistency</strong> — flags contradictions with cards → collapsible result panel</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">2</div>
+        <div class="feature-card-title">Characters Tab</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">A profile workspace that pulls character cards from the Story Canvas and lets you build a full profile for each one.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Layout</div>
+          <ul class="bullet-list">
+            <li><strong>Sidebar (left)</strong> — scrollable list of all character-type cards; click to select</li>
+            <li><strong>Profile panel (right)</strong> — full profile sheet for the selected character</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Profile Fields</div>
+          <ul class="bullet-list">
+            <li>Role (dropdown: Protagonist / Antagonist / Supporting / Mentor / Unknown)</li>
+            <li>Enneagram Type 1–9 — auto-displays description card below (Core Desire, Core Fear, Key Traits)</li>
+            <li>Core Goal, Core Fear, Character Arc, Notes — all textareas</li>
+            <li>All fields auto-save on change to <code>sf_character_profiles</code></li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">AI Generate Profile</div>
+          <ul class="bullet-list">
+            <li>Fills only empty fields — never overwrites existing user content</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">3</div>
+        <div class="feature-card-title">Arcs &amp; Timeline Tab</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">A brainstorming and planning workspace for arc cards, dramatic structure, and AI-powered plot ideas.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Timeline Strip (top)</div>
+          <ul class="bullet-list">
+            <li>Horizontal scrollable row of arc cards as clickable nodes</li>
+            <li>Empty state shown when no arc cards exist</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Brainstorm Panel (middle)</div>
+          <ul class="bullet-list">
+            <li><strong>36 Dramatic Situations</strong> — 6-column grid; click to select + see description; feeds into Ideas Generator</li>
+            <li><strong>8-Sequence Structure</strong> — all 8 beats with descriptions + mapped arc cards; "Map My Arcs" AI button assigns arcs to slots</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">AI Ideas Generator (bottom)</div>
+          <ul class="bullet-list">
+            <li>Optional direction textarea + selected situation context</li>
+            <li>"Generate 3 Ideas ▶" → returns 3 numbered "What if..." plot directions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Decisions Made -->
+  <div class="section-header"><h2>Decisions Made</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Decision</th><th>Rationale</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Plan-first approach</td><td>User explicitly requested roadmap review before implementation began</td></tr>
+      <tr><td>Static data embedded in <code>app.js</code></td><td>CLAUDE.md prohibits new files; no framework needed for constant arrays</td></tr>
+      <tr><td>Idempotent render guards on Situations/Sequences grids</td><td>Prevents duplicate rendering when switching between brainstorm sub-tabs</td></tr>
+      <tr><td>AI Generate Profile fills empty fields only</td><td>Respects existing user work — never overwrites what the user has written</td></tr>
+      <tr><td>Working Copy / Draft distinction</td><td>Keeps the "official" writing separate from AI-assisted exploration</td></tr>
+      <tr><td>Event delegation on <code>#panel-arcs</code></td><td>Brainstorm tab buttons may not be in DOM until arcs panel is first activated</td></tr>
+    </tbody>
+  </table>
+
+  <!-- What Changed -->
+  <div class="section-header"><h2>What Changed</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>File</th><th>What Changed</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>app.js</code></td>
+        <td>+~750 lines: <code>ENNEAGRAM_TYPES</code>, <code>DRAMATIC_SITUATIONS</code>, <code>EIGHT_SEQUENCES</code> constants; Section 15 (Writing JS); Section 16 (Characters JS); Section 17 (Arcs JS)</td>
+      </tr>
+      <tr>
+        <td><code>index.html</code></td>
+        <td>Lines 168–192 replaced: three <code>.coming-soon</code> divs replaced with full HTML for Writing, Characters, and Arcs tabs</td>
+      </tr>
+      <tr>
+        <td><code>style.css</code></td>
+        <td>+~600 lines: all CSS for Writing, Characters, and Arcs tabs appended after existing styles</td>
+      </tr>
+      <tr>
+        <td><code>CLAUDE.md</code></td>
+        <td>4 new localStorage keys added: <code>sf_writing_copy</code>, <code>sf_writing_draft</code>, <code>sf_character_profiles</code>, <code>sf_arc_sequence_map</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pending -->
+  <div class="section-header"><h2>Still Pending</h2></div>
+  <div class="pending-block">
+    <div class="pending-item">
+      <div class="pending-dot amber"></div>
+      <div>
+        <div class="pending-title">Browser Testing</div>
+        <div class="pending-desc">No manual browser verification done yet. All three tabs need to be opened in Live Server and tested before building further on top of them.</div>
+      </div>
+    </div>
+    <div class="pending-item">
+      <div class="pending-dot blue"></div>
+      <div>
+        <div class="pending-title">Git Commit / Push</div>
+        <div class="pending-desc">User requested no GitHub commit this session. All changes are local only. Needs explicit user approval before pushing.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Known Risks -->
+  <div class="section-header"><h2>Known Risks &amp; Watch Points</h2></div>
+  <div class="risk-block">
+    <div class="risk-item">
+      <strong>Tab hook fragility</strong> — <code>renderCharacterSidebar()</code> and <code>renderArcsTab()</code> are called by hooks appended to existing <code>.tab-btn</code> click listeners. If tab-switching code is refactored, these hooks need to be reviewed.
+    </div>
+    <div class="risk-item">
+      <strong>AI profile JSON parsing</strong> — <code>generateCharacterProfile</code> parses a JSON response from Claude. If the model returns non-JSON, there is a <code>try/catch</code>, but the user will see a toast error rather than a graceful fallback.
+    </div>
+    <div class="risk-item">
+      <strong>Situations grid on iPad</strong> — The 36 Situations grid uses <code>grid-template-columns: repeat(6, 1fr)</code>. This will need responsive breakpoints for iPad (scheduled for Phase 4c).
+    </div>
+  </div>
+
+  <!-- Next Steps -->
+  <div class="section-header"><h2>Next Steps</h2></div>
+  <div class="next-block">
+    <div class="next-item">
+      <div class="next-num">1</div>
+      <div>
+        <div class="next-title">Browser-test all three new tabs in Live Server</div>
+        <ul class="next-sub">
+          <li>Writing tab: type text → word count updates → reload → content persists</li>
+          <li>Click "Show Draft ▶" → split pane appears → "← Promote" copies content</li>
+          <li>AI actions → all four produce output in the correct pane</li>
+          <li>Characters tab: click sidebar item → profile renders → Enneagram picker shows description</li>
+          <li>Arcs tab: timeline strip renders → 36 Situations grid → select one → generator uses it</li>
+        </ul>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">2</div>
+      <div><div class="next-title">Fix any bugs found during browser testing</div></div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">3</div>
+      <div><div class="next-title">Commit and push to GitHub (when user is ready)</div></div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">4</div>
+      <div><div class="next-title">Start Phase 4 — Homepage design polish (next roadmap priority)</div></div>
+    </div>
+  </div>
+
+  <div class="doc-footer">StoryForge · Session Report · 2026-04-11</div>
+
+</div>
+</body>
+</html>

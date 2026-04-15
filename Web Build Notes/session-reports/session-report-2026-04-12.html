@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Report — 2026-04-12 · StoryForge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f17;
+      --surface:    #131620;
+      --surface-2:  #181c2a;
+      --border:     #1e2338;
+      --border-2:   #262b42;
+      --text:       #dde3f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4e5670;
+      --accent:     #60a5fa;
+      --accent-dim: #122140;
+      --green:      #34d399;
+      --green-dim:  #0d3327;
+      --amber:      #fbbf24;
+      --amber-dim:  #3a2a08;
+      --red:        #f87171;
+      --red-dim:    #3a1212;
+      --purple:     #c084fc;
+      --purple-dim: #2d1a4a;
+      --mono:       'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 20px;
+      margin-bottom: 40px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.02em;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    .meta-item { font-size: 12.5px; color: var(--text-muted); }
+    .meta-item strong { color: var(--text); font-weight: 500; }
+    .meta-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      padding: 4px 12px; border-radius: 20px;
+      color: var(--accent); background: var(--accent-dim);
+      border: 1px solid rgba(96,165,250,.25);
+    }
+
+    /* ── Section headers ────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 44px 0 16px;
+    }
+    .section-header h2 {
+      font-size: 13px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted); white-space: nowrap;
+    }
+    .section-header::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Feature cards ──────────────────────────── */
+    .feature-block {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .feature-card-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 26px; height: 26px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .feature-card-title { font-size: 15px; font-weight: 600; color: #fff; }
+    .feature-card-body { padding: 16px 20px; }
+
+    .detail-intro { font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px; }
+
+    .sub-feature { margin-bottom: 14px; }
+    .sub-feature:last-child { margin-bottom: 0; }
+    .sub-feature-title {
+      font-size: 12.5px; font-weight: 600; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .bullet-list li {
+      font-size: 13px; color: var(--text-muted);
+      padding-left: 14px; position: relative;
+    }
+    .bullet-list li::before {
+      content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+    }
+
+    code {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px; color: var(--text);
+    }
+
+    /* ── Tables ─────────────────────────────────── */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      font-size: 13.5px;
+    }
+    .data-table thead tr { background: var(--surface-2); }
+    .data-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 16px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--text); font-weight: 500; }
+    .data-table td code { font-size: 11px; }
+
+    /* ── Risk cards ─────────────────────────────── */
+    .risk-block { display: flex; flex-direction: column; gap: 10px; }
+    .risk-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0; padding: 12px 16px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+
+    /* ── Next steps ─────────────────────────────── */
+    .next-block { display: flex; flex-direction: column; gap: 10px; }
+    .next-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .next-num {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .next-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+    .next-sub {
+      list-style: none; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;
+    }
+    .next-sub li {
+      font-size: 12.5px; color: var(--text-dim);
+      padding-left: 12px; position: relative;
+    }
+    .next-sub li::before { content: '→'; position: absolute; left: 0; color: var(--text-dim); }
+
+    /* ── Footer ─────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">Session Report · StoryForge / Life of Bon</div>
+    <h1>2026-04-12</h1>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Focus:</strong> UI &amp; behaviour overhaul — 7 interconnected improvements</div>
+      <div class="meta-badge">7 changes shipped</div>
+    </div>
+  </div>
+
+  <!-- What We Built -->
+  <div class="section-header"><h2>What We Built</h2></div>
+  <div class="feature-block">
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">1</div>
+        <div class="feature-card-title">FAB Button Overlap Fix</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">The "Ask Claude" floating action button was covering the last lines of scrollable content in every tab.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Fix</div>
+          <ul class="bullet-list">
+            <li>Added <code>padding-bottom: 80px</code> to <code>.col-cards</code>, <code>.writing-editor</code>, <code>.char-profile-panel</code>, <code>.char-list</code>, and <code>.brainstorm-panel</code></li>
+            <li>Merged into shorthand where existing padding was already set (e.g., <code>padding: 24px 32px 80px</code>)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">2</div>
+        <div class="feature-card-title">Archive Left Slide-in Panel</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Archived cards used to remain visible in board and map views with a faded style. They are now fully hidden and browseable in a dedicated left panel.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Behaviour Changes</div>
+          <ul class="bullet-list">
+            <li><code>renderCards()</code> and <code>renderMap()</code> now filter out cards where <code>status === 'archived'</code></li>
+            <li>Left slide-in panel (260px) lists archived cards grouped by type with a Restore button on each</li>
+            <li>Panel toggled via "📦 Archive" button in the header; overlay click closes it</li>
+            <li><code>renderArchivePanel()</code> called whenever cards are archived or restored</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Design</div>
+          <ul class="bullet-list">
+            <li><code>transform: translateX(-100%)</code> / <code>.open { transform: translateX(0) }</code> slide pattern (mirrors right chat panel)</li>
+            <li>Cards shown with type-colored left border and compact preview text</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">3</div>
+        <div class="feature-card-title">Home Page Tab</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">A proper landing screen shown on app load — replacing the previous behavior of dropping directly into Story Canvas.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Contents</div>
+          <ul class="bullet-list">
+            <li><strong>Hero:</strong> "StoryForge" title with gradient text (orange → white), subtitle "Your world. Your arcs. Your story."</li>
+            <li><strong>Stats chips:</strong> live card count, arc count, character count (glass-morphism style)</li>
+            <li><strong>Prominent CTA:</strong> "Get Started →" button navigates to Story Canvas (primary workspace)</li>
+            <li><strong>Nav tiles:</strong> 4 secondary buttons for Story Canvas, Writing, Characters, Arcs</li>
+            <li><strong>Recent cards strip:</strong> last 5 cards added as mini card previews</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Implementation</div>
+          <ul class="bullet-list">
+            <li>Home tab is first and active by default on load</li>
+            <li><code>renderHomePage()</code> called on load and after card changes to keep stats/recent strip live</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">4</div>
+        <div class="feature-card-title">Writing Tab — Rich Text Editor</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">The Working Copy textarea was replaced with a <code>contenteditable</code> div and a formatting toolbar.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Toolbar Buttons</div>
+          <ul class="bullet-list">
+            <li><strong>B</strong> (bold), <em>I</em> (italic), <u>U</u> (underline), H1, H2, bullet list, numbered list, HR divider, clear formatting</li>
+            <li>Uses <code>document.execCommand()</code> — intentional choice over Selection API for simplicity in plain-JS app</li>
+            <li><code>mousedown</code> + <code>e.preventDefault()</code> preserves editor focus before command runs</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Data Handling</div>
+          <ul class="bullet-list">
+            <li>Saved as <code>innerHTML</code> to <code>sf_writing_copy</code></li>
+            <li>AI actions receive <code>textContent</code> (plain text — no HTML noise in prompts)</li>
+            <li>Word count reads <code>.textContent</code> not <code>.value</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">5</div>
+        <div class="feature-card-title">Character Grouping by Name</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Multiple cards for the same character (e.g., "Bon", "Bon - Child", "Young Bon") are now grouped in the Characters sidebar.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Grouping Logic</div>
+          <ul class="bullet-list">
+            <li><code>groupCharactersByName()</code>: normalises titles, extracts first meaningful token as root name, groups cards that share a root</li>
+            <li>Groups with 2+ cards render as an expandable header with count badge</li>
+            <li>Single cards render as before</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Profile View</div>
+          <ul class="bullet-list">
+            <li>When a group is selected, the profile panel shows the shared profile form plus a "Related Cards" section listing all cards in the group</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">6</div>
+        <div class="feature-card-title">Arcs Tab — Timeline Editing &amp; 36 Situations Reorder</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Several interaction improvements to the Arcs &amp; Timeline tab.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Arc Timeline</div>
+          <ul class="bullet-list">
+            <li>Each arc node gets a ‹ ✎ › toolbar: left/right arrows reorder the timeline; ✎ enables inline title/content editing</li>
+            <li>Order saved to <code>sf_arc_order</code> (array of arc card IDs); persists on reload</li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Map Cards — Explicit Edit Button</div>
+          <ul class="bullet-list">
+            <li>✎ Edit button added to Story Canvas map card action bar</li>
+            <li>Click focuses the card's title <code>contenteditable</code> via <code>placeCaretAtEnd()</code></li>
+          </ul>
+        </div>
+        <div class="sub-feature">
+          <div class="sub-feature-title">36 Dramatic Situations</div>
+          <ul class="bullet-list">
+            <li>Switched from 6-column grid to 2-column scrollable list</li>
+            <li>▲▼ buttons on each situation card for reordering</li>
+            <li>Order saved to <code>sf_situation_order</code>; persists on reload</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">7</div>
+        <div class="feature-card-title">/insights Command Documented</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">The <code>/insights</code> Claude Code chat command was formally documented and moved to the right location.</p>
+        <div class="sub-feature">
+          <div class="sub-feature-title">Changes</div>
+          <ul class="bullet-list">
+            <li>Added <code>## Claude Code Commands</code> section to <code>CLAUDE.md</code> with the full 8-section <code>/insights</code> format</li>
+            <li>Deleted <code>memory/feedback_insights_command.md</code> (wrong location)</li>
+            <li><code>memory/MEMORY.md</code> updated with one-liner pointer to <code>CLAUDE.md</code></li>
+            <li><code>/insights</code> now generates two outputs: a session-specific report + updated full-project report</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Decisions Made -->
+  <div class="section-header"><h2>Decisions Made</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Decision</th><th>Rationale</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Left slide-in panel for archive</td><td>Mirrors existing chat panel pattern; keeps UI consistent without introducing a new design paradigm</td></tr>
+      <tr><td><code>document.execCommand()</code> for rich text</td><td>Deprecated but fully functional; Selection API alternative would add 200+ lines for no user-visible gain in a plain-JS personal app</td></tr>
+      <tr><td>Save writing as <code>innerHTML</code>, send to AI as <code>textContent</code></td><td>Preserves formatting locally; AI prompts stay clean with no HTML noise</td></tr>
+      <tr><td>Root-name grouping for characters</td><td>First meaningful token handles "Bon", "Bon - Child", "Young Bon" without requiring the user to tag or link cards manually</td></tr>
+      <tr><td>▲▼ buttons instead of drag for Situations reorder</td><td>Simpler to implement and verify; drag-and-drop on a 36-item grid is error-prone on desktop and unusable on touch without significant extra code</td></tr>
+      <tr><td><code>/insights</code> produces two files, not one</td><td>Session report = focused snapshot; full-project report = always up-to-date reference. Mixing them means neither is useful for its purpose.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- What Changed -->
+  <div class="section-header"><h2>What Changed</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>File</th><th>What Changed</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>index.html</code></td>
+        <td>Archive panel HTML + overlay; Home tab button (first, active by default); full Home panel HTML; writing format toolbar; replaced <code>&lt;textarea id="writingCopyEditor"&gt;</code> with <code>contenteditable</code> div; "📦 Archive" button in header</td>
+      </tr>
+      <tr>
+        <td><code>style.css</code></td>
+        <td>Padding fixes on all scrollable areas; archive panel slide-in styles; home page styles (hero, gradient title, stat chips, CTA, nav tiles, recent strip); writing format toolbar; <code>.rich-editor</code> with placeholder and typography; character group header + badge; arc node toolbar; map card edit button; 36 Situations 2-column list + reorder buttons</td>
+      </tr>
+      <tr>
+        <td><code>app.js</code></td>
+        <td><code>placeCaretAtEnd()</code> helper; <code>arcOrder</code> / <code>situationOrder</code> state + save functions; archive filter in <code>renderCards()</code> and <code>renderMap()</code>; <code>renderHomePage()</code>; <code>toggleArchivePanel()</code> / <code>renderArchivePanel()</code>; writing IIFE updated for <code>innerHTML</code> save/load; <code>groupCharactersByName()</code>; updated <code>renderCharacterSidebar()</code> and <code>renderCharacterProfile()</code>; arc timeline with order + ‹ ✎ › toolbar; 36 Situations always-re-render with ▲▼ buttons; map card ✎ edit button; <code>renderHomePage()</code> and <code>renderArchivePanel()</code> wired into tab-switch handler</td>
+      </tr>
+      <tr>
+        <td><code>CLAUDE.md</code></td>
+        <td>Updated "Card Status Field" section; added <code>## Claude Code Commands</code> with <code>/insights</code> format; added <code>sf_arc_order</code>, <code>sf_situation_order</code> to localStorage key reference; noted <code>sf_writing_copy</code> now stores HTML</td>
+      </tr>
+      <tr>
+        <td><code>memory/MEMORY.md</code></td>
+        <td>Replaced <code>/insights</code> memory file pointer with one-liner referencing CLAUDE.md</td>
+      </tr>
+      <tr>
+        <td><code>memory/feedback_insights_command.md</code></td>
+        <td>Deleted — content moved to CLAUDE.md</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Known Risks -->
+  <div class="section-header"><h2>Known Risks &amp; Watch Points</h2></div>
+  <div class="risk-block">
+    <div class="risk-item">
+      <strong>execCommand deprecation</strong> — Browsers still support it fully, but if a future Chromium update removes it, the rich text toolbar will silently stop working. No short-term risk; would need Selection API rewrite if it breaks.
+    </div>
+    <div class="risk-item">
+      <strong>Writing content migration</strong> — <code>sf_writing_copy</code> now stores HTML. If a user has plain text saved from before this session, it will load into the rich editor as plain text — which is harmless, but H1/H2/list formatting won't be present. No data loss risk.
+    </div>
+    <div class="risk-item">
+      <strong>Character group root-name collisions</strong> — Two unrelated characters whose names start with the same token (e.g., "Bon" the protagonist and a background character called "Bonwick") would be incorrectly grouped. Acceptable for now; can be refined with explicit "link cards" feature later.
+    </div>
+    <div class="risk-item">
+      <strong>Archive panel z-index on mobile</strong> — The archive panel is <code>z-index: 200</code> and the chat panel is similar. On narrow screens both could overlap if opened simultaneously. No toggle-both guard exists yet.
+    </div>
+  </div>
+
+  <!-- Next Steps -->
+  <div class="section-header"><h2>Next Steps</h2></div>
+  <div class="next-block">
+    <div class="next-item">
+      <div class="next-num">1</div>
+      <div>
+        <div class="next-title">Browser-test all 7 changes in Live Server</div>
+        <ul class="next-sub">
+          <li>Scroll to bottom of each tab — content should be fully visible above FAB</li>
+          <li>Archive a card → disappears from board/map → Archive panel shows it → Restore works</li>
+          <li>Home tab loads first; "Get Started →" navigates to Story Canvas; stats update after adding a card</li>
+          <li>Writing toolbar: bold/italic/H1 apply and persist on reload</li>
+          <li>Create 3 "Bon" cards → Characters sidebar shows "Bon (3)" group</li>
+          <li>‹ / › reorder arc nodes; ✎ enables editing; map card ✎ button focuses title</li>
+          <li>36 Situations ▲▼ reorder; order persists on reload</li>
+        </ul>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">2</div>
+      <div><div class="next-title">Fix any bugs found during browser testing</div></div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">3</div>
+      <div>
+        <div class="next-title">Phase 4b — Export / Import Data</div>
+        <ul class="next-sub">
+          <li>Download all cards as JSON; re-import with merge or replace</li>
+          <li>Data safety before adding more features</li>
+        </ul>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">4</div>
+      <div>
+        <div class="next-title">Phase 4c — iPad / Mobile Layout</div>
+        <ul class="next-sub">
+          <li>Responsive breakpoints, touch targets, single-pane writing on narrow screens</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-footer">StoryForge · Session Report · 2026-04-12</div>
+
+</div>
+</body>
+</html>
