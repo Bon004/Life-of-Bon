@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Report — 2026-04-15 · StoryForge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f17;
+      --surface:    #131620;
+      --surface-2:  #181c2a;
+      --border:     #1e2338;
+      --border-2:   #262b42;
+      --text:       #dde3f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4e5670;
+      --accent:     #60a5fa;
+      --accent-dim: #122140;
+      --green:      #34d399;
+      --green-dim:  #0d3327;
+      --amber:      #fbbf24;
+      --amber-dim:  #3a2a08;
+      --red:        #f87171;
+      --red-dim:    #3a1212;
+      --purple:     #c084fc;
+      --purple-dim: #2d1a4a;
+      --mono:       'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 20px;
+      margin-bottom: 40px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -.02em;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    .meta-item { font-size: 12.5px; color: var(--text-muted); }
+    .meta-item strong { color: var(--text); font-weight: 500; }
+    .meta-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      padding: 4px 12px; border-radius: 20px;
+      color: var(--accent); background: var(--accent-dim);
+      border: 1px solid rgba(96,165,250,.25);
+    }
+
+    /* ── Section headers ────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 44px 0 16px;
+    }
+    .section-header h2 {
+      font-size: 13px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted); white-space: nowrap;
+    }
+    .section-header::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Stats row ──────────────────────────────── */
+    .stats-row {
+      display: flex; gap: 32px; flex-wrap: wrap;
+      padding: 20px 0; margin-bottom: 8px;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-family: var(--mono); font-size: 22px; font-weight: 700; color: #fff; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-top: 4px; }
+
+    /* ── At-a-glance quad ───────────────────────── */
+    .glance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .glance-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .glance-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+    }
+    .glance-label.green { color: var(--green); }
+    .glance-label.amber { color: var(--amber); }
+    .glance-label.blue  { color: var(--accent); }
+    .glance-label.purple { color: var(--purple); }
+    .glance-text { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+
+    /* ── Tables ─────────────────────────────────── */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      font-size: 13.5px;
+    }
+    .data-table thead tr { background: var(--surface-2); }
+    .data-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 16px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--text); font-weight: 500; }
+    .count-badge {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    /* ── Feature cards ──────────────────────────── */
+    .feature-block { display: flex; flex-direction: column; gap: 12px; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .feature-card-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 26px; height: 26px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .feature-card-title { font-size: 15px; font-weight: 600; color: #fff; }
+    .feature-card-body { padding: 16px 20px; }
+    .detail-intro { font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.6; }
+    .sub-feature { margin-bottom: 14px; }
+    .sub-feature:last-child { margin-bottom: 0; }
+    .sub-feature-title { font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .bullet-list li {
+      font-size: 13px; color: var(--text-muted);
+      padding-left: 14px; position: relative;
+    }
+    .bullet-list li::before {
+      content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+    }
+
+    code {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px; color: var(--text);
+    }
+    pre {
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 10px 14px; border-radius: 6px; color: var(--text-muted);
+      overflow-x: auto; line-height: 1.6; margin-top: 8px;
+      white-space: pre-wrap;
+    }
+
+    /* ── Risk / amber cards ─────────────────────── */
+    .risk-block { display: flex; flex-direction: column; gap: 10px; }
+    .risk-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0; padding: 14px 18px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+    .risk-item strong { color: var(--text); display: block; margin-bottom: 4px; }
+    .risk-item ul { margin-top: 8px; }
+
+    /* ── Win cards ──────────────────────────────── */
+    .win-block { display: flex; flex-direction: column; gap: 10px; }
+    .win-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 0 8px 8px 0; padding: 14px 18px;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+    }
+    .win-card strong { color: var(--green); display: block; margin-bottom: 4px; }
+
+    /* ── Next steps / patterns ──────────────────── */
+    .next-block { display: flex; flex-direction: column; gap: 10px; }
+    .next-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .next-num {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      color: var(--accent); background: var(--accent-dim);
+      width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .next-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+    .next-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-bottom: 6px; }
+    .prompt-block {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px 12px; margin-top: 6px;
+    }
+    .prompt-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--text-dim); margin-bottom: 6px;
+    }
+    .prompt-block code {
+      font-size: 11.5px; color: var(--text-muted); background: none;
+      border: none; padding: 0; display: block; white-space: pre-wrap; line-height: 1.6;
+    }
+
+    /* ── Horizon cards ──────────────────────────── */
+    .horizon-block { display: flex; flex-direction: column; gap: 14px; }
+    .horizon-card {
+      background: linear-gradient(135deg, var(--purple-dim) 0%, var(--surface) 100%);
+      border: 1px solid rgba(192,132,252,.2);
+      border-radius: 10px; padding: 18px 20px;
+    }
+    .horizon-title { font-size: 15px; font-weight: 600; color: var(--purple); margin-bottom: 8px; }
+    .horizon-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+    .horizon-tip {
+      font-size: 12.5px; color: var(--text-dim);
+      background: rgba(255,255,255,.04); padding: 8px 12px; border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .horizon-tip strong { color: var(--purple); }
+
+    /* ── Highlight callout ──────────────────────── */
+    .highlight-card {
+      background: var(--surface-2); border: 1px solid var(--border-2);
+      border-radius: 10px; padding: 20px 24px;
+    }
+    .highlight-headline {
+      font-size: 16px; font-weight: 600; color: #fff;
+      margin-bottom: 10px; line-height: 1.4;
+    }
+    .highlight-detail { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Footer ─────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .glance-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">Session Report · StoryForge / Life of Bon</div>
+    <h1>2026-04-15 · Claude Code Usage Insights</h1>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Sessions analyzed:</strong> 6 of 15</div>
+      <div class="meta-item"><strong>Date range:</strong> 2026-04-07 to 2026-04-15</div>
+      <div class="meta-item"><strong>Messages:</strong> 32 &nbsp;·&nbsp; <strong>Hours:</strong> 26 &nbsp;·&nbsp; <strong>Commits:</strong> 2</div>
+      <div class="meta-badge">Usage Analytics</div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-value">32</div>
+      <div class="stat-label">Messages</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">26h</div>
+      <div class="stat-label">Duration</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">6</div>
+      <div class="stat-label">Sessions Analyzed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">15</div>
+      <div class="stat-label">Total Sessions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Commits</div>
+    </div>
+  </div>
+
+  <!-- At a Glance -->
+  <div class="section-header"><h2>At a Glance</h2></div>
+  <div class="glance-grid">
+    <div class="glance-card">
+      <div class="glance-label green">What's Working</div>
+      <div class="glance-text">You're blending real feature work on StoryForge with learning fundamentals like Git, and you ask smart clarifying questions about whether changes need committing. Your willingness to push back when Claude heads in the wrong direction—like with the broken buttons investigation—keeps debugging honest and gets to root causes faster.</div>
+    </div>
+    <div class="glance-card">
+      <div class="glance-label amber">What's Hindering</div>
+      <div class="glance-text">On Claude's side, it sometimes starts investigating bugs from the wrong assumption and has issued bash syntax that fails in PowerShell. On your side, several sessions were consumed entirely by /compact commands with no actual work, suggesting you're hitting context limits mid-task—and your shell environment isn't being communicated upfront, causing avoidable command failures.</div>
+    </div>
+    <div class="glance-card">
+      <div class="glance-label blue">Quick Wins to Try</div>
+      <div class="glance-text">Create a CLAUDE.md in your StoryForge project noting you're on Windows/PowerShell and documenting the run command once, so you stop re-asking how to launch the app. Then try a custom slash command like /run for launching StoryForge—reusable skills turn repeated workflows into one-keystroke actions.</div>
+    </div>
+    <div class="glance-card">
+      <div class="glance-label purple">Ambitious Workflows</div>
+      <div class="glance-text">As models improve, you'll be able to describe a feature like 'add PDF upload' in plain English and have Claude generate failing tests first, then iterate autonomously until they pass—turning vague requests into regression-proof contracts. Further out, imagine parallel agents in git worktrees each tackling a different StoryForge feature simultaneously, so you review three finished branches instead of pair-programming one.</div>
+    </div>
+  </div>
+
+  <!-- Project Areas -->
+  <div class="section-header"><h2>Project Areas</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Area</th>
+        <th>Sessions</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>StoryForge App Development</td>
+        <td><span class="count-badge">2</span></td>
+        <td>Worked on running the StoryForge application, adding PDF upload support, and resolving duplicate project issues. Claude Code was used to explain app setup and implement new features with clear guidance.</td>
+      </tr>
+      <tr>
+        <td>Web Frontend Bug Fixing</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Debugged broken buttons on a website by identifying a missing JavaScript module import. Claude used Read and Write tools to inline the missing functions and restore functionality across HTML, JS, and CSS files.</td>
+      </tr>
+      <tr>
+        <td>Git &amp; Version Control</td>
+        <td><span class="count-badge">2</span></td>
+        <td>Handled git commits, reviewed settings file changes, and taught Git basics. Claude explained version control status and executed commits via Bash after clarifying what needed to be tracked.</td>
+      </tr>
+      <tr>
+        <td>Session Insights &amp; Summaries</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Answered questions about how the /insights command handles multi-chat and late runs, and provided session summaries of prior work. Claude offered clear explanations of tooling behavior.</td>
+      </tr>
+      <tr>
+        <td>Documentation &amp; Explanation</td>
+        <td><span class="count-badge">1</span></td>
+        <td>Provided code explanations and walkthroughs across Markdown and JavaScript files. Claude Code was used primarily in a read-and-explain mode to help the user understand existing code.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Interaction Style -->
+  <div class="section-header"><h2>Interaction Style</h2></div>
+  <div class="feature-card">
+    <div class="feature-card-body">
+      <p class="detail-intro">You interact with Claude Code in a <strong style="color:var(--text)">pragmatic, question-driven style</strong> rather than issuing detailed upfront specs. Your sessions often start with exploratory questions like "how do I run this app?" or "should I commit this settings file?" — you're using Claude as much for <strong style="color:var(--text)">learning and explanation as for code generation</strong>, which shows in the high rate of good-explanation outcomes and your mix of Git basics, how-to-run questions, and conceptual queries about features like <code>/insights</code>.</p>
+      <p class="detail-intro">You <strong style="color:var(--text)">let Claude run but course-correct when it goes wrong</strong>. A clear example: when Claude began investigating broken buttons as if they worked, you interrupted to clarify they did <em>not</em> work, which unblocked the real fix (a missing JS module import). You're willing to trust Claude's approach initially but <strong style="color:var(--text)">intervene decisively when assumptions drift</strong>.</p>
+      <p class="detail-intro" style="margin-bottom:0">Your tool footprint — heavy Read and Bash, moderate Write, and repeated ExitPlanMode — suggests you favor <strong style="color:var(--text)">plan-then-execute flows on a real working codebase</strong>, not greenfield scaffolding. You're shipping a real project incrementally (PDF upload, duplicate project cleanup, button fixes) with only occasional commits, treating Claude as a collaborator who explains the 'why' alongside the 'what'.</p>
+    </div>
+  </div>
+
+  <!-- What Worked Well -->
+  <div class="section-header"><h2>What Worked Well</h2></div>
+  <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.6">Over the past week you've been building StoryForge across 26 hours and 6 sessions, mixing feature work with learning fundamentals.</p>
+  <div class="win-block">
+    <div class="win-card">
+      <strong>Debugging Broken UI to Root Cause</strong>
+      When buttons broke on your site, you clearly corrected Claude's wrong assumption and stayed engaged until the real issue—a missing JS module import—was identified and fixed by inlining the functions. Your willingness to push back kept the debugging honest and efficient.
+    </div>
+    <div class="win-card">
+      <strong>Learning Git Alongside Shipping</strong>
+      You're blending real feature work (PDF upload, deduping projects) with learning Git basics, asking smart questions about whether settings changes need committing. This shows you're building durable skills, not just getting code written.
+    </div>
+    <div class="win-card">
+      <strong>Planning Before Executing</strong>
+      You're leaning on ExitPlanMode frequently, letting Claude lay out an approach before touching files. Combined with your habit of asking for session summaries, this gives you a clear mental model of what's changing and why.
+    </div>
+  </div>
+
+  <!-- Where Things Went Wrong -->
+  <div class="section-header"><h2>Where Things Went Wrong</h2></div>
+  <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.6">Your sessions show friction from frequent context compactions, cross-platform shell mismatches, and occasional misreadings of bug reports.</p>
+  <div class="risk-block">
+    <div class="risk-item">
+      <strong>Wasted sessions from context compaction</strong>
+      Several of your sessions consist entirely of /compact commands with no actual work, suggesting you're hitting context limits mid-task and losing momentum. Consider starting fresh sessions for new tasks or breaking work into smaller scoped chunks to avoid burning sessions on housekeeping.
+      <ul class="bullet-list" style="margin-top:8px">
+        <li>Three separate sessions were just compactions with zero productive output, wasting setup time</li>
+        <li>You had to request a session summary of prior StoryForge work just to regain context</li>
+      </ul>
+    </div>
+    <div class="risk-item">
+      <strong>Shell environment mismatches</strong>
+      Claude issued bash syntax that failed in your PowerShell terminal, forcing you to return later and report the error. Mention your shell (PowerShell/Windows) upfront or add it to a CLAUDE.md so commands are generated correctly the first time.
+      <ul class="bullet-list" style="margin-top:8px">
+        <li>A bash command failed in PowerShell, breaking your flow and requiring a round-trip to fix</li>
+        <li>Running the StoryForge app required extra back-and-forth due to platform-specific command issues</li>
+      </ul>
+    </div>
+    <div class="risk-item">
+      <strong>Misinterpreted bug reports</strong>
+      Claude sometimes starts investigating in the wrong direction, assuming the opposite of what you reported. Lead with an explicit, unambiguous statement of the broken behavior and expected behavior to avoid wasted investigation.
+      <ul class="bullet-list" style="margin-top:8px">
+        <li>You had to interrupt Claude who was investigating buttons as if they worked, when you'd reported they were broken</li>
+        <li>The PDF upload fix required extra clarification rounds before the real issue was addressed</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Features to Try -->
+  <div class="section-header"><h2>Features to Try</h2></div>
+  <div class="feature-block">
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">1</div>
+        <div class="feature-card-title">Custom Skills — /commit workflow</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Reusable slash commands defined in markdown. You repeatedly ask about git commit/status workflows — a <code>/commit</code> skill would standardize this.</p>
+        <pre>mkdir -p .claude/skills/commit
+echo '# Commit\n\nRun git status, stage relevant files, write a conventional commit message, and commit.' > .claude/skills/commit/SKILL.md</pre>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">2</div>
+        <div class="feature-card-title">Custom Skills — /run for StoryForge</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">"how_to_run_app" was your #1 goal across sessions — define it once as a skill and stop re-asking.</p>
+        <pre>echo '# Run StoryForge\n\nStart the dev server and open the app in browser.' > .claude/skills/run/SKILL.md</pre>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-header">
+        <div class="feature-num">3</div>
+        <div class="feature-card-title">Hooks — auto-check after edits</div>
+      </div>
+      <div class="feature-card-body">
+        <p class="detail-intro">Auto-run commands on lifecycle events. Could auto-run a lint/build check after edits to catch missing imports like the one that broke your buttons.</p>
+        <pre>{"hooks": {"PostToolUse": [{"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "node -c $FILE 2>&1 || true"}]}]}}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Patterns -->
+  <div class="section-header"><h2>Usage Pattern Tips</h2></div>
+  <div class="next-block">
+    <div class="next-item">
+      <div class="next-num">1</div>
+      <div>
+        <div class="next-title">Too many /compact-only sessions</div>
+        <div class="next-desc">3 of your 5 analyzed sessions were just context compactions with no actual work. End sessions with a clear summary of next steps written to a NOTES.md file so you can resume cleanly without needing heavy compaction.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">Copyable prompt</div>
+          <code>Before we end, write a brief NOTES.md with: current state, what's next, and any blockers so I can resume easily next session.</code>
+        </div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">2</div>
+      <div>
+        <div class="next-title">Verify bugs before investigating</div>
+        <div class="next-desc">Ask Claude to reproduce or confirm the bug first. In the buttons-broken session, Claude began assuming buttons worked. Front-load bug reports with exact reproduction steps and ask Claude to confirm it sees the issue before proposing fixes.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">Copyable prompt</div>
+          <code>The [X] buttons don't work when clicked. First, read the relevant code and tell me what you think SHOULD happen, then identify why it isn't happening before making changes.</code>
+        </div>
+      </div>
+    </div>
+    <div class="next-item">
+      <div class="next-num">3</div>
+      <div>
+        <div class="next-title">Document the StoryForge run workflow once</div>
+        <div class="next-desc">"how_to_run_app" appeared as a top goal twice. Have Claude write a RUNNING.md once that covers setup, start command, and common issues — then reference it.</div>
+        <div class="prompt-block">
+          <div class="prompt-label">Copyable prompt</div>
+          <code>Create a RUNNING.md documenting exactly how to start StoryForge locally on Windows/PowerShell, including prerequisites and troubleshooting.</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- On the Horizon -->
+  <div class="section-header"><h2>On the Horizon</h2></div>
+  <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.6">AI-assisted development is shifting from single-task help to orchestrated, autonomous workflows that plan, verify, and ship with minimal supervision.</p>
+  <div class="horizon-block">
+    <div class="horizon-card">
+      <div class="horizon-title">Autonomous Bug-to-PR Pipeline</div>
+      <div class="horizon-desc">Instead of manually reporting broken buttons and debugging live, imagine Claude running Playwright smoke tests on every page, detecting JS import errors autonomously, fixing them, and opening a PR with reproduction evidence. Your StoryForge site could self-heal before users notice.</div>
+      <div class="horizon-tip"><strong>How to try:</strong> Use Claude Code with Playwright MCP and a GitHub Actions workflow that invokes Claude on failing runs.</div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copyable prompt</div>
+        <code>Set up an autonomous bug-fix workflow for my StoryForge app: (1) write Playwright smoke tests that click every button and verify no JS console errors, (2) create a GitHub Action that runs these on push, (3) on failure, invoke Claude Code headless to diagnose, fix, and open a PR with the test output attached. Walk me through setup and implement it end-to-end.</code>
+      </div>
+    </div>
+    <div class="horizon-card">
+      <div class="horizon-title">Parallel Feature Agents via Worktrees</div>
+      <div class="horizon-desc">Spin up multiple Claude agents in parallel git worktrees — one adding PDF upload, one cleaning duplicate projects, one improving CSS — each iterating against its own test suite until green, then merging sequentially. You review three finished features instead of pair-programming one.</div>
+      <div class="horizon-tip"><strong>How to try:</strong> Use git worktree + Claude Code's Agent tool with subagents running in separate branches, coordinated by a TodoWrite plan.</div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copyable prompt</div>
+        <code>I want to develop three StoryForge features in parallel using git worktrees and Claude subagents: (A) robust PDF upload with text extraction, (B) duplicate project detection and merge UI, (C) responsive CSS refresh. Create a worktree per feature, spawn a subagent for each with clear acceptance tests, have them iterate until tests pass, then give me a merge plan. Start by scaffolding the worktrees and test stubs.</code>
+      </div>
+    </div>
+    <div class="horizon-card">
+      <div class="horizon-title">Test-Driven Spec Loop</div>
+      <div class="horizon-desc">Describe a feature in plain English and have Claude generate failing tests first, then iterate code-edit → run-tests → fix until green, fully autonomously. This converts vague requests like 'buttons should work' into verifiable, regression-proof contracts.</div>
+      <div class="horizon-tip"><strong>How to try:</strong> Use Claude Code with Vitest/Playwright and an autonomous loop prompt that forbids stopping until all tests pass.</div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copyable prompt</div>
+        <code>Act as a TDD agent for StoryForge. For each feature I describe, (1) write failing Vitest + Playwright tests capturing the behavior, (2) show me the tests for approval, (3) then autonomously edit code and re-run tests in a loop until all pass, (4) commit with a descriptive message. First feature: 'PDF uploads should parse text, show a preview, and save to the project.' Begin.</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Highlight -->
+  <div class="section-header"><h2>Session Highlight</h2></div>
+  <div class="highlight-card">
+    <div class="highlight-headline">Claude confidently investigated why the buttons worked — until the user interrupted to say the buttons very much did NOT work</div>
+    <div class="highlight-detail">During a StoryForge debugging session, Claude misread the problem and started poking around as if things were functional. The user had to stop it mid-investigation to clarify the buttons were broken. Claude then found the real culprit: a missing JS module import, and fixed it by inlining the functions.</div>
+  </div>
+
+  <div class="doc-footer">StoryForge · Session Report · 2026-04-15 · Claude Code Usage Insights</div>
+
+</div>
+</body>
+</html>
