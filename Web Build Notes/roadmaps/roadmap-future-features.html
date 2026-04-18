@@ -714,6 +714,219 @@
     </div>
   </div>
 
+  <!-- UX Sprint D -->
+  <div class="section-header"><h2>UX Sprint D — Visual Design &amp; Branding (Do Now)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">High visual impact · No breaking changes · Affects every tab</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Design System Refresh</div>
+        <div class="feature-id">D1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Cards, panels, and the board feel more polished — tighter spacing, better elevation, and more refined hover/interaction states throughout</div>
+      <ul class="task-list">
+        <li>Card hover: subtle lift via <code>box-shadow</code> increase + <code>translateY(-1px)</code> — pure CSS, no JS</li>
+        <li>Column headers: bolder label, tighter count badge, cleaner spacing between header and card list</li>
+        <li>Button audit: standardize icon buttons, ghost buttons, and primary CTA buttons across all tabs</li>
+        <li>Panel polish: archive panel, chat panel, import preview modal — consistent border radius, padding, shadow depth</li>
+        <li>Scrollbar styling: thin custom scrollbars on all overflow areas (already partially done — extend to all panels)</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Animated Tab Transitions</div>
+        <div class="feature-id">D2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Switching between tabs (Home, Story Canvas, Writing, etc.) has a smooth 120ms fade-in so the app feels fluid rather than jumpy</div>
+      <ul class="task-list">
+        <li>Add a CSS <code>@keyframes</code> fade-in on <code>.tab-panel.active</code>: opacity 0→1 + translateY 4px→0 over 120ms ease-out</li>
+        <li>Outgoing tab: no animation needed — instant hide is fine; only the incoming tab animates in</li>
+        <li>Ensure animation does not interfere with <code>display: none</code> toggling — use a brief <code>setTimeout</code> to trigger the class after the display change</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Branding &amp; Logo Area</div>
+        <div class="feature-id">D3</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> The top-left corner has a polished wordmark that feels like a real product, not a placeholder label</div>
+      <ul class="task-list">
+        <li>Replace plain text logo with a CSS gradient wordmark ("StoryForge" or "Life of Bon" — user decides)</li>
+        <li>Add a small icon/sigil before the wordmark (styled emoji glyph, e.g., ✦ or a book icon as SVG inline)</li>
+        <li>Give the topbar a slightly distinct background — e.g., a very subtle gradient or a hairline separator from the tab bar below</li>
+        <li>Active tab indicator: thicker or glowing accent underline instead of the current fill treatment</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- UX Sprint E -->
+  <div class="section-header"><h2>UX Sprint E — Writing Tools II (Do Next)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Deepens the Writing tab into a real authoring environment · Builds on existing editor</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Writing Statistics &amp; Session Goals</div>
+        <div class="feature-id">E1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Writer can see session word count, total word count, reading time, and optionally set a daily word goal with a progress indicator</div>
+      <ul class="task-list">
+        <li>Session word count: words typed since the tab was opened (reset on reload, tracked in memory)</li>
+        <li>Reading time estimate: "(~4 min read)" shown next to total word count</li>
+        <li>Daily word goal: optional input in writing toolbar ("Goal: 500 words"); renders a progress bar below the toolbar when set</li>
+        <li>Goal stored in <code>sf_writing_goal</code> localStorage key; progress resets each calendar day</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Export Writing as .txt / .md</div>
+        <div class="feature-id">E2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can download the working copy as a plain text or Markdown file with one click from the Writing tab</div>
+      <ul class="task-list">
+        <li>"Export ▾" dropdown button in writing toolbar with two options: <em>Plain text (.txt)</em> and <em>Markdown (.md)</em></li>
+        <li>.txt: strips all HTML tags, preserves paragraph line breaks, handles <code>&lt;br&gt;</code> and block elements as newlines</li>
+        <li>.md: converts <code>&lt;h1&gt;</code>→<code>#</code>, <code>&lt;h2&gt;</code>→<code>##</code>, <code>&lt;strong&gt;</code>→<code>**</code>, <code>&lt;em&gt;</code>→<code>*</code>, <code>&lt;ul&gt;&lt;li&gt;</code>→<code>- </code></li>
+        <li>Filename: <code>life-of-bon-YYYY-MM-DD.txt</code> / <code>.md</code> via Blob + anchor download</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Find &amp; Replace in Working Copy</div>
+        <div class="feature-id">E3</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Ctrl+H opens an inline Find &amp; Replace bar that works on the working copy without leaving the editor</div>
+      <ul class="task-list">
+        <li>Keyboard shortcut: <code>Ctrl+H</code> (or toolbar button) opens an inline bar just above the editor</li>
+        <li>Find input: highlights all matches; "X of N" counter; navigate with Enter / Shift+Enter</li>
+        <li>Replace input with "Replace" (current match) and "Replace All" buttons</li>
+        <li>Implemented by scanning <code>innerHTML</code> and wrapping matches in highlight spans; Escape closes the bar and removes highlights</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Distraction-Free Writing Mode</div>
+        <div class="feature-id">E4</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> A "Focus" button hides all UI chrome and shows only the writing area centered on a clean dark canvas</div>
+      <ul class="task-list">
+        <li>"⛶ Focus" button in writing toolbar — enters focus mode via CSS class toggle on <code>body</code></li>
+        <li>Hides: tab bar, topbar, writing toolbar, draft pane, format toolbar</li>
+        <li>Shows: only the working copy editor, centered and max-width constrained (~700px)</li>
+        <li>Word count shown as a faint small overlay at the bottom-center</li>
+        <li>Escape key or a floating "Exit Focus" button (top-right corner) returns to normal</li>
+        <li>Optional: soft vignette (radial-gradient overlay) to dim the screen edges for immersion</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- UX Sprint F -->
+  <div class="section-header"><h2>UX Sprint F — Board Focus Mode (Do Next)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Lets you zoom into 1–2 card types at a time without losing any data or navigation</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Column Spotlight Mode</div>
+        <div class="feature-id">F1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can spotlight 1–2 board columns to view them at full width, while non-spotlighted columns shrink to labeled icon strips on the side</div>
+      <ul class="task-list">
+        <li>Add a small spotlight icon button (⊞ or ⤢) to each column header</li>
+        <li>Clicking it marks that column as "spotlighted" — all other columns shrink to ~48px labeled strips with a rotated type label and card count</li>
+        <li>Up to 2 columns spotlighted simultaneously; activating a 3rd deselects the oldest</li>
+        <li>Spotlighted columns expand evenly to fill available space via <code>flex-grow</code></li>
+        <li>Thin strips still show count badge and are clickable to swap spotlight focus</li>
+        <li>"✕ Reset" button in the board toolbar clears all spotlight state — not persisted across reloads</li>
+      </ul>
+      <div class="dep-note">UX pattern: "expand-to-spotlight" — non-selected columns fold to icon strips, no data is hidden or modified</div>
+    </div>
+  </div>
+
+  <!-- UX Sprint G -->
+  <div class="section-header"><h2>UX Sprint G — Map Organization Zones (Later)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Brings semantic spatial structure to the free-form map — optional, non-destructive</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Structured Map Layout with Zones</div>
+        <div class="feature-id">G1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> "Organize by Zone" snaps all cards into semantic regions: arcs across the top, characters below arcs, world-building on the right, quotes &amp; ideas at the bottom</div>
+      <ul class="task-list">
+        <li>"Organize by Zone" button in the map toolbar (next to existing "Re-organize")</li>
+        <li><strong>Arc zone:</strong> arc cards laid out horizontally across the top row (~y=80), evenly spaced in current story order</li>
+        <li><strong>Character zone:</strong> character cards arranged below the arc they're most connected to (fallback: general character row at y=320)</li>
+        <li><strong>World zone:</strong> world-building cards clustered in a column on the right side of the map</li>
+        <li><strong>Quotes &amp; Ideas zone:</strong> quote and idea cards arranged in a horizontal strip at the bottom (~y=560)</li>
+        <li>Layout is computed once; positions saved to <code>sf_positions</code> — free-form dragging still works after</li>
+        <li>Does not auto-run — user must explicitly trigger it; existing positions preserved until then</li>
+      </ul>
+      <div class="dep-note">Arc-to-character zone placement uses existing <code>sf_connections</code> data to determine relatedness</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Zone Background Labels</div>
+        <div class="feature-id">G2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> The map canvas shows faint labeled background regions for each semantic zone, making the structure readable at a glance</div>
+      <ul class="task-list">
+        <li>SVG background regions: translucent rounded rectangles drawn behind card content</li>
+        <li>Each region labeled in its top-left corner with a small, dim zone name ("Arcs &amp; Plot", "Characters", "World Building", "Quotes &amp; Ideas")</li>
+        <li>Regions are fixed to the canvas coordinate system (not the viewport) so they stay with the cards as you pan/zoom</li>
+        <li>"Show Zones" toggle in map toolbar; state persisted in <code>sf_map_zones_visible</code></li>
+      </ul>
+      <div class="dep-note">Requires G1 (Structured Layout) to determine zone positions</div>
+    </div>
+  </div>
+
   <!-- Dependency Map -->
   <div class="section-header"><h2>Dependency Map</h2></div>
   <div class="dep-map">
@@ -822,17 +1035,69 @@
       <div class="dep-row-line"></div>
       <div class="dep-row-desc">No dependencies — start anytime</div>
     </div>
+    <div class="dep-row">
+      <div class="dep-row-name">D1 (Design System Refresh)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — CSS/style changes only</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">D2 (Tab Transitions)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — CSS + minimal JS</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">D3 (Branding &amp; Logo)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — HTML/CSS only</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">E1 (Writing Stats &amp; Goals)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Writing tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">E2 (Export Writing)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Writing tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">E3 (Find &amp; Replace)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Writing tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">E4 (Distraction-Free Mode)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Writing tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">F1 (Column Spotlight)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — board rendering only</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">G1 (Structured Map Zones)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No hard dependencies; benefits from existing <code>sf_connections</code> data for placement</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">G2 (Zone Background Labels)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires G1 (Structured Zones) for zone coordinates</div>
+    </div>
   </div>
 
   <!-- Next Session -->
   <div class="section-header"><h2>Recommended Build Order</h2></div>
   <ol class="next-list">
-    <li><div class="next-num">1</div><div><strong>UX Sprint A (A1–A4)</strong> — Card visual refresh, collapsible content, quick-add, staged import preview. Fixes the card flood problem and makes everything scannable. <em>This session.</em></div></li>
-    <li><div class="next-num">2</div><div><strong>UX Sprint B (B1–B4)</strong> — Smarter AI prompt (fewer cards), batch group view, character tags, archive with summaries. Builds on Sprint A's batchId system.</div></li>
-    <li><div class="next-num">3</div><div><strong>Phase 4b</strong> — Export / Import data. Download <code>sf_cards</code> as JSON; re-import with merge or replace. Data safety.</div></li>
-    <li><div class="next-num">4</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the basics are solid.</div></li>
-    <li><div class="next-num">5</div><div>Choose: <strong>Phase 5</strong> (Writing depth) or <strong>Phase 6</strong> (Characters depth — relationship web, tags) based on current story priorities.</div></li>
-    <li><div class="next-num">6</div><div><strong>Phase 4c</strong> — iPad / mobile layout. <strong>Phase 7b</strong> — Chapter/scene breakdown. <strong>Phase 8</strong> — Settings panel.</div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint A (A1–A4)</strong> — Card visual refresh, collapsible content, quick-add, staged import preview. <em>Complete — 2026-04-16.</em></div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint B (B1–B4)</strong> — Smarter AI prompt, batch strip, character role chips, archive AI summary. <em>Complete — 2026-04-17.</em></div></li>
+    <li><div class="next-num">3</div><div><strong>UX Sprint D (D1–D3)</strong> — Design system refresh, animated tab transitions, branding &amp; logo area. Highest visual impact for the least code risk — pure CSS/style changes. <em>Do now.</em></div></li>
+    <li><div class="next-num">4</div><div><strong>UX Sprint E (E1–E4) + F1</strong> — Writing stats, export to .txt/.md, find &amp; replace, distraction-free mode, and column spotlight mode on the board. All independent — can be tackled in any order within this step.</div></li>
+    <li><div class="next-num">5</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the core UX is polished.</div></li>
+    <li><div class="next-num">6</div><div><strong>UX Sprint G (G1–G2)</strong> — Structured map zones and background labels. Moderate complexity; best done once card data is rich and connections are populated.</div></li>
+    <li><div class="next-num">7</div><div>Choose: <strong>Phase 5</strong> (writing depth: highlights, scene links) or <strong>Phase 6</strong> (character depth: relationship web, avatars) based on story priorities at the time.</div></li>
+    <li><div class="next-num">8</div><div><strong>Phase 4c</strong> — iPad / mobile layout. <strong>Phase 7b</strong> — Chapter/scene breakdown per arc. <strong>Phase 8</strong> — Settings panel.</div></li>
   </ol>
 
   <!-- Not Planned -->
@@ -844,7 +1109,7 @@
     <li>Real-time sync across devices</li>
   </ul>
 
-  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-16</div>
+  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-17</div>
 
 </div>
 </body>

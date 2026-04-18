@@ -229,14 +229,20 @@ function buildPrompt(existingTitles, existingCards) {
     'Return a JSON array of objects. Each object must have exactly these fields:',
     '  "type"    — one of: character, world, arc, quote, idea',
     '  "title"   — short name or label (max 6 words)',
-    '  "content" — 1-3 sentence description',
+    '  "content" — 2-4 sentence description with meaningful detail',
     '',
-    'IMPORTANT: Spread cards across ALL 5 types where the material supports it:',
+    'STRICT RULES:',
+    '  - Return NO MORE THAN 6 cards total. If the notes yield fewer distinct elements, return fewer.',
+    '  - Consolidate related ideas into one rich card rather than making many thin cards.',
+    '  - Only create a new card if the information is truly distinct from all others.',
+    '  - Prefer depth over breadth: one detailed card beats three shallow ones.',
+    '',
+    'Card types (use only where the material clearly supports it):',
     '  character = people, beings, named characters',
     '  world     = locations, lore, magic systems, world rules',
     '  arc       = plot beats, story events, narrative arcs',
-    '  quote     = memorable dialogue or lines',
-    '  idea      = themes, concepts, future plans (prefix title with "[Idea]" for speculative/exploratory content)',
+    '  quote     = memorable dialogue or lines (only for near-verbatim quotes)',
+    '  idea      = themes, concepts, future plans (prefix title with "[Idea]")',
     '',
     existingContext,
     existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
@@ -259,19 +265,24 @@ function buildSyncPrompt(existingTitles, existingCards) {
     'Return a JSON array of objects. Each object must have exactly these fields:',
     '  "type"    — one of: character, world, arc, quote, idea',
     '  "title"   — short name or label (max 6 words)',
-    '  "content" — 1-3 sentence description',
+    '  "content" — 2-4 sentence description with meaningful detail',
     '',
-    'IMPORTANT: Spread cards across ALL 5 types where the material supports it:',
+    'STRICT RULES:',
+    '  - Return NO MORE THAN 6 cards total. If the content yields fewer distinct elements, return fewer.',
+    '  - Consolidate related ideas into one rich card rather than making many thin cards.',
+    '  - Only create a new card if the information is truly distinct from all others.',
+    '  - Prefer depth over breadth: one detailed card beats three shallow ones.',
+    '',
+    'Card types (use only where the material clearly supports it):',
     '  character = people, beings, named characters',
     '  world     = locations, lore, magic systems, world rules',
     '  arc       = plot beats, story events, narrative arcs',
-    '  quote     = memorable dialogue or lines',
-    '  idea      = themes, concepts, future plans (prefix title with "[Idea]" for speculative/exploratory content)',
+    '  quote     = memorable dialogue or lines (only for near-verbatim quotes)',
+    '  idea      = themes, concepts, future plans (prefix title with "[Idea]")',
     '',
     existingContext,
     existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
     skipLine,
-    '- Maximum 15 new cards per file',
     'Return only the JSON array, nothing else.'
   ].filter(Boolean).join('\n');
 }
@@ -327,10 +338,18 @@ function renderCards() {
       el.className = 'story-card';
 
       // We use contenteditable="true" so clicking a card makes it editable
+      var roleChip = '';
+      if (card.type === 'character') {
+        var profile = characterProfiles[card.id] || {};
+        if (profile.role && profile.role !== 'Unknown') {
+          roleChip = '<span class="role-chip role-chip-' + profile.role.toLowerCase() + '">' + profile.role + '</span>';
+        }
+      }
       el.innerHTML =
         '<button class="card-delete" data-id="' + card.id + '" title="Delete">✕</button>' +
         '<div class="card-header-row">' +
           '<span class="card-type-badge card-type-' + card.type + '">' + card.type + '</span>' +
+          roleChip +
           '<span class="card-timestamp">' + relativeTime(card.createdAt) + '</span>' +
         '</div>' +
         '<div class="card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
@@ -392,6 +411,69 @@ function renderCards() {
         }
       }
     });
+  });
+  renderBatchStrip();
+}
+
+// renderBatchStrip: shows the most recent import batch (< 24h old) above the board columns (B2)
+function renderBatchStrip() {
+  var stripEl = document.getElementById('batchStrip');
+  if (!stripEl) return;
+
+  var batches = [];
+  try { batches = JSON.parse(localStorage.getItem('sf_batches') || '[]'); } catch(e) {}
+  var dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem('sf_dismissed_batches') || '[]'); } catch(e) {}
+
+  // Find the most recent non-dismissed batch within 24 hours
+  var now = Date.now();
+  var recent = null;
+  for (var i = batches.length - 1; i >= 0; i--) {
+    var b = batches[i];
+    if (dismissed.indexOf(b.id) !== -1) continue;
+    if (now - new Date(b.createdAt).getTime() < 24 * 60 * 60 * 1000) {
+      recent = b;
+      break;
+    }
+  }
+
+  if (!recent) { stripEl.classList.add('hidden'); return; }
+
+  var batchCards = cards.filter(function(c) { return c.batchId === recent.id && c.status !== 'archived'; });
+  if (batchCards.length === 0) { stripEl.classList.add('hidden'); return; }
+
+  var collapsed = stripEl.classList.contains('batch-collapsed');
+  var typeColors = { character: 'var(--color-character)', world: 'var(--color-world)', arc: 'var(--color-arc)', quote: 'var(--color-quote)', idea: 'var(--color-idea)' };
+
+  var miniCards = batchCards.map(function(c) {
+    return '<span class="batch-mini-card" style="border-color:' + (typeColors[c.type] || 'var(--border)') + '">' +
+      '<span class="batch-mini-type" style="color:' + (typeColors[c.type] || 'var(--text-muted)') + '">' + c.type + '</span>' +
+      ' ' + escapeHtml(c.title.length > 28 ? c.title.slice(0, 28) + '…' : c.title) +
+    '</span>';
+  }).join('');
+
+  var when = relativeTime(recent.createdAt);
+  stripEl.innerHTML =
+    '<div class="batch-strip-header">' +
+      '<span class="batch-strip-title">✦ Latest import · ' + batchCards.length + ' card' + (batchCards.length !== 1 ? 's' : '') + ' · ' + when + '</span>' +
+      '<div class="batch-strip-actions">' +
+        '<button class="batch-toggle-btn">' + (collapsed ? '▾ Show' : '▴ Hide') + '</button>' +
+        '<button class="batch-dismiss-btn" data-id="' + recent.id + '">✕</button>' +
+      '</div>' +
+    '</div>' +
+    (collapsed ? '' : '<div class="batch-mini-cards">' + miniCards + '</div>');
+
+  stripEl.classList.remove('hidden');
+
+  stripEl.querySelector('.batch-toggle-btn').addEventListener('click', function() {
+    stripEl.classList.toggle('batch-collapsed');
+    renderBatchStrip();
+  });
+  stripEl.querySelector('.batch-dismiss-btn').addEventListener('click', function() {
+    var id = this.getAttribute('data-id');
+    dismissed.push(id);
+    localStorage.setItem('sf_dismissed_batches', JSON.stringify(dismissed));
+    stripEl.classList.add('hidden');
   });
 }
 
@@ -637,6 +719,9 @@ function renderArchivePanel() {
         '<div class="archive-card-info">' +
           '<div class="archive-card-title">' + escapeHtml(card.title) + '</div>' +
           (card.content ? '<div class="archive-card-preview">' + escapeHtml(card.content) + '</div>' : '') +
+          (card.archiveSummary
+            ? '<div class="archive-card-summary">💡 ' + escapeHtml(card.archiveSummary) + '</div>'
+            : '<button class="archive-gen-summary-btn" data-id="' + card.id + '">✦ Why archived?</button>') +
         '</div>' +
         '<button class="archive-restore-btn" data-id="' + card.id + '">♻️</button>' +
       '</div>';
@@ -660,6 +745,30 @@ function renderArchivePanel() {
         renderArchivePanel();
         renderHomePage();
         showToast('♻️ Card restored');
+      }
+    });
+  });
+
+  // Wire up "Why archived?" summary generation buttons
+  bodyEl.querySelectorAll('.archive-gen-summary-btn').forEach(function(btn) {
+    btn.addEventListener('click', async function(e) {
+      e.stopPropagation();
+      var key = getApiKey();
+      if (!key) { showToast('Set your API key first'); return; }
+      var id = btn.getAttribute('data-id');
+      var card = cards.find(function(c) { return c.id === id; });
+      if (!card) return;
+      btn.textContent = '⏳ Thinking...';
+      btn.disabled = true;
+      try {
+        var summaryPrompt = 'In one concise sentence, explain what story element this card represents and why it might be archived or superseded. Card title: "' + card.title + '". Card content: ' + card.content;
+        card.archiveSummary = await callClaudeForCard(key, summaryPrompt, 80);
+        saveCards();
+        renderArchivePanel();
+      } catch (e) {
+        showToast('Could not generate summary');
+        btn.textContent = '✦ Why archived?';
+        btn.disabled = false;
       }
     });
   });
@@ -2064,6 +2173,14 @@ async function handleCardContextMenuAction(action, cardId) {
   if (action === 'archive' || action === 'restore') {
     var target = cards.find(function(c) { return c.id === cardId; });
     if (target) {
+      if (action === 'archive' && !target.archiveSummary) {
+        try {
+          var summaryPrompt = 'In one concise sentence, explain what story element this card represents and why it might be archived or superseded. Card title: "' + target.title + '". Card content: ' + target.content;
+          target.archiveSummary = await callClaudeForCard(key, summaryPrompt, 80);
+        } catch (e) {
+          // silently skip if AI fails — archiving still proceeds
+        }
+      }
       target.status = action === 'archive' ? 'archived' : 'active';
       saveCards();
       renderCards();
@@ -3128,11 +3245,28 @@ function applyWritingSplitRatio() {
   draftEditor.innerHTML = localStorage.getItem('sf_writing_draft') || '';
   updateWritingWordCounts();
 
+  // Draft history: push a snapshot after 3 minutes of inactivity in the copy editor
+  var historySnapshotTimer = null;
+  function pushDraftSnapshot() {
+    var content = copyEditor.innerHTML;
+    if (!content || !copyEditor.textContent.trim()) return;
+    var history = [];
+    try { history = JSON.parse(localStorage.getItem('sf_draft_history') || '[]'); } catch(e) {}
+    // Skip if identical to the last snapshot
+    if (history.length > 0 && history[history.length - 1].content === content) return;
+    history.push({ savedAt: new Date().toISOString(), content: content });
+    if (history.length > 10) history = history.slice(history.length - 10);
+    localStorage.setItem('sf_draft_history', JSON.stringify(history));
+  }
+
   // Auto-save on input — store innerHTML (preserves formatting)
   copyEditor.addEventListener('input', function() {
     localStorage.setItem('sf_writing_copy', copyEditor.innerHTML);
     updateWritingWordCounts();
     renderHomePage(); // keep word count on home page in sync
+    // Schedule a history snapshot after 3 min of inactivity
+    clearTimeout(historySnapshotTimer);
+    historySnapshotTimer = setTimeout(pushDraftSnapshot, 3 * 60 * 1000);
   });
   draftEditor.addEventListener('input', function() {
     localStorage.setItem('sf_writing_draft', draftEditor.innerHTML);
@@ -3155,6 +3289,57 @@ function applyWritingSplitRatio() {
 
   // Draft toggle button
   document.getElementById('draftToggleBtn').addEventListener('click', toggleWritingDraft);
+
+  // ── Draft History panel (5c) ───────────────────────────────
+  function renderDraftHistoryPanel() {
+    var panel = document.getElementById('draftHistoryPanel');
+    var listEl = document.getElementById('draftHistoryList');
+    if (!panel || !listEl) return;
+    var history = [];
+    try { history = JSON.parse(localStorage.getItem('sf_draft_history') || '[]'); } catch(e) {}
+    if (history.length === 0) {
+      listEl.innerHTML = '<div class="draft-history-empty">No snapshots yet. Snapshots are saved automatically after a pause in typing.</div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    // Show newest first
+    for (var i = history.length - 1; i >= 0; i--) {
+      (function(entry) {
+        var item = document.createElement('div');
+        item.className = 'draft-history-item';
+        var d = new Date(entry.savedAt);
+        var label = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        var words = (entry.content.replace(/<[^>]+>/g, ' ').match(/\S+/g) || []).length;
+        item.innerHTML =
+          '<div class="draft-history-meta">' +
+            '<span class="draft-history-date">' + label + '</span>' +
+            '<span class="draft-history-words">' + words + ' words</span>' +
+          '</div>' +
+          '<div class="draft-history-preview">' + escapeHtml(entry.content.replace(/<[^>]+>/g, ' ').slice(0, 80)) + '…</div>' +
+          '<button class="draft-history-restore-btn">Restore</button>';
+        item.querySelector('.draft-history-restore-btn').addEventListener('click', function() {
+          if (confirm('Restore this snapshot? Your current working copy will be replaced.')) {
+            copyEditor.innerHTML = entry.content;
+            localStorage.setItem('sf_writing_copy', entry.content);
+            updateWritingWordCounts();
+            renderHomePage();
+            document.getElementById('draftHistoryPanel').classList.add('hidden');
+            showToast('⏱ Snapshot restored');
+          }
+        });
+        listEl.appendChild(item);
+      })(history[i]);
+    }
+  }
+
+  document.getElementById('historyBtn').addEventListener('click', function() {
+    var panel = document.getElementById('draftHistoryPanel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) renderDraftHistoryPanel();
+  });
+  document.getElementById('draftHistoryClose').addEventListener('click', function() {
+    document.getElementById('draftHistoryPanel').classList.add('hidden');
+  });
 
   // Promote draft → working copy
   document.getElementById('promoteBtn').addEventListener('click', function() {
@@ -3516,6 +3701,8 @@ function saveProfileField(cardId, field, value) {
   if (!characterProfiles[cardId]) characterProfiles[cardId] = {};
   characterProfiles[cardId][field] = value;
   saveCharacterProfiles();
+  // Re-render board cards so role chip stays in sync when role changes
+  if (field === 'role') renderCards();
 }
 
 function showEnneagramInfo(typeId) {

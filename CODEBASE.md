@@ -83,6 +83,8 @@ Search with **Ctrl+F** using the section name to jump directly.
 | `sf_summary_expanded` | Whether the summary bar is expanded |
 | `sf_chat_memory` | Compressed chat history (capped at 3,000 chars) |
 | `sf_batches` | `[{ id, createdAt, cardCount }]` — one entry per staged AI import batch |
+| `sf_dismissed_batches` | JSON array of batch IDs dismissed from the batch strip (B2) |
+| `sf_draft_history` | `[{ savedAt, content }]` — up to 10 working-copy snapshots (5c) |
 
 ---
 

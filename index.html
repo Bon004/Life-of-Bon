@@ -156,6 +156,8 @@
 
       <!-- Board view (columns) -->
       <div class="board-view" id="boardView">
+        <!-- Batch strip: shows most recent import batch (B2) -->
+        <div id="batchStrip" class="batch-strip hidden"></div>
         <div class="canvas-columns">
 
           <div class="canvas-col" data-type="character">
@@ -285,6 +287,17 @@
         <button class="fmt-btn" data-cmd="insertHorizontalRule"  title="Divider">─</button>
         <span class="fmt-sep"></span>
         <button class="fmt-btn fmt-btn-clear" data-cmd="removeFormat" title="Clear formatting">✕ Clear</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" id="historyBtn" title="Draft history">⏱ History</button>
+      </div>
+
+      <!-- Draft version history panel (5c) -->
+      <div class="draft-history-panel hidden" id="draftHistoryPanel">
+        <div class="draft-history-header">
+          <span>Draft History</span>
+          <button class="draft-history-close" id="draftHistoryClose">✕</button>
+        </div>
+        <div class="draft-history-list" id="draftHistoryList"></div>
       </div>
 
       <div class="writing-panes" id="writingPanes">
