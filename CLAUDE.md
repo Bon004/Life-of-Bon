@@ -206,20 +206,29 @@ DOM-dependent code in `app.js` stays as manual browser testing only.
 
 ## Next Phases (In Order)
 1. ✅ Add Notes with AI organization (DONE)
-2. Polish homepage design
-   - Hero section with title, subtitle, and visible "Add Notes" CTA
-   - Consistent card shadows and hover states
-   - Done when: looks polished on 1080p desktop and iPad
-3. Writing tab: chapter editor, word count, auto-save
-   - Done when: user can type a chapter, see word count live, and have it save automatically
-4. Characters tab: character profile sheets, emoji picker
-   - Done when: each character card has expandable profile fields and an emoji avatar picker
-5. Arcs tab: arc timeline with events
-   - Done when: arcs display in chronological order with events attached
-6. Settings/backup: export/import data
-   - Done when: user can download all cards as JSON and re-import them
+2. ✅ Polish homepage design (DONE — hero, stat chips, nav tiles, recent cards)
+3. ✅ Writing tab: chapter editor, word count, auto-save (DONE — rich text editor, split pane, AI actions)
+4. 🔄 Characters tab: character profile sheets, emoji picker
+   - ✅ Profile sheets with Enneagram, Goal, Fear, Arc, Notes, AI generation
+   - ⬜ Emoji avatar picker — pending
+5. 🔄 Arcs tab: arc timeline with events
+   - ✅ Timeline strip, 36 Dramatic Situations, 8-Sequence Structure, Ideas Generator
+   - ⬜ Event attachment to individual arcs — pending
+6. **[CURRENT]** Settings/backup: export/import data
+   - Done when: user can download all cards as JSON and re-import (merge or replace)
 7. Mobile refinements for iPad use
    - Done when: all 4 tabs are usable on iPad without horizontal scrolling
+
+## Workflow Guidelines
+
+### "Redesign" means structural + visual
+When the user asks for a redesign, treat it as layout + typography + palette changes — not just color tweaks.
+- Always propose a redesign plan first (layout scope + palette)
+- Confirm whether the user wants layout changes, palette changes, or both
+- Deliver spacing, hierarchy, card shape, and typography improvements — not just CSS color variable swaps
+
+### Browser test gate
+Before starting any new feature sprint, manually test the existing tabs to catch regressions. If something is visibly broken, fix it before adding new features.
 
 ## Git Workflow
 - Push changes regularly to `https://github.com/Bon004/Life-of-Bon.git`

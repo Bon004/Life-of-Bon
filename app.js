@@ -3884,6 +3884,251 @@ async function generateStoryIdeas() {
 
 
 // ============================================================
+// SECTION 14: EXPORT / IMPORT DATA (Backup & Restore)
+// ─────────────────────────────────────────────────────────────
+// Export: reads localStorage into a downloadable JSON file.
+//         Pure read — never modifies any stored data.
+// Import: reads a backup JSON and either merges (adds new items
+//         only, never overwrites) or replaces all data.
+//         No API key required — no network calls at all.
+// ============================================================
+
+// All keys included in a backup (settings + UI state excluded)
+const BACKUP_KEYS = [
+  'sf_cards',
+  'sf_positions',
+  'sf_connections',
+  'sf_character_profiles',
+  'sf_arc_sequence_map',
+  'sf_arc_order',
+  'sf_situation_order',
+  'sf_writing_copy',
+  'sf_writing_draft',
+  'sf_suggestions',
+];
+
+// ── Backup modal open / close ──────────────────────────────
+const backupModal     = document.getElementById('backupModal');
+const openBackupBtn   = document.getElementById('openBackupModal');
+const closeBackupBtn  = document.getElementById('closeBackupModal');
+
+openBackupBtn.addEventListener('click', function() {
+  backupModal.classList.remove('hidden');
+  setBackupStatus('', '');
+});
+closeBackupBtn.addEventListener('click', function() {
+  backupModal.classList.add('hidden');
+});
+backupModal.addEventListener('click', function(e) {
+  if (e.target === backupModal) backupModal.classList.add('hidden');
+});
+
+function setBackupStatus(msg, type) {
+  // type: '' | 'ok' | 'err'
+  var el = document.getElementById('backupStatus');
+  if (!msg) { el.classList.add('hidden'); el.textContent = ''; return; }
+  el.classList.remove('hidden');
+  el.className = 'backup-status backup-status-' + (type || 'ok');
+  el.textContent = msg;
+}
+
+// ── Export ─────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', function() {
+  var backup = { version: 1, exportedAt: new Date().toISOString() };
+
+  for (var i = 0; i < BACKUP_KEYS.length; i++) {
+    var key = BACKUP_KEYS[i];
+    var raw = localStorage.getItem(key);
+    if (raw !== null) {
+      try { backup[key] = JSON.parse(raw); } catch(e) { backup[key] = raw; }
+    }
+  }
+
+  var json = JSON.stringify(backup, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  var date = new Date().toISOString().slice(0, 10);
+  a.href     = url;
+  a.download = 'storyforge-backup-' + date + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setBackupStatus('Backup downloaded.', 'ok');
+});
+
+// ── Import ─────────────────────────────────────────────────
+document.getElementById('importFileInput').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.name.endsWith('.json')) {
+    setBackupStatus('Error: please select a .json file.', 'err');
+    e.target.value = '';
+    return;
+  }
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var backup;
+    try {
+      backup = JSON.parse(ev.target.result);
+    } catch(err) {
+      setBackupStatus('Error: could not read file — invalid JSON.', 'err');
+      return;
+    }
+
+    // Validate it looks like a StoryForge backup
+    if (!backup || !Array.isArray(backup.sf_cards)) {
+      setBackupStatus("Error: this doesn't look like a StoryForge backup file.", 'err');
+      return;
+    }
+
+    var mode = document.querySelector('input[name="importMode"]:checked').value;
+
+    if (mode === 'replace') {
+      var count = (backup.sf_cards || []).length;
+      if (!confirm('Replace all current data with this backup?\n\nThis will load ' + count + ' cards and overwrite all your current cards, connections, and character profiles.\n\nClick OK to continue.')) {
+        e.target.value = '';
+        return;
+      }
+      applyReplace(backup);
+    } else {
+      applyMerge(backup);
+    }
+
+    // Reset file input so the same file can be chosen again
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// sf_writing_copy and sf_writing_draft are raw HTML strings in localStorage
+// (not JSON-encoded). Everything else is JSON. This helper stores correctly.
+function setBackupValue(key, value) {
+  if (key === 'sf_writing_copy' || key === 'sf_writing_draft') {
+    // value is already an HTML string — store as-is
+    localStorage.setItem(key, typeof value === 'string' ? value : '');
+  } else {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+}
+
+function applyReplace(backup) {
+  // Write all keys present in the backup, skip missing ones
+  for (var i = 0; i < BACKUP_KEYS.length; i++) {
+    var key = BACKUP_KEYS[i];
+    if (backup[key] !== undefined) {
+      setBackupValue(key, backup[key]);
+    }
+  }
+  setBackupStatus('Restored from backup. Reloading…', 'ok');
+  setTimeout(function() { location.reload(); }, 1200);
+}
+
+function applyMerge(backup) {
+  var added = 0, skipped = 0;
+
+  // sf_cards — merge by id
+  var existingCards = cards.slice(); // current in-memory array
+  var existingIds   = new Set(existingCards.map(function(c) { return c.id; }));
+  var newCards      = (backup.sf_cards || []).filter(function(c) {
+    if (existingIds.has(c.id)) { skipped++; return false; }
+    added++;
+    return true;
+  });
+  if (newCards.length > 0) {
+    var merged = existingCards.concat(newCards);
+    localStorage.setItem('sf_cards', JSON.stringify(merged));
+    cards = merged; // sync in-memory state
+  }
+
+  // sf_positions — add missing card positions
+  var pos = {};
+  try { pos = JSON.parse(localStorage.getItem('sf_positions') || '{}'); } catch(e) {}
+  var bPos = backup.sf_positions || {};
+  Object.keys(bPos).forEach(function(id) {
+    if (!pos[id]) pos[id] = bPos[id];
+  });
+  localStorage.setItem('sf_positions', JSON.stringify(pos));
+
+  // sf_connections — merge by id
+  var existingConns = [];
+  try { existingConns = JSON.parse(localStorage.getItem('sf_connections') || '[]'); } catch(e) {}
+  var existingConnIds = new Set(existingConns.map(function(c) { return c.id; }));
+  var newConns = (backup.sf_connections || []).filter(function(c) {
+    return c.id && !existingConnIds.has(c.id);
+  });
+  if (newConns.length > 0) {
+    localStorage.setItem('sf_connections', JSON.stringify(existingConns.concat(newConns)));
+  }
+
+  // sf_character_profiles — add missing profiles
+  var charProfs = {};
+  try { charProfs = JSON.parse(localStorage.getItem('sf_character_profiles') || '{}'); } catch(e) {}
+  var bCharProfs = backup.sf_character_profiles || {};
+  Object.keys(bCharProfs).forEach(function(id) {
+    if (!charProfs[id]) charProfs[id] = bCharProfs[id];
+  });
+  localStorage.setItem('sf_character_profiles', JSON.stringify(charProfs));
+
+  // sf_arc_sequence_map — add missing sequence slots
+  var seqMap = {};
+  try { seqMap = JSON.parse(localStorage.getItem('sf_arc_sequence_map') || '{}'); } catch(e) {}
+  var bSeqMap = backup.sf_arc_sequence_map || {};
+  Object.keys(bSeqMap).forEach(function(slot) {
+    if (!seqMap[slot]) seqMap[slot] = bSeqMap[slot];
+  });
+  localStorage.setItem('sf_arc_sequence_map', JSON.stringify(seqMap));
+
+  // sf_arc_order — add missing arc IDs (preserve current order, append new)
+  var arcOrd = [];
+  try { arcOrd = JSON.parse(localStorage.getItem('sf_arc_order') || '[]'); } catch(e) {}
+  var arcOrdSet = new Set(arcOrd);
+  (backup.sf_arc_order || []).forEach(function(id) {
+    if (!arcOrdSet.has(id)) arcOrd.push(id);
+  });
+  localStorage.setItem('sf_arc_order', JSON.stringify(arcOrd));
+
+  // sf_situation_order — add missing situation indices
+  var sitOrd = [];
+  try { sitOrd = JSON.parse(localStorage.getItem('sf_situation_order') || '[]'); } catch(e) {}
+  var sitOrdSet = new Set(sitOrd);
+  (backup.sf_situation_order || []).forEach(function(n) {
+    if (!sitOrdSet.has(n)) sitOrd.push(n);
+  });
+  localStorage.setItem('sf_situation_order', JSON.stringify(sitOrd));
+
+  // sf_suggestions — merge by id
+  var existingSug = [];
+  try { existingSug = JSON.parse(localStorage.getItem('sf_suggestions') || '[]'); } catch(e) {}
+  var existingSugIds = new Set(existingSug.map(function(s) { return s.id; }));
+  var newSug = (backup.sf_suggestions || []).filter(function(s) {
+    return s.id && !existingSugIds.has(s.id);
+  });
+  if (newSug.length > 0) {
+    localStorage.setItem('sf_suggestions', JSON.stringify(existingSug.concat(newSug)));
+  }
+
+  // sf_writing_copy and sf_writing_draft — only import if current slot is empty
+  if (!localStorage.getItem('sf_writing_copy') && backup.sf_writing_copy) {
+    setBackupValue('sf_writing_copy', backup.sf_writing_copy);
+  }
+  if (!localStorage.getItem('sf_writing_draft') && backup.sf_writing_draft) {
+    setBackupValue('sf_writing_draft', backup.sf_writing_draft);
+  }
+
+  var msg = added + ' card' + (added !== 1 ? 's' : '') + ' added';
+  if (skipped > 0) msg += ', ' + skipped + ' skipped (already exist)';
+  msg += '. Reloading…';
+  setBackupStatus(msg, 'ok');
+  setTimeout(function() { location.reload(); }, 1400);
+}
+
+
+// ============================================================
 // INITIALIZE — runs when the page first loads
 // ============================================================
 renderCards();

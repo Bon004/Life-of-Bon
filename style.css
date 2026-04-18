@@ -2950,3 +2950,127 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   .home-right     { padding: 32px 24px 48px; }
   .home-recent-cards { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Backup & Restore Modal ────────────────────────────────── */
+.backup-body {
+  padding: 4px 0 8px;
+}
+.backup-section {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.backup-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.backup-section-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.backup-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 22px;
+}
+
+/* Export button */
+.btn-backup-export {
+  align-self: flex-start;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+.btn-backup-export:hover { opacity: 0.85; }
+
+/* Import mode radio options */
+.backup-mode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.backup-mode-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.backup-mode-opt:hover { border-color: rgba(255,255,255,0.15); }
+.backup-mode-opt input[type="radio"] {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.backup-mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.backup-mode-text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.backup-mode-text span {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Import file button */
+.btn-backup-import-label {
+  align-self: flex-start;
+  cursor: pointer;
+}
+.btn-backup-import {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-backup-import:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.18);
+}
+
+/* Status message */
+.backup-status {
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.backup-status-ok {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--color-world);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+.backup-status-err {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-idea);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}

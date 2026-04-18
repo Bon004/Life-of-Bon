@@ -28,6 +28,7 @@
     </div>
     <div class="header-right">
       <button class="btn-archive-toggle" id="archiveBtn" title="Browse archived cards">📦 Archive</button>
+      <button class="btn-archive-toggle" id="openBackupModal" title="Export or import story data">💾 Backup</button>
       <button class="btn-sync-notes" id="syncNotesBtn">↻ Sync Notes</button>
       <button class="btn-add-notes" id="openNotesModal">+ Add Notes</button>
     </div>
@@ -432,6 +433,60 @@
         <button class="btn-organize" id="organizeBtn">Organize with AI</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- BACKUP MODAL -->
+  <div class="modal-overlay hidden" id="backupModal">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-icon">💾</span>
+          <h3>Backup &amp; Restore</h3>
+        </div>
+        <button class="modal-close" id="closeBackupModal">✕</button>
+      </div>
+
+      <div class="backup-body">
+
+        <!-- Export -->
+        <div class="backup-section">
+          <div class="backup-section-title">Export</div>
+          <p class="backup-section-desc">Download all your story data as a JSON file. Read-only — your current data is never touched.</p>
+          <button class="btn-backup-export" id="exportBtn">⬇ Download Backup</button>
+        </div>
+
+        <div class="backup-divider"></div>
+
+        <!-- Import -->
+        <div class="backup-section">
+          <div class="backup-section-title">Import</div>
+          <p class="backup-section-desc">Restore from a backup file. Choose how to handle existing data:</p>
+          <div class="backup-mode-options">
+            <label class="backup-mode-opt">
+              <input type="radio" name="importMode" value="merge" checked />
+              <div class="backup-mode-text">
+                <strong>Merge</strong>
+                <span>Add new items from backup without removing anything. Safest — skips cards that already exist.</span>
+              </div>
+            </label>
+            <label class="backup-mode-opt">
+              <input type="radio" name="importMode" value="replace" />
+              <div class="backup-mode-text">
+                <strong>Replace All</strong>
+                <span>Overwrite all current data with the backup. Requires confirmation.</span>
+              </div>
+            </label>
+          </div>
+          <label class="btn-backup-import-label">
+            <input type="file" id="importFileInput" accept=".json" hidden />
+            <span class="btn-backup-import">⬆ Choose Backup File</span>
+          </label>
+          <div class="backup-status hidden" id="backupStatus"></div>
+        </div>
+
+      </div>
     </div>
   </div>
 
