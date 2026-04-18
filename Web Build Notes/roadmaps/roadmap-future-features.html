@@ -237,9 +237,9 @@
     <div class="hero-eyebrow">StoryForge / Life of Bon</div>
     <h1>Future Features Roadmap</h1>
     <div class="hero-meta">
-      <div class="meta-item"><strong>Last updated:</strong> 2026-04-12</div>
+      <div class="meta-item"><strong>Last updated:</strong> 2026-04-16</div>
       <div class="meta-item"><strong>Stack:</strong> Plain HTML + CSS + JS · localStorage · no build tools</div>
-      <div class="meta-item"><strong>Status:</strong> Phase 4a complete — next: 4b (Export/Import) and 4c (Mobile)</div>
+      <div class="meta-item"><strong>Status:</strong> UX Improvement Sprint — next: Card polish, import staging, note organization</div>
     </div>
   </div>
 
@@ -345,6 +345,215 @@
         <li>Touch-friendly tap targets (min 44px)</li>
       </ul>
       <div class="dep-note">Phase 4a (polish) should be done first</div>
+    </div>
+  </div>
+
+  <!-- UX Sprint A -->
+  <div class="section-header"><h2>UX Sprint A — Card Polish &amp; Import Staging (Do Now)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Highest impact · Foundational for all later UX work · Build in order: A1 → A2 → A3 → A4</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Card Visual Refresh</div>
+        <div class="feature-id">A1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Cards look cleaner with better spacing, type badges, subtle color tints, and relative timestamps</div>
+      <ul class="task-list">
+        <li>Increase card padding (10→14px), gap between cards (7→10px), font sizes (+1px)</li>
+        <li>Add faint type-color background gradient tint (4% opacity)</li>
+        <li>Add small type pill badge (e.g., "character") on each card</li>
+        <li>Add relative timestamp below content ("2d ago", "1w ago")</li>
+        <li>Move delete button into hover/actions area for cleaner default state</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Collapsible Card Content</div>
+        <div class="feature-id">A2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Long cards show first 2 lines with fade-out; click to expand/collapse</div>
+      <ul class="task-list">
+        <li>Cards &gt;100 chars default to collapsed (max-height 3.2em with gradient fade)</li>
+        <li>Click card body to toggle expand/collapse</li>
+        <li>Auto-expand when user clicks to edit (contenteditable focus)</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Quick-Add Card (No AI)</div>
+        <div class="feature-id">A3</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can add a card with title + content via inline form, no AI required</div>
+      <ul class="task-list">
+        <li>Replace <code>prompt()</code> dialog with inline form at top of board column</li>
+        <li>Form has: title input, content textarea, Add/Cancel buttons</li>
+        <li>Type pre-filled from the column; Enter to submit, Escape to cancel</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Staged Import Preview</div>
+        <div class="feature-id">A4</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> "Organize with AI" shows a preview with summary + card checklist instead of creating cards immediately</div>
+      <ul class="task-list">
+        <li>After AI returns, show preview screen inside modal (not instant card creation)</li>
+        <li>Preview shows: 2-3 sentence summary + proposed cards grouped by type</li>
+        <li>Each proposed card has a checkbox, inline-editable title and content</li>
+        <li>"Create Selected" button confirms; only checked cards are created</li>
+        <li>New card field: <code>batchId</code> linking cards from same import</li>
+        <li>New localStorage key: <code>sf_batches</code> with <code>{ summary, createdAt, cardCount }</code> per batch</li>
+      </ul>
+      <div class="dep-note">Core fix for the "too many cards" problem — enables batch grouping in Sprint B</div>
+    </div>
+  </div>
+
+  <!-- UX Sprint B -->
+  <div class="section-header"><h2>UX Sprint B — Organization &amp; Smarter AI (Do Next)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Builds on Sprint A · Better card grouping, character tags, archive upgrades</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Smarter AI Prompt (Fewer, Richer Cards)</div>
+        <div class="feature-id">B1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> AI creates 3-7 rich cards (3-5 sentences each) instead of 10-15 thin ones</div>
+      <ul class="task-list">
+        <li>Change card content target from "1-3 sentences" to "3-5 sentences with full context"</li>
+        <li>Add consolidation instruction: merge fragments about same character/location</li>
+        <li>Change cap from 15 to 10 max, target 3-7</li>
+        <li>Update both <code>buildPrompt()</code> and <code>buildSyncPrompt()</code></li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Batch Group View on Board</div>
+        <div class="feature-id">B2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Cards from the same import are visually grouped with a collapsible batch header showing the import summary</div>
+      <ul class="task-list">
+        <li>Cards sharing a <code>batchId</code> render together with a batch header above them</li>
+        <li>Batch header shows: summary text, card count, collapse/expand toggle</li>
+        <li>Collapsing a batch hides its cards, showing only the summary line</li>
+        <li>Collapse state persisted in <code>sf_collapsed_batches</code></li>
+      </ul>
+      <div class="dep-note">Requires A4 (Staged Import) for batchId data</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Character Tags &amp; Role Filtering</div>
+        <div class="feature-id">B3</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Characters can be tagged (villain, mentor, royalty, etc.) and filtered by tag in the sidebar</div>
+      <ul class="task-list">
+        <li>Add <code>tags: string[]</code> to character profiles</li>
+        <li>Tag input with predefined suggestions in Characters tab profile panel</li>
+        <li>Tags render as colored pills on character cards everywhere</li>
+        <li>Tag filter bar at top of character sidebar</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Archive with AI Summary</div>
+        <div class="feature-id">B4</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Archiving a card can optionally generate a 1-sentence summary card that stays visible</div>
+      <ul class="task-list">
+        <li>"Summarize before archiving?" prompt when archiving a card</li>
+        <li>Summary card stays active, marked with <code>isSummary: true</code>, styled differently (italic, dimmer)</li>
+        <li>Multi-select on board (Shift+click) → "Archive Selected" with batch summarize option</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- UX Sprint C -->
+  <div class="section-header"><h2>UX Sprint C — Advanced Note Management (Later)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Future improvements · More complex features for deeper organization</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Import Batch History</div>
+        <div class="feature-id">C1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Home tab shows a timeline of all past imports with summary, card count, and "View Cards" filter</div>
+      <ul class="task-list">
+        <li>"History" section on Home tab reading from <code>sf_batches</code></li>
+        <li>Each entry: date, summary, card count, "View Cards" link</li>
+        <li>"View Cards" filters the board to show only that batch's cards</li>
+      </ul>
+      <div class="dep-note">Requires A4 (Staged Import) for batch data</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Card Sections (Sub-cards)</div>
+        <div class="feature-id">C2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Cards can have collapsible internal sections (e.g., Appearance, Abilities, Relationships for characters)</div>
+      <ul class="task-list">
+        <li>New card field: <code>sections: [{ label, text }]</code></li>
+        <li>Sections render as collapsible <code>&lt;details&gt;</code> elements below main content</li>
+        <li>AI prompt updated to optionally produce sections for character and world cards</li>
+        <li>"Add Section" button for manual section creation</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Smart Archive: AI Stale Detection</div>
+        <div class="feature-id">C3</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> "Find Stale Notes" button identifies outdated or redundant cards for review</div>
+      <ul class="task-list">
+        <li>Sends all active cards to Claude to identify outdated/superseded/redundant ones</li>
+        <li>Review panel with archive/merge/keep actions per card</li>
+        <li>Shows reason for each suggestion ("superseded by newer card X")</li>
+      </ul>
     </div>
   </div>
 
@@ -514,6 +723,66 @@
       <div class="dep-row-desc"><span class="check">✓ Complete 2026-04-12</span></div>
     </div>
     <div class="dep-row">
+      <div class="dep-row-name">Phase 7a (Drag Reorder)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc"><span class="check">✓ Complete 2026-04-12</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">A1 (Card Visual Refresh)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — start now</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">A2 (Collapsible Content)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — start now</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">A3 (Quick-Add Card)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — start now</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">A4 (Staged Import)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — core fix for atomization</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">B1 (Smarter AI Prompt)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — works with or without A4</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">B2 (Batch Group View)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires A4 for batchId data</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">B3 (Character Tags)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires Characters tab <span class="check">✓</span></div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">B4 (Archive with Summary)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">C1 (Batch History)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires A4 for batch data</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">C2 (Card Sections)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">C3 (Stale Detection)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies</div>
+    </div>
+    <div class="dep-row">
       <div class="dep-row-name">Phase 4b/c (Export, Mobile)</div>
       <div class="dep-row-line"></div>
       <div class="dep-row-desc">No dependencies — start anytime</div>
@@ -544,14 +813,9 @@
       <div class="dep-row-desc">Requires Characters tab <span class="check">✓</span></div>
     </div>
     <div class="dep-row">
-      <div class="dep-row-name">Phase 7a (Drag Reorder)</div>
-      <div class="dep-row-line"></div>
-      <div class="dep-row-desc"><span class="check">✓ Complete 2026-04-12</span></div>
-    </div>
-    <div class="dep-row">
       <div class="dep-row-name">Phase 7b (Scene Breakdown)</div>
       <div class="dep-row-line"></div>
-      <div class="dep-row-desc">Requires 7a</div>
+      <div class="dep-row-desc">Requires 7a <span class="check">✓</span></div>
     </div>
     <div class="dep-row">
       <div class="dep-row-name">Phase 8 (Settings)</div>
@@ -561,13 +825,14 @@
   </div>
 
   <!-- Next Session -->
-  <div class="section-header"><h2>Recommended Next Session Order</h2></div>
+  <div class="section-header"><h2>Recommended Build Order</h2></div>
   <ol class="next-list">
-    <li><div class="next-num">1</div><div><strong>Browser-test all 2026-04-12 changes</strong> — 7 UI improvements need manual verification in Live Server before building on top.</div></li>
-    <li><div class="next-num">2</div><div><strong>Phase 4b</strong> — Export / Import data. Download <code>sf_cards</code> as JSON; re-import with merge or replace. Data safety before new features.</div></li>
-    <li><div class="next-num">3</div><div><strong>Phase 4c</strong> — iPad / mobile layout adjustments. Responsive breakpoints, touch targets.</div></li>
-    <li><div class="next-num">4</div><div>Choose: <strong>Phase 5</strong> (Writing depth — character name highlights, scene links) or <strong>Phase 6</strong> (Characters depth — relationship web, emoji picker) based on current story priorities.</div></li>
-    <li><div class="next-num">5</div><div><strong>Phase 7b</strong> — Chapter/scene breakdown per arc (sub-events on timeline nodes).</div></li>
+    <li><div class="next-num">1</div><div><strong>UX Sprint A (A1–A4)</strong> — Card visual refresh, collapsible content, quick-add, staged import preview. Fixes the card flood problem and makes everything scannable. <em>This session.</em></div></li>
+    <li><div class="next-num">2</div><div><strong>UX Sprint B (B1–B4)</strong> — Smarter AI prompt (fewer cards), batch group view, character tags, archive with summaries. Builds on Sprint A's batchId system.</div></li>
+    <li><div class="next-num">3</div><div><strong>Phase 4b</strong> — Export / Import data. Download <code>sf_cards</code> as JSON; re-import with merge or replace. Data safety.</div></li>
+    <li><div class="next-num">4</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the basics are solid.</div></li>
+    <li><div class="next-num">5</div><div>Choose: <strong>Phase 5</strong> (Writing depth) or <strong>Phase 6</strong> (Characters depth — relationship web, tags) based on current story priorities.</div></li>
+    <li><div class="next-num">6</div><div><strong>Phase 4c</strong> — iPad / mobile layout. <strong>Phase 7b</strong> — Chapter/scene breakdown. <strong>Phase 8</strong> — Settings panel.</div></li>
   </ol>
 
   <!-- Not Planned -->
@@ -579,7 +844,7 @@
     <li>Real-time sync across devices</li>
   </ul>
 
-  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-12</div>
+  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-16</div>
 
 </div>
 </body>

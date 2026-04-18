@@ -178,6 +178,23 @@ function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// relativeTime: returns a human-readable relative time string like "2d ago"
+function relativeTime(isoStr) {
+  if (!isoStr) return '';
+  var diff = Date.now() - new Date(isoStr).getTime();
+  var mins  = Math.floor(diff / 60000);
+  var hours = Math.floor(diff / 3600000);
+  var days  = Math.floor(diff / 86400000);
+  var weeks = Math.floor(days / 7);
+  var months = Math.floor(days / 30);
+  if (mins  < 1)   return 'just now';
+  if (mins  < 60)  return mins  + 'm ago';
+  if (hours < 24)  return hours + 'h ago';
+  if (days  < 7)   return days  + 'd ago';
+  if (weeks < 5)   return weeks + 'w ago';
+  return months + 'mo ago';
+}
+
 // placeCaretAtEnd: moves the cursor to the end of a contenteditable element
 function placeCaretAtEnd(el) {
   var range = document.createRange();
@@ -259,16 +276,17 @@ function buildSyncPrompt(existingTitles, existingCards) {
   ].filter(Boolean).join('\n');
 }
 
-// addCard: creates a new card object and adds it to the cards array
-function addCard(type, title, content) {
-  const card = {
+// addCard: creates a new card object and adds it to the cards array.
+// Optional `extra` object is merged in (used to attach batchId from staged import).
+function addCard(type, title, content, extra) {
+  const card = Object.assign({
     id:        generateId(),
     type:      type,
     title:     title || 'Untitled',
     content:   content || '',
-    status:    'active',       // 'active' | 'archived'
+    status:    'active',
     createdAt: new Date().toISOString()
-  };
+  }, extra || {});
   cards.push(card);
   saveCards();
   unsyncedIds.add(card.id);
@@ -311,8 +329,18 @@ function renderCards() {
       // We use contenteditable="true" so clicking a card makes it editable
       el.innerHTML =
         '<button class="card-delete" data-id="' + card.id + '" title="Delete">✕</button>' +
+        '<div class="card-header-row">' +
+          '<span class="card-type-badge card-type-' + card.type + '">' + card.type + '</span>' +
+          '<span class="card-timestamp">' + relativeTime(card.createdAt) + '</span>' +
+        '</div>' +
         '<div class="card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
         '<div class="card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>';
+
+      // Collapse long content by default (A2)
+      var contentEl = el.querySelector('.card-content');
+      if (card.content && card.content.length > 100) {
+        contentEl.classList.add('card-collapsed');
+      }
 
       col.appendChild(el);
     });
@@ -322,6 +350,24 @@ function renderCards() {
   if (viewMode === 'map') renderMap();
 
   // After rendering, attach event listeners to the new elements
+
+  // Collapsible content: click to expand, focusout to re-collapse (A2)
+  document.querySelectorAll('.card-content.card-collapsed').forEach(function(el) {
+    el.addEventListener('click', function() {
+      el.classList.remove('card-collapsed');
+      el.dataset.userExpanded = '1';
+    });
+  });
+  document.querySelectorAll('.card-content[contenteditable]').forEach(function(el) {
+    el.addEventListener('focusin', function() {
+      el.classList.remove('card-collapsed');
+    });
+    el.addEventListener('focusout', function() {
+      if (!el.dataset.userExpanded && el.textContent.length > 100) {
+        el.classList.add('card-collapsed');
+      }
+    });
+  });
 
   // Delete button listeners
   document.querySelectorAll('.card-delete').forEach(function(btn) {
@@ -354,23 +400,57 @@ function renderCards() {
 // SECTION 3: "+ Card" BUTTONS (manual add)
 // ─────────────────────────────────────────────────────────────
 // What it does: Attaches click listeners to the + button at
-// the top of each board column. Uses browser prompt() to ask
-// for a title, then calls addCard().
+// the top of each board column. Shows an inline form (A3)
+// instead of using a browser prompt().
 //
-// Entry:  .btn-add-card click → prompt → addCard()
+// Entry:  .btn-add-card click → inline form → addCard()
 // ============================================================
+
+function openQuickAddForm(col, type) {
+  // Only one form open at a time
+  var existing = document.querySelector('.quick-add-form');
+  if (existing) existing.remove();
+
+  var cardsList = col.querySelector('.col-cards');
+  var form = document.createElement('div');
+  form.className = 'quick-add-form';
+  form.innerHTML =
+    '<input class="qa-title" placeholder="Title\u2026" />' +
+    '<textarea class="qa-content" placeholder="Notes\u2026 (optional)" rows="2"></textarea>' +
+    '<div class="qa-actions">' +
+      '<button class="qa-add">Add</button>' +
+      '<button class="qa-cancel">Cancel</button>' +
+    '</div>';
+
+  cardsList.insertBefore(form, cardsList.firstChild);
+  form.querySelector('.qa-title').focus();
+
+  function submit() {
+    var title   = form.querySelector('.qa-title').value.trim();
+    var content = form.querySelector('.qa-content').value.trim();
+    if (title) {
+      addCard(type, title, content);
+    }
+    form.remove();
+  }
+
+  form.querySelector('.qa-add').addEventListener('click', submit);
+  form.querySelector('.qa-cancel').addEventListener('click', function() { form.remove(); });
+
+  form.querySelector('.qa-title').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); submit(); }
+    if (e.key === 'Escape') form.remove();
+  });
+  form.querySelector('.qa-content').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') form.remove();
+  });
+}
 
 document.querySelectorAll('.btn-add-card').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    // Find which column this button belongs to
     const col  = btn.closest('.canvas-col');
     const type = col.getAttribute('data-type');
-
-    // Ask the user for a title with a browser prompt
-    const title = prompt('Card title:');
-    if (title && title.trim()) {
-      addCard(type, title.trim(), '');
-    }
+    openQuickAddForm(col, type);
   });
 });
 
@@ -1110,31 +1190,22 @@ async function organizeWithAI() {
       throw new Error('AI returned unexpected format. Please try again.');
     }
 
-    // --- Add the new cards (skip duplicates) ---
-    let addedCount = 0;
-    newCards.forEach(function(c) {
-      // Skip if missing required fields or invalid type
-      if (!c.type || !c.title) return;
-      if (!VALID_CARD_TYPES.includes(c.type)) return;
-
-      // Skip if a card with this title already exists
-      const alreadyExists = existingTitles.includes(c.title.toLowerCase());
-      if (alreadyExists) return;
-
-      addCard(c.type, c.title, c.content || '');
-      addedCount++;
+    // --- Filter out duplicates, then show preview (A4) ---
+    const validCards = newCards.filter(function(c) {
+      if (!c.type || !c.title) return false;
+      if (!VALID_CARD_TYPES.includes(c.type)) return false;
+      if (existingTitles.includes(c.title.toLowerCase())) return false;
+      return true;
     });
 
-    // --- Show success and switch to canvas ---
-    const word = addedCount === 1 ? 'card' : 'cards';
-    setModalStatus('✅ Added ' + addedCount + ' new ' + word + ' to your canvas!');
-    if (addedCount > 0) setTimeout(generateSummary, 2000);
+    if (validCards.length === 0) {
+      setModalStatus('✅ No new cards found (all already exist).');
+      return;
+    }
 
-    // After 1.5 seconds, close the modal and show the canvas
-    setTimeout(function() {
-      document.querySelector('[data-tab="canvas"]').click();
-      closeModal();
-    }, 1500);
+    setModalStatus('');
+    closeModal();
+    showImportPreview(validCards);
 
   } catch (err) {
     // Show a clear error message
@@ -1151,6 +1222,94 @@ async function organizeWithAI() {
 // ============================================================
 function setModalStatus(msg) {
   document.getElementById('organizeStatus').textContent = msg;
+}
+
+
+// ============================================================
+// STAGED IMPORT PREVIEW (A4)
+// ─────────────────────────────────────────────────────────────
+// Shows a modal with proposed cards after AI returns, letting
+// the user check/uncheck before creation. All confirmed cards
+// share a batchId stored in sf_batches.
+// ============================================================
+
+function showImportPreview(proposedCards) {
+  var modal     = document.getElementById('importPreviewModal');
+  var summaryEl = document.getElementById('previewSummary');
+  var listEl    = document.getElementById('previewCardList');
+  var countEl   = document.getElementById('previewCount');
+
+  // Render summary line
+  summaryEl.textContent = 'AI found ' + proposedCards.length + ' card' + (proposedCards.length === 1 ? '' : 's') + '. Uncheck any you don\'t want.';
+
+  // Render card checklist
+  listEl.innerHTML = '';
+  proposedCards.forEach(function(c, i) {
+    var item = document.createElement('div');
+    item.className = 'preview-card-item';
+    item.innerHTML =
+      '<label class="preview-card-check">' +
+        '<input type="checkbox" class="preview-cb" data-index="' + i + '" checked />' +
+      '</label>' +
+      '<div class="preview-card-body">' +
+        '<span class="card-type-badge card-type-' + c.type + '">' + c.type + '</span>' +
+        '<div class="preview-card-title" contenteditable="true" data-index="' + i + '">' + escapeHtml(c.title) + '</div>' +
+        '<div class="preview-card-content">' + escapeHtml(c.content || '') + '</div>' +
+      '</div>';
+    listEl.appendChild(item);
+
+    // Keep proposedCards in sync with live edits to title
+    item.querySelector('.preview-card-title').addEventListener('input', function(e) {
+      proposedCards[i].title = e.target.textContent.trim();
+    });
+  });
+
+  function updateCount() {
+    var checked = listEl.querySelectorAll('.preview-cb:checked').length;
+    countEl.textContent = checked + ' of ' + proposedCards.length + ' selected';
+  }
+  updateCount();
+  listEl.addEventListener('change', updateCount);
+
+  modal.classList.remove('hidden');
+
+  function closePreview() {
+    modal.classList.add('hidden');
+    listEl.innerHTML = '';
+  }
+
+  document.getElementById('previewClose').onclick  = closePreview;
+  document.getElementById('previewCancel').onclick = closePreview;
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) closePreview();
+  });
+
+  document.getElementById('previewConfirm').onclick = function() {
+    var batchId    = generateId();
+    var createdAt  = new Date().toISOString();
+    var addedCount = 0;
+
+    listEl.querySelectorAll('.preview-cb:checked').forEach(function(cb) {
+      var idx = parseInt(cb.getAttribute('data-index'), 10);
+      var c   = proposedCards[idx];
+      if (!c || !c.title || !c.type) return;
+      addCard(c.type, c.title, c.content || '', { batchId: batchId });
+      addedCount++;
+    });
+
+    // Save batch metadata
+    var batches = [];
+    try { batches = JSON.parse(localStorage.getItem('sf_batches') || '[]'); } catch(e) {}
+    batches.push({ id: batchId, createdAt: createdAt, cardCount: addedCount });
+    localStorage.setItem('sf_batches', JSON.stringify(batches));
+
+    closePreview();
+    document.querySelector('[data-tab="canvas"]').click();
+    if (addedCount > 0) {
+      showToast('Added ' + addedCount + ' card' + (addedCount === 1 ? '' : 's') + ' to your canvas!', 3000);
+      setTimeout(generateSummary, 2000);
+    }
+  };
 }
 
 

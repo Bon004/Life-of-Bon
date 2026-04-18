@@ -490,6 +490,26 @@
     </div>
   </div>
 
+  <!-- IMPORT PREVIEW MODAL (A4) -->
+  <div class="modal-overlay hidden" id="importPreviewModal">
+    <div class="modal-box preview-box">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-icon">🗂</span>
+          <h3>Review Proposed Cards</h3>
+        </div>
+        <button class="modal-close" id="previewClose">✕</button>
+      </div>
+      <div id="previewSummary" class="preview-summary"></div>
+      <div id="previewCardList" class="preview-card-list"></div>
+      <div class="modal-footer">
+        <span id="previewCount" class="organize-status"></span>
+        <button class="btn-secondary-sm" id="previewCancel">Cancel</button>
+        <button class="btn-organize" id="previewConfirm">Create Selected</button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMBINE CARDS PANEL -->
   <div class="combine-panel hidden" id="combinePanel">
     <div class="combine-panel-header">

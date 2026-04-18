@@ -82,6 +82,7 @@ Search with **Ctrl+F** using the section name to jump directly.
 | `sf_summary` | Cached AI-generated story overview |
 | `sf_summary_expanded` | Whether the summary bar is expanded |
 | `sf_chat_memory` | Compressed chat history (capped at 3,000 chars) |
+| `sf_batches` | `[{ id, createdAt, cardCount }]` — one entry per staged AI import batch |
 
 ---
 
