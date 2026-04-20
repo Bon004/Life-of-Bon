@@ -346,6 +346,7 @@ function renderCards() {
         }
       }
       el.innerHTML =
+        '<input type="checkbox" class="card-checkbox" data-id="' + card.id + '" title="Select card">' +
         '<button class="card-delete" data-id="' + card.id + '" title="Delete">✕</button>' +
         '<div class="card-header-row">' +
           '<span class="card-type-badge card-type-' + card.type + '">' + card.type + '</span>' +
@@ -353,12 +354,15 @@ function renderCards() {
           '<span class="card-timestamp">' + relativeTime(card.createdAt) + '</span>' +
         '</div>' +
         '<div class="card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
-        '<div class="card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>';
+        '<div class="card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>' +
+        '<button class="card-collapse-btn" title="Collapse card">▲ Collapse</button>';
 
-      // Collapse long content by default (A2)
+      // Collapse long content by default
       var contentEl = el.querySelector('.card-content');
       if (card.content && card.content.length > 100) {
         contentEl.classList.add('card-collapsed');
+      } else {
+        el.classList.add('card-expanded');
       }
 
       col.appendChild(el);
@@ -370,20 +374,43 @@ function renderCards() {
 
   // After rendering, attach event listeners to the new elements
 
-  // Collapsible content: click to expand, focusout to re-collapse (A2)
-  document.querySelectorAll('.card-content.card-collapsed').forEach(function(el) {
-    el.addEventListener('click', function() {
-      el.classList.remove('card-collapsed');
-      el.dataset.userExpanded = '1';
+  // Clicking anywhere on a collapsed card expands it (excludes buttons and editable areas)
+  document.querySelectorAll('.story-card').forEach(function(cardEl) {
+    cardEl.addEventListener('click', function(e) {
+      if (e.target.closest('[contenteditable]') || e.target.closest('button')) return;
+      var contentEl = cardEl.querySelector('.card-content');
+      if (contentEl && contentEl.classList.contains('card-collapsed')) {
+        contentEl.classList.remove('card-collapsed');
+        contentEl.dataset.userExpanded = '1';
+        cardEl.classList.add('card-expanded');
+      }
     });
   });
+
+  // Collapse button: shrinks the card back
+  document.querySelectorAll('.card-collapse-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var cardEl = btn.closest('.story-card');
+      var contentEl = cardEl && cardEl.querySelector('.card-content');
+      if (contentEl && contentEl.textContent.length > 100) {
+        contentEl.classList.add('card-collapsed');
+        delete contentEl.dataset.userExpanded;
+        cardEl.classList.remove('card-expanded');
+      }
+    });
+  });
+
+  // Focusin on content: expand while editing; focusout: re-collapse if not user-pinned
   document.querySelectorAll('.card-content[contenteditable]').forEach(function(el) {
     el.addEventListener('focusin', function() {
       el.classList.remove('card-collapsed');
+      el.closest('.story-card').classList.add('card-expanded');
     });
     el.addEventListener('focusout', function() {
       if (!el.dataset.userExpanded && el.textContent.length > 100) {
         el.classList.add('card-collapsed');
+        el.closest('.story-card').classList.remove('card-expanded');
       }
     });
   });
@@ -1702,8 +1729,8 @@ function applyZoom(newZoom) {
   var mapView = document.getElementById('mapView');
   var viewW = (mapView && mapView.clientWidth)  || 1200;
   var viewH = (mapView && mapView.clientHeight) || 800;
-  mapScaler.style.width  = Math.max(6000 * mapZoom + viewW,  viewW  * 1.5) + 'px';
-  mapScaler.style.height = Math.max(4000 * mapZoom + viewH,  viewH  * 1.5) + 'px';
+  mapScaler.style.width  = Math.max(7000 * mapZoom + viewW,  viewW  * 1.5) + 'px';
+  mapScaler.style.height = Math.max(5000 * mapZoom + viewH,  viewH  * 1.5) + 'px';
 
   // Update zoom label
   var label = document.getElementById('zoomLabel');
@@ -1804,6 +1831,7 @@ function renderMap() {
 
     el.innerHTML =
       '<button class="card-tab-btn" data-id="' + card.id + '" title="AI Actions">⋮</button>' +
+      '<button class="map-card-quick-delete" data-id="' + card.id + '" title="Delete card">✕</button>' +
       '<div class="card-tab-dropdown" data-id="' + card.id + '"></div>' +
       '<div class="map-card-header">' +
         '<span class="col-dot" style="background:' + color + ';flex-shrink:0"></span>' +
@@ -1864,6 +1892,13 @@ function renderMap() {
   });
 
   mapInner.querySelectorAll('.map-action-btn.delete').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      deleteCard(btn.dataset.id);
+    });
+  });
+
+  mapInner.querySelectorAll('.map-card-quick-delete').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       deleteCard(btn.dataset.id);
@@ -1959,8 +1994,8 @@ function makeDraggable(el, cardId) {
       // Divide mouse delta by mapZoom so the card follows the cursor
       // correctly at any zoom level (e.g., at 0.5× zoom, mouse moves
       // 100px but we only want the card to move 50px in canvas space)
-      var newX = Math.max(50, Math.min(5700, startLeft + (e.clientX - startX) / mapZoom));
-      var newY = Math.max(50, Math.min(3800, startTop  + (e.clientY - startY) / mapZoom));
+      var newX = Math.max(0, Math.min(6700, startLeft + (e.clientX - startX) / mapZoom));
+      var newY = Math.max(0, Math.min(4700, startTop  + (e.clientY - startY) / mapZoom));
       // Preserve saved w/h when updating position
       var existing = cardPositions[cardId] || {};
       cardPositions[cardId] = { x: newX, y: newY, w: existing.w, h: existing.h };
@@ -1974,7 +2009,7 @@ function makeDraggable(el, cardId) {
       if (moved) saveCardPositions();
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      if (wasDragging) setTimeout(function() { wasDragging = false; }, 50);
+      if (wasDragging) setTimeout(function() { wasDragging = false; }, 150);
     }
 
     document.addEventListener('mousemove', onMove);
@@ -3287,6 +3322,19 @@ function applyWritingSplitRatio() {
     });
   });
 
+  // Font size selector
+  var fontSizeSelect = document.getElementById('fontSizeSelect');
+  if (fontSizeSelect) {
+    fontSizeSelect.addEventListener('change', function() {
+      var val = fontSizeSelect.value;
+      if (val) {
+        copyEditor.focus();
+        document.execCommand('fontSize', false, val);
+      }
+      fontSizeSelect.value = '';
+    });
+  }
+
   // Draft toggle button
   document.getElementById('draftToggleBtn').addEventListener('click', toggleWritingDraft);
 
@@ -3549,6 +3597,13 @@ function renderCharacterSidebar() {
 
   var groups = groupCharactersByName(characterCards);
 
+  // Auto-select first character if nothing is selected yet
+  if (!selectedCharacterId && characterCards.length > 0) {
+    selectedCharacterId = characterCards[0].id;
+    // Defer rendering profile until after sidebar is built
+    setTimeout(function() { renderCharacterProfile(selectedCharacterId); }, 0);
+  }
+
   groups.forEach(function(group) {
     if (group.cards.length === 1) {
       // Single card — render as before
@@ -3676,6 +3731,24 @@ function renderCharacterProfile(cardId) {
     });
   }
 
+  // Connections: other cards that mention this character's name
+  var firstName = card.title.split(/[\s\-–]/)[0].toLowerCase();
+  if (firstName.length > 2) {
+    var mentioned = cards.filter(function(c) {
+      if (c.id === cardId || c.status === 'archived') return false;
+      return (c.title + ' ' + (c.content || '')).toLowerCase().indexOf(firstName) !== -1;
+    });
+    if (mentioned.length > 0) {
+      profileEl.innerHTML +=
+        '<div class="char-section-title">Mentioned In (' + mentioned.length + ')</div>' +
+        '<div class="char-connections">' +
+        mentioned.slice(0, 12).map(function(c) {
+          return '<span class="char-connection-chip char-connection-' + c.type + '" data-id="' + c.id + '">' + escapeHtml(c.title) + '</span>';
+        }).join('') +
+        '</div>';
+    }
+  }
+
   // Show enneagram info if type already selected
   if (profile.enneagram) showEnneagramInfo(profile.enneagram);
 
@@ -3792,6 +3865,120 @@ async function generateCharacterProfile(cardId) {
 
 
 // ============================================================
+// BOARD SELECTION MODE
+// ─────────────────────────────────────────────────────────────
+(function() {
+  var boardView     = document.getElementById('boardView');
+  var toggleBtn     = document.getElementById('boardSelectToggle');
+  var actionsBar    = document.getElementById('boardSelectActions');
+  var countEl       = document.getElementById('boardSelectCount');
+  var cancelBtn     = document.getElementById('boardSelectCancel');
+  var archiveBtn    = document.getElementById('boardBatchArchive');
+  var mergeBtn      = document.getElementById('boardBatchMerge');
+  var deleteBtn     = document.getElementById('boardBatchDelete');
+
+  var selectionMode = false;
+  var selectedIds   = new Set();
+
+  function enterSelectionMode() {
+    selectionMode = true;
+    selectedIds.clear();
+    boardView.classList.add('selection-mode');
+    toggleBtn.classList.add('active');
+    actionsBar.classList.remove('hidden');
+    updateCount();
+  }
+
+  function exitSelectionMode() {
+    selectionMode = false;
+    selectedIds.clear();
+    boardView.classList.remove('selection-mode');
+    toggleBtn.classList.remove('active');
+    actionsBar.classList.add('hidden');
+    // Uncheck all checkboxes
+    document.querySelectorAll('.card-checkbox').forEach(function(cb) { cb.checked = false; });
+  }
+
+  function updateCount() {
+    var n = selectedIds.size;
+    countEl.textContent = n + ' selected';
+    archiveBtn.disabled = n === 0;
+    mergeBtn.disabled   = n < 2;
+    deleteBtn.disabled  = n === 0;
+  }
+
+  toggleBtn.addEventListener('click', function() {
+    if (selectionMode) exitSelectionMode();
+    else enterSelectionMode();
+  });
+
+  cancelBtn.addEventListener('click', exitSelectionMode);
+
+  // Handle checkbox clicks (delegated — works after each renderCards)
+  document.addEventListener('change', function(e) {
+    if (!e.target.classList.contains('card-checkbox')) return;
+    var id = e.target.getAttribute('data-id');
+    if (e.target.checked) selectedIds.add(id);
+    else selectedIds.delete(id);
+    // Update card highlight
+    var card = e.target.closest('.story-card');
+    if (card) card.classList.toggle('card-selected-board', e.target.checked);
+    updateCount();
+  });
+
+  // Batch Archive
+  archiveBtn.addEventListener('click', function() {
+    if (selectedIds.size === 0) return;
+    var n = selectedIds.size;
+    selectedIds.forEach(function(id) {
+      var card = cards.find(function(c) { return c.id === id; });
+      if (card) card.status = 'archived';
+    });
+    saveCards();
+    renderCards();
+    exitSelectionMode();
+    showToast(n + ' card(s) archived.');
+  });
+
+  // Batch Delete
+  deleteBtn.addEventListener('click', function() {
+    if (selectedIds.size === 0) return;
+    var n = selectedIds.size;
+    if (!confirm('Delete ' + n + ' card(s)? This cannot be undone.')) return;
+    var idsToDelete = Array.from(selectedIds);
+    cards = cards.filter(function(c) { return idsToDelete.indexOf(c.id) === -1; });
+    saveCards();
+    renderCards();
+    exitSelectionMode();
+    showToast(n + ' card(s) deleted.');
+  });
+
+  // Batch Merge: combine selected cards into the first one, archive the rest
+  mergeBtn.addEventListener('click', function() {
+    if (selectedIds.size < 2) return;
+    var idsArr = Array.from(selectedIds);
+    var primary = cards.find(function(c) { return c.id === idsArr[0]; });
+    if (!primary) return;
+    var others = idsArr.slice(1).map(function(id) { return cards.find(function(c) { return c.id === id; }); }).filter(Boolean);
+    // Merge: append other cards' titles+content to primary content
+    var merged = primary.content + '\n\n' +
+      others.map(function(c) { return '--- ' + c.title + ' ---\n' + c.content; }).join('\n\n');
+    primary.content = merged.trim();
+    // Archive the rest
+    others.forEach(function(c) { c.status = 'archived'; });
+    saveCards();
+    renderCards();
+    exitSelectionMode();
+    showToast('Merged ' + idsArr.length + ' cards into "' + primary.title + '".');
+  });
+
+  // Escape key exits selection mode
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && selectionMode) exitSelectionMode();
+  });
+})();
+
+// ============================================================
 // SECTION 17: ARCS & TIMELINE TAB
 // ─────────────────────────────────────────────────────────────
 // What it does: Shows arc cards as a horizontal timeline strip.
@@ -3824,10 +4011,73 @@ function saveArcSequenceMap() {
   localStorage.setItem('sf_arc_sequence_map', JSON.stringify(arcSequenceMap));
 }
 
+var brainstormControlsInitialized = false;
 function renderArcsTab() {
   renderArcsTimeline();
   renderDramaticSituations();
   renderEightSequences();
+  if (!brainstormControlsInitialized) {
+    initBrainstormControls();
+    brainstormControlsInitialized = true;
+  }
+}
+
+function initBrainstormControls() {
+  var section = document.getElementById('brainstormSection');
+  var collapseBtn = document.getElementById('brainstormCollapseBtn');
+  var resizeHandle = document.getElementById('brainstormResizeHandle');
+
+  // Restore collapsed state from localStorage
+  if (localStorage.getItem('sf_brainstorm_collapsed') === '1' && section) {
+    section.classList.add('collapsed');
+    if (collapseBtn) collapseBtn.textContent = '▶';
+  }
+
+  // Restore saved height
+  var savedH = localStorage.getItem('sf_brainstorm_height');
+  if (savedH && section && !section.classList.contains('collapsed')) {
+    section.style.height = savedH + 'px';
+    section.style.flex = 'none';
+  }
+
+  if (collapseBtn && section) {
+    collapseBtn.addEventListener('click', function() {
+      var isCollapsed = section.classList.toggle('collapsed');
+      collapseBtn.textContent = isCollapsed ? '▶' : '▼';
+      localStorage.setItem('sf_brainstorm_collapsed', isCollapsed ? '1' : '0');
+      if (!isCollapsed) {
+        var savedH = localStorage.getItem('sf_brainstorm_height');
+        if (savedH) { section.style.height = savedH + 'px'; section.style.flex = 'none'; }
+        else { section.style.height = ''; section.style.flex = ''; }
+      }
+    });
+  }
+
+  if (resizeHandle && section) {
+    var startY, startH;
+    resizeHandle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      startY = e.clientY;
+      startH = section.offsetHeight;
+      resizeHandle.classList.add('resizing');
+      function onMove(e) {
+        var newH = Math.max(80, startH + (e.clientY - startY));
+        section.style.height = newH + 'px';
+        section.style.flex = 'none';
+        section.classList.remove('collapsed');
+        collapseBtn && (collapseBtn.textContent = '▼');
+      }
+      function onUp() {
+        resizeHandle.classList.remove('resizing');
+        localStorage.setItem('sf_brainstorm_height', section.offsetHeight);
+        localStorage.setItem('sf_brainstorm_collapsed', '0');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
 }
 
 function renderArcsTimeline() {

@@ -47,6 +47,24 @@ Track build status of pending improvements:
 ### 8. Recommended Next Actions
 - Top 3 story-side priorities
 - Top 1–2 build tasks to tackle next
+
+### 9. Handoff
+**Branch:** `[git branch name]`
+**Last commit:** `[SHA] — [commit message]`
+
+**Files changed or created this session:**
+- `path/to/file.js` — [one-line reason]
+
+**Decisions made this session:**
+- [Decision]: [why — what alternative was rejected]
+
+**Resume here:**
+1. [First concrete action to take next session]
+2. [Second action, if any]
+3. [Third action, if any]
+
+**Known blockers or open questions:**
+- [Anything unresolved that the next session needs to know before starting]
 ```
 
 ## Session Report Rules
@@ -64,3 +82,10 @@ Every `/insights` run must produce **two outputs**:
 - **Work laptop (egarza):** `C:\Users\egarza\Master File for code stuff\Life-of-Bon\Web Build Notes\session-reports\`
 
 Never save to `.claude/usage-data/` or any other location. If a report ends up anywhere else, it is in the wrong place.
+
+**Handoff section data:** To populate Section 9, run these git commands:
+- `git branch --show-current` → Branch
+- `git log -1 --oneline` → Last commit SHA + message
+- `git diff --name-only HEAD~1 HEAD` (or `git status` if there are uncommitted changes) → Files changed
+
+If git commands are unavailable in context, ask the user to paste the output, or note "unavailable" and fill in what is known.
