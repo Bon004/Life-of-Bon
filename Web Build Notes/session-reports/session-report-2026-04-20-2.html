@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-20 (Run 2) · Claude Instructions Cleanup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #334155; line-height: 1.65; padding: 48px 24px; }
+    .container { max-width: 820px; margin: 0 auto; }
+    h1 { font-size: 30px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    h2 { font-size: 19px; font-weight: 600; color: #0f172a; margin-top: 40px; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+    .subtitle { color: #64748b; font-size: 14px; margin-bottom: 28px; }
+    .tag { display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px; vertical-align: middle; }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; }
+    p { font-size: 14px; color: #475569; margin-bottom: 10px; }
+    ul { padding-left: 20px; margin-bottom: 10px; }
+    li { font-size: 14px; color: #475569; margin-bottom: 6px; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: #1e40af; }
+    .key { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 3px solid #16a34a; padding: 12px 16px; border-radius: 6px; color: #166534; font-size: 14px; margin: 10px 0; }
+    .warn { background: #fef3c7; border: 1px solid #fde68a; border-left: 3px solid #f59e0b; padding: 12px 16px; border-radius: 6px; color: #92400e; font-size: 14px; margin: 10px 0; }
+    .na { color: #94a3b8; font-style: italic; font-size: 13px; }
+    .handoff-row { display: flex; gap: 12px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: #0f172a; min-width: 130px; }
+    .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>StoryForge Insights Report <span class="tag">Run 2</span></h1>
+  <div class="subtitle">2026-04-20 · Focus: reorganize Claude Code instructions into a unified <code>/insights</code> skill</div>
+
+  <h2>1. Story Overview</h2>
+  <div class="card">
+    <p class="na">No card-data work this session — scope was limited to restructuring Claude Code instruction files. See <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the UI/UX overhaul sprint earlier today.</p>
+  </div>
+
+  <h2>2. Character Analysis</h2>
+  <div class="card"><p class="na">Not reviewed this session.</p></div>
+
+  <h2>3. Plot &amp; Arc Structure</h2>
+  <div class="card"><p class="na">Not reviewed this session.</p></div>
+
+  <h2>4. World-Building Status</h2>
+  <div class="card"><p class="na">Not reviewed this session.</p></div>
+
+  <h2>5. Writing Progress</h2>
+  <div class="card"><p class="na">Not reviewed this session.</p></div>
+
+  <h2>6. UI &amp; Feature Progress</h2>
+  <div class="card">
+    <p>No app-code changes this session. Build status unchanged from <a href="session-report-2026-04-20.html">Run 1</a>:</p>
+    <ul>
+      <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+      <li>[x] Home page / landing screen — shipped earlier</li>
+      <li>[x] Writing tab rich text toolbar — expanded in Run 1</li>
+      <li>[x] Character grouping by name — shipped earlier</li>
+      <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+      <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+    </ul>
+  </div>
+
+  <h2>7. Open Questions &amp; Gaps</h2>
+  <div class="card">
+    <ul>
+      <li>Should <code>/insights</code> eventually read past session reports to track cumulative Claude-usage patterns? User chose "session only" for now — revisit if the Section 10 reflection starts feeling repetitive.</li>
+      <li>Historical session report <code>session-report-2026-04-20.html</code> still references the now-deleted <code>insights-format.md</code> (one string hit). Immutable by design, so left in place.</li>
+    </ul>
+  </div>
+
+  <h2>8. Recommended Next Actions</h2>
+  <div class="card">
+    <p><strong>Story-side:</strong></p>
+    <ul>
+      <li>Next session: run <code>/insights</code> end-to-end to validate the new skill produces the 10-section report correctly.</li>
+      <li>Return to story work — character arc gaps and world-rule consistency were not touched today.</li>
+    </ul>
+    <p><strong>Build-side:</strong></p>
+    <ul>
+      <li>Resume from Sprint B/C items in <code>roadmap-future-features.html</code> (smarter AI, tags, batch history, stale detection).</li>
+    </ul>
+  </div>
+
+  <h2>9. Handoff</h2>
+  <div class="card">
+    <div class="handoff-row"><div class="handoff-key">Branch:</div><div><code>main</code></div></div>
+    <div class="handoff-row"><div class="handoff-key">Last commit:</div><div><code>38b3c53 — UI/UX overhaul sprint: 9 improvements across all tabs + session report 2026-04-20</code></div></div>
+
+    <p style="margin-top: 14px;"><strong>Files changed this session (uncommitted):</strong></p>
+    <ul>
+      <li><code>CLAUDE.md</code> — trimmed <code>/insights</code> block; now a 2-line pointer to the skill. Removed duplicated save-path text.</li>
+      <li><code>Web Build Notes/insights-format.md</code> — <strong>deleted</strong>; content migrated into the skill.</li>
+      <li><code>.claude/skills/insights/SKILL.md</code> — <strong>created</strong>; workflow, save paths, immutability, same-day handling.</li>
+      <li><code>.claude/skills/insights/report-template.md</code> — <strong>created</strong>; 10-section format (new Section 10: Claude Collaboration Insights).</li>
+      <li><code>Web Build Notes/session-reports/session-report-2026-04-20-2.html</code> — this file.</li>
+      <li><code>Web Build Notes/session-reports/full-project-report.html</code> — Session History row added for this run.</li>
+    </ul>
+
+    <p><strong>Decisions made this session:</strong></p>
+    <ul>
+      <li><strong>Promote <code>/insights</code> from prose-in-two-files to a proper skill.</strong> Why: it was the only command still relying on free-form instruction reads across <code>CLAUDE.md</code> + <code>insights-format.md</code>. Alternative rejected: keep the split and just add cross-links.</li>
+      <li><strong>Single source of truth for save paths — in the skill, not CLAUDE.md.</strong> Why: the paths had drifted to two places. Duplication rejected.</li>
+      <li><strong>Scope of new Section 10 = this session only, no cumulative pattern reads.</strong> Why: keeps the skill fast; revisit if useful data emerges.</li>
+      <li><strong>Delete <code>insights-format.md</code> rather than stub.</strong> Why: git history preserves it; stale files rot.</li>
+      <li><strong>This run saved as <code>-2.html</code>, not an append.</strong> Why: session-report immutability rule — Run 1 stays untouched.</li>
+    </ul>
+
+    <p><strong>Resume here next session:</strong></p>
+    <ul>
+      <li>Commit the instruction-reorg changes (<code>CLAUDE.md</code>, deleted <code>insights-format.md</code>, new skill folder, both new report files).</li>
+      <li>Run <code>/insights</code> again end-to-end and confirm it flows cleanly from a single skill file.</li>
+      <li>Return to Sprint B/C build items.</li>
+    </ul>
+
+    <p><strong>Known blockers / open questions:</strong></p>
+    <ul>
+      <li>None blocking.</li>
+    </ul>
+  </div>
+
+  <h2>10. Claude Collaboration Insights</h2>
+  <div class="card">
+    <p><strong>What I asked Claude to do this session:</strong></p>
+    <ul>
+      <li>Audit all Claude-related instruction files in the project and flag duplication/misplacement.</li>
+      <li>Recommend a cleaner structure: <code>CLAUDE.md</code> as the brain, <code>/insights</code> as a proper skill, long templates in referenced files.</li>
+      <li>Implement the reorganization and then run <code>/insights</code> to prove the new flow works.</li>
+    </ul>
+
+    <p><strong>What worked well:</strong></p>
+    <ul>
+      <li>Planning mode kept the restructure from turning into an uncontrolled edit — the plan file captured decisions before any file moved.</li>
+      <li>Using <code>AskUserQuestion</code> for three specific trade-offs (scope, delete vs. stub, single-source save paths) prevented guessing and locked in the design.</li>
+      <li>Mirroring the existing <code>.claude/skills/status/</code> shape meant the new skill felt native, not bolted on.</li>
+    </ul>
+
+    <p><strong>What needed correction:</strong></p>
+    <ul>
+      <li>None this session — the user's own recommendation ("CLAUDE.md central, <code>/insights</code> as skill, long templates referenced") was already the right call and was followed directly.</li>
+    </ul>
+
+    <p><strong>Patterns worth repeating:</strong></p>
+    <ul>
+      <li>When instructions are split across files, look for <em>duplication of the same fact</em> (save paths, section counts) — those are the strongest signals that the split is wrong.</li>
+      <li>Keep skills self-contained in their own folder: <code>SKILL.md</code> + referenced <code>template.md</code> beats a skill that cross-links to distant docs.</li>
+      <li>When a template has to stay identical across runs, store it as a separate file the skill reads — not inlined in the workflow prose.</li>
+    </ul>
+
+    <p><strong>Candidates to persist (into <code>CLAUDE.md</code> or memory):</strong></p>
+    <div class="key">
+      Rule: <strong>When adding a new Claude workflow, default to a skill under <code>.claude/skills/&lt;name&gt;/</code> with SKILL.md + any referenced templates in the same folder — do not spread workflow prose across <code>CLAUDE.md</code> and <code>Web Build Notes/</code>.</strong><br>
+      Why: this session fixed exactly that drift for <code>/insights</code>. The split had caused stale section counts, duplicated save paths, and two-file cross-reads on every run.
+    </div>
+    <div class="warn">
+      Consider saving the above as a feedback memory so future sessions don't re-introduce workflow prose into <code>CLAUDE.md</code>.
+    </div>
+  </div>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-20 (Run 2) · Claude instructions cleanup</div>
+
+</div>
+</body>
+</html>

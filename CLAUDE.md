@@ -63,14 +63,8 @@ Each card has a `status` field: `"active"` (default) or `"archived"` (superseded
 
 ## Claude Code Commands
 
-### `/insights` — Story & Project Report
-Full format spec and section breakdown: see `Web Build Notes/insights-format.md`
-
-**Save path (always):** Detect the active machine by checking the working directory:
-- **Home machine (esteb):** `C:\Users\esteb\Documents\Story website\Web Build Notes\session-reports\`
-- **Work laptop (egarza):** `C:\Users\egarza\Master File for code stuff\Life-of-Bon\Web Build Notes\session-reports\`
-
-Every run produces two outputs: a new `session-report-YYYY-MM-DD.html` and an updated `full-project-report.html`. Never save to `.claude/usage-data/` or any other location.
+- **`/insights`** — Story + project + Claude-usage session report. Implemented as a skill at `.claude/skills/insights/SKILL.md` (template in the same folder). That file is the single source of truth for the workflow, format, and save paths.
+- **`/status`** — Quick project orientation. See `.claude/skills/status/SKILL.md`.
 
 ## When Editing Code
 
