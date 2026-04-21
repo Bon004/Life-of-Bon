@@ -83,7 +83,33 @@ const TYPE_COLORS = {
 const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
 
 // Valid card types accepted by the app. Used for validating AI responses.
-const VALID_CARD_TYPES = ['character', 'world', 'arc', 'quote', 'idea'];
+// 'world' kept for backwards-compat with existing localStorage cards.
+const VALID_CARD_TYPES = [
+  'character', 'world', 'location', 'faction',
+  'arc', 'event', 'scene',
+  'lore', 'relationship', 'theme',
+  'quote', 'idea'
+];
+
+// Maps every valid type to one of the 5 board columns.
+// New types are routed to the column that fits best visually.
+const TYPE_TO_COLUMN = {
+  character:   'character',
+  world:       'world',
+  location:    'world',
+  faction:     'world',
+  lore:        'world',
+  arc:         'arc',
+  event:       'arc',
+  scene:       'arc',
+  relationship:'idea',
+  theme:       'idea',
+  quote:       'quote',
+  idea:        'idea'
+};
+
+// The 5 physical column IDs that exist in the HTML.
+const COLUMN_TYPES = ['character', 'world', 'arc', 'quote', 'idea'];
 
 // ============================================================
 // STATIC STORY DATA — Enneagram, 36 Situations, 8 Sequences
@@ -225,29 +251,48 @@ function buildPrompt(existingTitles, existingCards) {
     : '';
   const existingContext = buildExistingCardsContext(existingCards);
   return [
-    'You are a story editor and organization assistant. Read the notes below and extract story elements.',
-    'Return a JSON array of objects. Each object must have exactly these fields:',
-    '  "type"    — one of: character, world, arc, quote, idea',
-    '  "title"   — short name or label (max 6 words)',
-    '  "content" — 2-4 sentence description with meaningful detail',
+    'You are a story editor assistant. Treat the notes below as grounded source material for a story — not something to briefly summarize.',
     '',
-    'STRICT RULES:',
-    '  - Return NO MORE THAN 6 cards total. If the notes yield fewer distinct elements, return fewer.',
-    '  - Consolidate related ideas into one rich card rather than making many thin cards.',
-    '  - Only create a new card if the information is truly distinct from all others.',
-    '  - Prefer depth over breadth: one detailed card beats three shallow ones.',
+    'STEP 1 — Analyze document structure:',
+    'Scan the entire input and identify its major sections using headings, labels, and obvious breaks (blank lines, separators, etc.).',
+    'Think of it like a story bible: character sections, worldbuilding, arcs, notes, etc.',
     '',
-    'Card types (use only where the material clearly supports it):',
-    '  character = people, beings, named characters',
-    '  world     = locations, lore, magic systems, world rules',
-    '  arc       = plot beats, story events, narrative arcs',
-    '  quote     = memorable dialogue or lines (only for near-verbatim quotes)',
-    '  idea      = themes, concepts, future plans (prefix title with "[Idea]")',
+    'STEP 2 — Extract section by section:',
+    'Process the notes section by section. For each section, determine what kind of content it contains, then identify each distinct story element and turn it into one card.',
+    '',
+    'EXTRACTION RULES:',
+    '  - Create as many cards as the content actually warrants — there is NO upper limit.',
+    '  - Each card must represent ONE clearly distinct story element.',
+    '  - Do NOT compress everything into a handful of cards.',
+    '  - Do NOT merge unrelated elements just to reduce the card count.',
+    '  - Do NOT skip specific details, names, rules, or events.',
+    '  - Merge ONLY when two notes clearly describe the exact same element; then combine all details into one richer card.',
+    '',
+    'Card types — use the most specific type that fits:',
+    '  character    — named people or beings',
+    '  relationship — dynamics or connections between characters',
+    '  location     — specific places, regions, realms',
+    '  faction      — groups, organizations, factions, teams',
+    '  lore         — world rules, magic systems, cosmology, history',
+    '  arc          — narrative arcs or phases of the story',
+    '  event        — specific plot events or turning points',
+    '  scene        — individual scenes or scene fragments',
+    '  theme        — themes, motifs, emotional throughlines',
+    '  quote        — near-verbatim memorable dialogue or lines',
+    '  idea         — open questions, unresolved canon, future ideas (prefix title with "[Idea]")',
+    '  world        — general worldbuilding that does not fit a more specific type',
+    '',
+    'Return a JSON array. Each object must have exactly these fields:',
+    '  "type"           — one of the types listed above',
+    '  "title"          — short, specific, unique name or label',
+    '  "content"        — 3–6 sentences of clear reference material: summary + important details as a coherent paragraph',
+    '  "source_section" — the heading or subsection name in the notes where this card\'s information mainly came from; use "General" if unclear',
+    '  "tags"           — array of 2–5 short lowercase labels (e.g. ["protagonist","arc-1","reincarnated"])',
     '',
     existingContext,
     existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
     skipLine,
-    'Return only the JSON array, nothing else.'
+    'Respond with ONLY the raw JSON array. No commentary, no markdown fences, no explanations.'
   ].filter(Boolean).join('\n');
 }
 
@@ -260,35 +305,45 @@ function buildSyncPrompt(existingTitles, existingCards) {
     : '';
   const existingContext = buildExistingCardsContext(existingCards);
   return [
-    'You are a story editor and organization assistant. Read the content below and extract story elements.',
+    'You are a story editor assistant. Read the content below and extract story elements.',
     'IMPORTANT: If the content is NOT related to a story, characters, plot, or worldbuilding, return an empty array [].',
-    'Return a JSON array of objects. Each object must have exactly these fields:',
-    '  "type"    — one of: character, world, arc, quote, idea',
-    '  "title"   — short name or label (max 6 words)',
-    '  "content" — 2-4 sentence description with meaningful detail',
     '',
-    'STRICT RULES:',
-    '  - Return NO MORE THAN 6 cards total. If the content yields fewer distinct elements, return fewer.',
-    '  - Consolidate related ideas into one rich card rather than making many thin cards.',
-    '  - Only create a new card if the information is truly distinct from all others.',
-    '  - Prefer depth over breadth: one detailed card beats three shallow ones.',
+    'EXTRACTION RULES:',
+    '  - Create as many cards as the content warrants — there is NO upper limit.',
+    '  - Each card must represent ONE clearly distinct story element.',
+    '  - Do NOT merge unrelated elements. Merge only when two notes describe the exact same element.',
+    '  - Do NOT skip specific details, names, rules, or events.',
     '',
-    'Card types (use only where the material clearly supports it):',
-    '  character = people, beings, named characters',
-    '  world     = locations, lore, magic systems, world rules',
-    '  arc       = plot beats, story events, narrative arcs',
-    '  quote     = memorable dialogue or lines (only for near-verbatim quotes)',
-    '  idea      = themes, concepts, future plans (prefix title with "[Idea]")',
+    'Card types — use the most specific type that fits:',
+    '  character    — named people or beings',
+    '  relationship — dynamics or connections between characters',
+    '  location     — specific places, regions, realms',
+    '  faction      — groups, organizations, factions, teams',
+    '  lore         — world rules, magic systems, cosmology, history',
+    '  arc          — narrative arcs or phases of the story',
+    '  event        — specific plot events or turning points',
+    '  scene        — individual scenes or scene fragments',
+    '  theme        — themes, motifs, emotional throughlines',
+    '  quote        — near-verbatim memorable dialogue or lines',
+    '  idea         — open questions, unresolved canon, future ideas (prefix title with "[Idea]")',
+    '  world        — general worldbuilding not covered by more specific types',
+    '',
+    'Return a JSON array. Each object must have exactly these fields:',
+    '  "type"           — one of the types listed above',
+    '  "title"          — short, specific, unique name or label',
+    '  "content"        — 3–6 sentences of clear reference material as a coherent paragraph',
+    '  "source_section" — heading or section name from the notes (use "General" if unclear)',
+    '  "tags"           — array of 2–5 short lowercase labels',
     '',
     existingContext,
     existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
     skipLine,
-    'Return only the JSON array, nothing else.'
+    'Respond with ONLY the raw JSON array. No commentary, no markdown fences, no explanations.'
   ].filter(Boolean).join('\n');
 }
 
 // addCard: creates a new card object and adds it to the cards array.
-// Optional `extra` object is merged in (used to attach batchId from staged import).
+// Optional `extra` object is merged in (batchId, source_section, tags, etc.).
 function addCard(type, title, content, extra) {
   const card = Object.assign({
     id:        generateId(),
@@ -316,16 +371,20 @@ function deleteCard(id) {
 
 // renderCards: redraws all cards — both board view and map view (if active)
 function renderCards() {
-  VALID_CARD_TYPES.forEach(function(type) {
-    const col = document.getElementById('cards-' + type);
-    col.innerHTML = ''; // clear the column
+  COLUMN_TYPES.forEach(function(colType) {
+    const col = document.getElementById('cards-' + colType);
+    col.innerHTML = '';
 
-    // Get only the active cards that belong to this column (archived cards go to archive panel)
-    const colCards = cards.filter(function(c) { return c.type === type && c.status !== 'archived'; });
+    // Collect all active cards that map to this column
+    const colCards = cards.filter(function(c) {
+      return (TYPE_TO_COLUMN[c.type] || c.type) === colType && c.status !== 'archived';
+    });
 
     // Update count badge (active only)
-    const countEl = document.getElementById('count-' + type);
+    const countEl = document.getElementById('count-' + colType);
     if (countEl) countEl.textContent = colCards.length;
+
+    var type = colType; // kept for legacy references below
 
     if (colCards.length === 0) {
       col.innerHTML = '<p class="col-empty">No cards yet — click + to add one.</p>';
@@ -345,6 +404,16 @@ function renderCards() {
           roleChip = '<span class="role-chip role-chip-' + profile.role.toLowerCase() + '">' + profile.role + '</span>';
         }
       }
+      var tagsHtml = '';
+      if (card.tags && card.tags.length > 0) {
+        tagsHtml = '<div class="card-tags">' +
+          card.tags.map(function(t) { return '<span class="card-tag">' + escapeHtml(t) + '</span>'; }).join('') +
+          '</div>';
+      }
+      var sourceHtml = card.source_section
+        ? '<div class="card-source-section">↳ ' + escapeHtml(card.source_section) + '</div>'
+        : '';
+
       el.innerHTML =
         '<input type="checkbox" class="card-checkbox" data-id="' + card.id + '" title="Select card">' +
         '<button class="card-delete" data-id="' + card.id + '" title="Delete">✕</button>' +
@@ -354,7 +423,9 @@ function renderCards() {
           '<span class="card-timestamp">' + relativeTime(card.createdAt) + '</span>' +
         '</div>' +
         '<div class="card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
+        tagsHtml +
         '<div class="card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>' +
+        sourceHtml +
         '<button class="card-collapse-btn" title="Collapse card">▲ Collapse</button>';
 
       // Collapse long content by default
@@ -1184,6 +1255,77 @@ function getExistingTitles() {
 // Entry:  #organizeBtn click → organizeWithAI()
 // ============================================================
 
+// splitIntoSections: splits a large text into chunks ≤ maxChunkSize chars.
+// Prefers splitting at markdown heading boundaries (# / ## / ###).
+// Falls back to paragraph breaks if no headings are found.
+function splitIntoSections(text, maxChunkSize) {
+  if (text.length <= maxChunkSize) return [text];
+
+  // Split at lines that start with a markdown heading
+  const parts = text.split(/(?=\n#{1,3} )/);
+  const segments = parts.length > 1 ? parts : text.split(/\n\n+/);
+
+  const batches = [];
+  let current = '';
+  for (var i = 0; i < segments.length; i++) {
+    var seg = segments[i];
+    if (current.length > 0 && (current + seg).length > maxChunkSize) {
+      batches.push(current.trim());
+      current = seg;
+    } else {
+      current += (current ? '\n\n' : '') + seg;
+    }
+  }
+  if (current.trim()) batches.push(current.trim());
+
+  return batches.length > 0 ? batches : [text.slice(0, maxChunkSize)];
+}
+
+// callClaudeForCards: single Claude API call → returns raw parsed card array.
+// Throws on network/API errors. Returns [] if Claude returns no valid JSON.
+async function callClaudeForCards(key, messageContent) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type':                              'application/json',
+      'x-api-key':                                 key,
+      'anthropic-version':                         '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model:      CLAUDE_MODEL,
+      max_tokens: 8192,
+      messages:   [{ role: 'user', content: messageContent }]
+    })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    const errMsg = data?.error?.message || data?.message || 'API error (status ' + response.status + ')';
+    throw new Error(errMsg);
+  }
+
+  let raw = '';
+  if (Array.isArray(data.content) && data.content[0] && typeof data.content[0].text === 'string') {
+    raw = data.content[0].text.trim();
+  }
+
+  if (!raw) {
+    console.error('Unexpected Claude response format', data);
+    throw new Error('AI returned unexpected response format. Check the browser console for details.');
+  }
+
+  raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error('Failed to parse Claude JSON', raw);
+    return [];
+  }
+}
+
 document.getElementById('organizeBtn').addEventListener('click', organizeWithAI);
 
 async function organizeWithAI() {
@@ -1213,141 +1355,77 @@ async function organizeWithAI() {
     return;
   }
 
-  // --- Collect existing card titles so we can skip duplicates ---
-  // We pass these to Claude and ask it not to repeat what's already there
-  const existingTitles = getExistingTitles();
-
-  // --- Build the prompt we'll send to Claude ---
-  const prompt = buildPrompt(existingTitles, cards);
-
-  // --- Build the message content for the API ---
-  // For text: just append the notes to the prompt
-  // For images: send image + prompt as separate parts
-  let messageContent;
-
-  if (activeMode === 'paste') {
-    var text = pasteText.length > 12000
-      ? (showToast('Note: text trimmed to ~12,000 chars for processing', 4000), pasteText.slice(0, 12000))
-      : pasteText;
-    messageContent = prompt + '\n\nContent to organize:\n' + text;
-
-  } else if (fileContent.type === 'text') {
-    var fileText = fileContent.text.length > 12000
-      ? (showToast('Note: file trimmed to ~12,000 chars for processing', 4000), fileContent.text.slice(0, 12000))
-      : fileContent.text;
-    messageContent = prompt + '\n\nContent to organize:\n' + fileText;
-
-  } else {
-    // Image: Claude can see images when we send them as base64
-    messageContent = [
-      {
-        type: 'image',
-        source: {
-          type:       'base64',
-          media_type: fileContent.mediaType,
-          data:       fileContent.base64
-        }
-      },
-      {
-        type: 'text',
-        text: prompt + '\n\nPlease read the image above and extract story elements.'
-      }
-    ];
-  }
-
   // --- Show loading state ---
   setModalStatus('⏳ Sending to Claude AI...');
   document.getElementById('organizeBtn').disabled = true;
 
+  // seenTitles tracks all titles we've told Claude to skip (existing + accumulated).
+  // Using a Set for O(1) lookup during cross-chunk deduplication.
+  const seenTitles = new Set(getExistingTitles());
+  let allValidCards = [];
+
   try {
-    // --- Call the Anthropic API ---
-    // We send a fetch() request directly to Anthropic's server.
-    // The header 'anthropic-dangerous-direct-browser-access' tells Anthropic
-    // we know what we're doing — normally API keys should be on a server,
-    // but for a personal local app this is fine.
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':                            'application/json',
-        'x-api-key':                               key,
-        'anthropic-version':                       '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model:      CLAUDE_MODEL,
-        max_tokens: 2048,
-        messages: [
-          { role: 'user', content: messageContent }
-        ]
-      })
-    });
+    if (activeMode !== 'upload' || fileContent.type === 'text') {
+      // --- Text path: section-aware chunking ---
+      const rawText = activeMode === 'paste' ? pasteText : fileContent.text;
+      const CHUNK_SIZE = 30000;
+      const sections = splitIntoSections(rawText, CHUNK_SIZE);
 
-    // Read the full API response body
-    const data = await response.json();
+      for (var si = 0; si < sections.length; si++) {
+        if (sections.length > 1) {
+          setModalStatus('⏳ Processing section ' + (si + 1) + ' of ' + sections.length + '...');
+        }
 
-    // If the API returned an error status, show the message from Claude's error body
-    if (!response.ok) {
-      const errMsg = data?.error?.message || data?.message || 'API error (status ' + response.status + ')';
-      throw new Error(errMsg);
+        // Rebuild prompt each iteration so seenTitles stays current
+        const chunkPrompt = buildPrompt(Array.from(seenTitles), cards);
+        const msgContent  = chunkPrompt + '\n\nContent to organize:\n' + sections[si];
+
+        const rawCards = await callClaudeForCards(key, msgContent);
+
+        rawCards.forEach(function(c) {
+          if (!c.type || !c.title) return;
+          if (!VALID_CARD_TYPES.includes(c.type)) return;
+          var titleKey = c.title.toLowerCase();
+          if (seenTitles.has(titleKey)) return;
+          seenTitles.add(titleKey);
+          allValidCards.push(c);
+        });
+      }
+
+    } else {
+      // --- Image path: send as base64, single call ---
+      const imagePrompt = buildPrompt(Array.from(seenTitles), cards);
+      const msgContent  = [
+        {
+          type: 'image',
+          source: { type: 'base64', media_type: fileContent.mediaType, data: fileContent.base64 }
+        },
+        { type: 'text', text: imagePrompt + '\n\nPlease read the image above and extract story elements.' }
+      ];
+
+      const rawCards = await callClaudeForCards(key, msgContent);
+      rawCards.forEach(function(c) {
+        if (!c.type || !c.title) return;
+        if (!VALID_CARD_TYPES.includes(c.type)) return;
+        var titleKey = c.title.toLowerCase();
+        if (seenTitles.has(titleKey)) return;
+        seenTitles.add(titleKey);
+        allValidCards.push(c);
+      });
     }
 
-    // --- Parse the response ---
-    let raw = '';
-    if (Array.isArray(data.content) && data.content[0] && typeof data.content[0].text === 'string') {
-      raw = data.content[0].text.trim();
-    } else if (typeof data.output_text === 'string') {
-      raw = data.output_text.trim();
-    } else if (typeof data.text === 'string') {
-      raw = data.text.trim();
-    } else if (data.completion?.message?.content && Array.isArray(data.completion.message.content)) {
-      raw = data.completion.message.content.map(function(item) {
-        return item.text || '';
-      }).join('\n').trim();
-    }
-
-    if (!raw) {
-      console.error('Unexpected Claude response format', data);
-      throw new Error('AI returned unexpected response format. Check the browser console for details.');
-    }
-
-    // Sometimes Claude wraps JSON in ```json ... ``` — strip those if present
-    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-
-    // Parse the JSON array
-    let newCards;
-    try {
-      newCards = JSON.parse(raw);
-    } catch (e) {
-      console.error('Failed to parse Claude JSON', raw);
-      throw new Error('AI returned unexpected format. Please try again.');
-    }
-
-    if (!Array.isArray(newCards)) {
-      throw new Error('AI returned unexpected format. Please try again.');
-    }
-
-    // --- Filter out duplicates, then show preview (A4) ---
-    const validCards = newCards.filter(function(c) {
-      if (!c.type || !c.title) return false;
-      if (!VALID_CARD_TYPES.includes(c.type)) return false;
-      if (existingTitles.includes(c.title.toLowerCase())) return false;
-      return true;
-    });
-
-    if (validCards.length === 0) {
+    if (allValidCards.length === 0) {
       setModalStatus('✅ No new cards found (all already exist).');
       return;
     }
 
     setModalStatus('');
     closeModal();
-    showImportPreview(validCards);
+    showImportPreview(allValidCards);
 
   } catch (err) {
-    // Show a clear error message
     setModalStatus('❌ ' + err.message);
   } finally {
-    // Always re-enable the button after the request finishes
     document.getElementById('organizeBtn').disabled = false;
   }
 }
@@ -1381,6 +1459,15 @@ function showImportPreview(proposedCards) {
   // Render card checklist
   listEl.innerHTML = '';
   proposedCards.forEach(function(c, i) {
+    var previewTagsHtml = (c.tags && c.tags.length > 0)
+      ? '<div class="card-tags preview-tags">' + c.tags.map(function(t) {
+          return '<span class="card-tag">' + escapeHtml(t) + '</span>';
+        }).join('') + '</div>'
+      : '';
+    var previewSourceHtml = c.source_section
+      ? '<div class="card-source-section">↳ ' + escapeHtml(c.source_section) + '</div>'
+      : '';
+
     var item = document.createElement('div');
     item.className = 'preview-card-item';
     item.innerHTML =
@@ -1390,7 +1477,9 @@ function showImportPreview(proposedCards) {
       '<div class="preview-card-body">' +
         '<span class="card-type-badge card-type-' + c.type + '">' + c.type + '</span>' +
         '<div class="preview-card-title" contenteditable="true" data-index="' + i + '">' + escapeHtml(c.title) + '</div>' +
+        previewTagsHtml +
         '<div class="preview-card-content">' + escapeHtml(c.content || '') + '</div>' +
+        previewSourceHtml +
       '</div>';
     listEl.appendChild(item);
 
@@ -1429,7 +1518,11 @@ function showImportPreview(proposedCards) {
       var idx = parseInt(cb.getAttribute('data-index'), 10);
       var c   = proposedCards[idx];
       if (!c || !c.title || !c.type) return;
-      addCard(c.type, c.title, c.content || '', { batchId: batchId });
+      addCard(c.type, c.title, c.content || '', {
+        batchId:        batchId,
+        source_section: c.source_section || undefined,
+        tags:           (c.tags && c.tags.length > 0) ? c.tags : undefined
+      });
       addedCount++;
     });
 
@@ -1539,17 +1632,17 @@ async function syncStoryNotes() {
       } else if (ext === 'pdf') {
         const buffer = await file.arrayBuffer();
         const text   = await extractTextFromPdfBuffer(buffer);
-        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + text.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + text.slice(0, 20000);
 
       } else if (ext === 'docx') {
         const buffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + result.value.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + result.value.slice(0, 20000);
 
       } else {
         // txt / md — read directly from the File object (no fetch needed)
         const text = await file.text();
-        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + text.slice(0, 8000);
+        messageContent = buildSyncPrompt(existingTitlesNow, cards) + '\n\nContent to organize:\n' + text.slice(0, 20000);
       }
 
       btn.textContent = '✨ Organizing ' + name + '...';
@@ -1609,7 +1702,7 @@ async function processFileWithAi(key, messageContent) {
       },
       body: JSON.stringify({
         model:      CLAUDE_MODEL,
-        max_tokens: 2048,
+        max_tokens: 8192,
         messages:   [{ role: 'user', content: messageContent }]
       })
     });
@@ -1638,7 +1731,10 @@ async function processFileWithAi(key, messageContent) {
     if (!c.type || !c.title) return;
     if (!VALID_CARD_TYPES.includes(c.type)) return;
     if (existingTitles.includes(c.title.toLowerCase())) return;
-    addCard(c.type, c.title, c.content || '');
+    addCard(c.type, c.title, c.content || '', {
+      source_section: c.source_section || undefined,
+      tags:           (c.tags && c.tags.length > 0) ? c.tags : undefined
+    });
     count++;
   });
 
@@ -2955,7 +3051,7 @@ function makeMapPannable() {
 // Column math: colX = START_X + colIndex * (CARD_W + COL_GAP)
 //   e.g. character at 200, world at 530, arc at 860, quote at 1190, idea at 1520
 function autoOrganizeMap() {
-  var TYPE_ORDER = VALID_CARD_TYPES; // character → world → arc → quote → idea
+  var TYPE_ORDER = COLUMN_TYPES; // character → world → arc → quote → idea (5 physical columns)
   var CARD_W     = 210; // card width
   var COL_GAP    = 120; // gap between columns (total column stride = 330px)
   var START_X    = 200; // left offset — cards always within scroll range (no negatives)
@@ -2965,10 +3061,11 @@ function autoOrganizeMap() {
   // Remove old auto-connections (manually created connections are preserved)
   connections = connections.filter(function(c) { return !c.auto; });
 
-  TYPE_ORDER.forEach(function(type, colIndex) {
+  TYPE_ORDER.forEach(function(colType, colIndex) {
     var colCards = cards
-      .filter(function(c) { return c.type === type; })
+      .filter(function(c) { return (TYPE_TO_COLUMN[c.type] || c.type) === colType; })
       .sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
+    var type = colType;
 
     var colX = START_X + colIndex * (CARD_W + COL_GAP);
 

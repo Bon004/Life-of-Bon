@@ -509,11 +509,43 @@ body {
   font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   padding: 2px 7px; border-radius: 20px; line-height: 1.5;
 }
-.card-type-character { color: var(--color-character); background: rgba(59,130,246,0.12);  border: 1px solid rgba(59,130,246,0.25); }
-.card-type-world     { color: var(--color-world);     background: rgba(16,185,129,0.12);  border: 1px solid rgba(16,185,129,0.25); }
-.card-type-arc       { color: var(--color-arc);       background: rgba(139,92,246,0.12);  border: 1px solid rgba(139,92,246,0.25); }
-.card-type-quote     { color: var(--color-quote);     background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.25); }
-.card-type-idea      { color: var(--color-idea);      background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.25); }
+.card-type-character    { color: var(--color-character); background: rgba(59,130,246,0.12);  border: 1px solid rgba(59,130,246,0.25); }
+.card-type-world        { color: var(--color-world);     background: rgba(16,185,129,0.12);  border: 1px solid rgba(16,185,129,0.25); }
+.card-type-arc          { color: var(--color-arc);       background: rgba(139,92,246,0.12);  border: 1px solid rgba(139,92,246,0.25); }
+.card-type-quote        { color: var(--color-quote);     background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.25); }
+.card-type-idea         { color: var(--color-idea);      background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.25); }
+/* New types — inherit color from their display column */
+.card-type-location     { color: var(--color-world);     background: rgba(16,185,129,0.12);  border: 1px solid rgba(16,185,129,0.25); }
+.card-type-faction      { color: var(--color-world);     background: rgba(16,185,129,0.12);  border: 1px solid rgba(16,185,129,0.25); }
+.card-type-lore         { color: var(--color-world);     background: rgba(16,185,129,0.12);  border: 1px solid rgba(16,185,129,0.25); }
+.card-type-event        { color: var(--color-arc);       background: rgba(139,92,246,0.12);  border: 1px solid rgba(139,92,246,0.25); }
+.card-type-scene        { color: var(--color-arc);       background: rgba(139,92,246,0.12);  border: 1px solid rgba(139,92,246,0.25); }
+.card-type-relationship { color: var(--color-idea);      background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.25); }
+.card-type-theme        { color: var(--color-idea);      background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.25); }
+
+/* Tag chips */
+.card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 5px; }
+.card-tag  {
+  font-size: 10px; color: var(--text-muted); background: var(--surface-alt, rgba(255,255,255,0.05));
+  border: 1px solid var(--border); border-radius: 20px; padding: 1px 7px;
+  letter-spacing: 0.03em; line-height: 1.6;
+}
+
+/* Source section label */
+.card-source-section {
+  font-size: 10px; color: var(--text-light); margin-top: 6px;
+  font-style: italic; opacity: 0.7;
+}
+
+/* Archive border colors for new types */
+.archive-card-item[data-type="location"]     { border-left-color: var(--color-world); }
+.archive-card-item[data-type="faction"]      { border-left-color: var(--color-world); }
+.archive-card-item[data-type="lore"]         { border-left-color: var(--color-world); }
+.archive-card-item[data-type="event"]        { border-left-color: var(--color-arc); }
+.archive-card-item[data-type="scene"]        { border-left-color: var(--color-arc); }
+.archive-card-item[data-type="relationship"] { border-left-color: var(--color-idea); }
+.archive-card-item[data-type="theme"]        { border-left-color: var(--color-idea); }
+
 .card-timestamp { font-size: 10.5px; color: var(--text-light); }
 
 /* Role chips on character cards (B3) */

@@ -7,7 +7,10 @@
       "Bash(bash ~/.claude/statusline.sh)",
       "Bash(node -e \"const l=require\\('fs'\\).readFileSync\\(0,'utf8'\\); const o=JSON.parse\\(l\\); console.log\\(JSON.stringify\\(o.message?.usage||o.usage,null,2\\)\\)\")",
       "Bash(node -e ' *)",
-      "Bash(echo '{\"model\":{\"display_name\":\"Opus 4.7\"},\"cost\":{\"total_cost_usd\":1.23},\"transcript_path\":\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\esteb\\\\\\\\\\\\\\\\.claude\\\\\\\\\\\\\\\\projects\\\\\\\\\\\\\\\\c--Users-esteb-Documents-Story-website\\\\\\\\\\\\\\\\a0093379-b268-4915-8ba4-ee6d13cda06f.jsonl\"}')"
+      "Bash(echo '{\"model\":{\"display_name\":\"Opus 4.7\"},\"cost\":{\"total_cost_usd\":1.23},\"transcript_path\":\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\esteb\\\\\\\\\\\\\\\\.claude\\\\\\\\\\\\\\\\projects\\\\\\\\\\\\\\\\c--Users-esteb-Documents-Story-website\\\\\\\\\\\\\\\\a0093379-b268-4915-8ba4-ee6d13cda06f.jsonl\"}')",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git add *)"
     ]
   },
   "hooks": {
