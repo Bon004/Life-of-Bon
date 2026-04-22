@@ -511,5 +511,114 @@
   <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 2: Sprint E writing tab features</div>
 
 </div>
+
+<!-- ═══════════════════════════════════════════ RUN 3 ═ -->
+<div class="container" style="margin-top: 80px; padding-top: 64px; border-top: 2px solid var(--border);">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report · Run 3</div>
+    <h1>Claude Code Usage Insights Review</h1>
+    <p class="subtitle">Ran /insights to analyze 7 sessions (2026-04-08 → 2026-04-21): 14 sessions total, 55 messages, ~6h, 2 commits. Reviewed interaction patterns, friction points, and workflow recommendations. Identified persistent API error issues, under-specified requests, and strong plan-first execution as key themes.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-22</strong></span>
+      <span class="chip">Run <strong>3</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Sessions <strong>7 analyzed</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Usage at a Glance</h2>
+    <div class="card">
+      <p><strong>14 sessions · 7 analyzed · 55 messages · ~6h · 2 commits</strong><br>Coverage: 2026-04-08 to 2026-04-21</p>
+      <p><strong>What's working:</strong> Plan-first approach consistently produces the best outcomes — Sprint A shipped all four sub-features across JS/CSS/HTML/docs in one coordinated push. Proactive security reviews and careful git conflict resolution show Claude being used as a thoughtful collaborator, not a one-shot generator.</p>
+      <p><strong>What's hindering:</strong> Transient API 500 errors have interrupted theming work mid-flight (teal/blue swap was never fully completed). First-pass interpretations of vague requests like "bolder redesign" sometimes produce only color tweaks when layout changes were intended. Environment constraints (locked-down work machine) surfaced too late in one session, costing 90 minutes.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Project Areas Covered (Apr 8–21)</h2>
+    <div class="card">
+      <ul>
+        <li><strong>UI/UX Redesign &amp; Theming (3 sessions):</strong> Color palette swaps (orange/black → violet/navy, teal/blue attempts), layout redesigns. CSS-heavy — 38 CSS edits vs 14 JS. Some work left incomplete due to API 500 errors.</li>
+        <li><strong>Project Planning &amp; Roadmapping (2 sessions):</strong> Structured sprint plans, roadmap updates, full Sprint A execution (A1–A4) across the stack using TodoWrite tracking.</li>
+        <li><strong>Git Operations &amp; Conflict Resolution (2 sessions):</strong> Pull, merge conflict resolution (preserving both sides of permissions), stash cleanup, commits.</li>
+        <li><strong>Security Review (1 session):</strong> Thorough branch audit via Grep/Read — no high-confidence vulnerabilities found. Clean outcome.</li>
+        <li><strong>Local Dev Environment Setup (1 session):</strong> 90-minute failed attempt to run Next.js on locked-down work machine without admin rights. Ended with decision to work from home.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Interaction Style</h2>
+    <div class="card">
+      <p><strong>Pattern:</strong> Short high-level goals → let Claude plan and execute broad multi-file changes autonomously → rely on git commits as safety net.</p>
+      <p>Sprint A ("plan and execute then commit") is the emblematic example: all four sub-features shipped without micromanagement. Aesthetic iteration happens by reacting to results rather than specifying upfront (pivot from violet/navy to teal/blue). Environment constraints, not Claude's reasoning, are the biggest friction source.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>Friction Points</h2>
+    <div class="card">
+      <ul>
+        <li><strong>API errors derailing styling work:</strong> Teal/blue accent swap never completed — left only partially applied. Consider breaking large styling requests into smaller chunks and saving git checkpoints before major color/layout swaps.</li>
+        <li><strong>Environment constraints not surfaced early:</strong> 90-minute Node.js install failure on locked-down machine. State hard constraints upfront (no admin rights, restricted PATH) so Claude can recommend portable alternatives within 2–3 attempts.</li>
+        <li><strong>Under-specified initial requests:</strong> "Bolder UI redesign" produced color tweaks only on first pass. "Layout + colors, or colors only?" clarification upfront saves a round trip.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Suggestions from Analysis</h2>
+    <div class="card">
+      <p><strong>CLAUDE.md additions recommended:</strong></p>
+      <ul>
+        <li>Add <code>## UI/Design Changes</code> section: "redesign" = layout/structure changes, not just color swaps — confirm scope before starting.</li>
+        <li>Add <code>## Environment Constraints</code> section: primary dev env is home machine with admin rights; don't attempt lengthy Node.js/PATH setups on locked-down machines — suggest portable alternatives within 2–3 attempts.</li>
+        <li><code>## Git Workflow</code> already exists — extend with: preserve permissions from both branches when resolving conflicts unless told otherwise.</li>
+      </ul>
+      <p><strong>Features to try:</strong></p>
+      <ul>
+        <li><strong>Custom Skill <code>/security-review</code>:</strong> Already run once manually; a reusable skill would codify the workflow (XSS, injection, secrets, auth, coverage by confidence level).</li>
+        <li><strong>Hooks:</strong> A <code>PostToolUse</code> hook running Prettier on Edit/Write events would keep CSS/JS formatting consistent automatically.</li>
+        <li><strong>ExitPlanMode more often:</strong> Best results came from plan-first sessions — make it default for any work touching more than two files.</li>
+      </ul>
+      <p><strong>On the horizon:</strong></p>
+      <ul>
+        <li>Parallel design variants via git worktrees + subagents — explore 4 theme directions simultaneously instead of iterating serially.</li>
+        <li>Playwright visual regression tests — let Claude self-correct against measurable UI assertions (contrast ratios, breakpoint renders, no horizontal scroll).</li>
+        <li>Autonomous sprint execution — Claude reads roadmap, implements next sprint, opens a PR; you review outcomes rather than steps.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Run <code>/insights</code> to analyze Claude Code usage across recent sessions and generate a structured report.</li>
+        <li>Save the report correctly to <code>Web Build Notes/session-reports/</code> as Run 3 of the existing 2026-04-22 report.</li>
+      </ul>
+
+      <p><strong>What needed correction:</strong></p>
+      <ul>
+        <li><strong>Initial output pointed to <code>.claude/usage-data/report.html</code> instead of saving to <code>session-reports/</code>.</strong> The memory note was clear (CRITICAL — always save to <code>Web Build Notes/session-reports/</code>), but the skill file was missing and the /insights handler defaulted to the wrong path. Required user correction before the report was properly saved.</li>
+      </ul>
+
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul>
+        <li>After running any skill that saves output, verify the save path against memory before reporting completion.</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Recurring issue:</strong> The <code>/insights</code> skill file at <code>.claude/skills/insights/SKILL.md</code> is missing. Without it, the skill falls back to default behavior and saves to <code>.claude/usage-data/</code> instead of the correct project path. The skill file needs to be recreated — this is the root cause of the repeated save-path correction.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 3: Claude Code usage insights review</div>
+
+</div>
 </body>
 </html>

@@ -24,4 +24,9 @@ story-notes/
 
 # Local development files
 node_modules/
+
+# Ignore most of .claude (local settings, cache, usage data)
+# but track skills/ so they sync between machines
 .claude/
+!.claude/skills/
+!.claude/skills/**
