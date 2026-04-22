@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StoryForge — Life of Bon</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-brand">
+        <span class="app-logo">⚔️</span>
+        <h1 class="app-title">StoryForge</h1>
+      </div>
+      <span class="app-divider"></span>
+      <span class="app-subtitle">Life of Bon</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-archive-toggle" id="archiveBtn" title="Browse archived cards">📦 Archive</button>
+      <button class="btn-archive-toggle" id="openBackupModal" title="Export or import story data">💾 Backup</button>
+      <button class="btn-sync-notes" id="syncNotesBtn">↻ Sync Notes</button>
+      <button class="btn-add-notes" id="openNotesModal">+ Add Notes</button>
+    </div>
+  </header>
+
+  <!-- ARCHIVE PANEL (left slide-in) -->
+  <div class="archive-panel" id="archivePanel">
+    <div class="archive-panel-header">
+      <div class="archive-panel-title">
+        📦 Archive
+        <span class="archive-count-badge" id="archiveCount">0</span>
+      </div>
+      <button class="archive-panel-close" id="archivePanelClose">✕</button>
+    </div>
+    <div class="archive-panel-body" id="archivePanelBody">
+      <div class="archive-empty" id="archiveEmpty">No archived cards yet.</div>
+    </div>
+  </div>
+  <div class="archive-overlay hidden" id="archiveOverlay"></div>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="home">Home</button>
+    <button class="tab-btn" data-tab="canvas">Story Canvas</button>
+    <button class="tab-btn" data-tab="writing">Writing</button>
+    <button class="tab-btn" data-tab="characters">Characters</button>
+    <button class="tab-btn" data-tab="arcs">Arcs & Timeline</button>
+  </nav>
+
+  <!-- NO-KEY BANNER: shown when no API key is found on startup -->
+  <div class="no-key-banner hidden" id="noKeyBanner">
+    <span>⚠️ No API key found — AI features won't work until you add one.</span>
+    <button id="noKeyBannerBtn">Set API Key →</button>
+  </div>
+
+  <!-- MAIN -->
+  <main class="app-main">
+
+    <!-- TAB 0: HOME -->
+    <section class="tab-panel active" id="panel-home">
+      <div class="home-layout">
+
+        <!-- LEFT: Brand + stats + CTA -->
+        <div class="home-left">
+          <div class="home-brand">
+            <div class="home-logo-mark">⚔️</div>
+            <h1 class="home-title">StoryForge</h1>
+            <p class="home-project-name">Life of Bon</p>
+            <p class="home-subtitle">Your world. Your arcs. Your story.</p>
+          </div>
+
+          <div class="home-stats" id="homeStats">
+            <div class="home-stat-item" id="homeStatCards">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">cards</span>
+            </div>
+            <div class="home-stat-item" id="homeStatChars">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">characters</span>
+            </div>
+            <div class="home-stat-item" id="homeStatArcs">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">arcs</span>
+            </div>
+            <div class="home-stat-item" id="homeStatWords">
+              <span class="home-stat-num">—</span>
+              <span class="home-stat-label">words written</span>
+            </div>
+          </div>
+
+          <button class="btn-get-started" id="btnGetStarted">Open Story Canvas →</button>
+        </div>
+
+        <!-- RIGHT: Nav tiles + recent cards -->
+        <div class="home-right">
+          <div class="home-nav-grid">
+            <button class="home-nav-btn" data-tab="canvas" data-color="var(--color-arc)">
+              <span class="home-nav-icon">🗂️</span>
+              <span class="home-nav-label">Story Canvas</span>
+              <span class="home-nav-desc">Cards, map, board view</span>
+            </button>
+            <button class="home-nav-btn" data-tab="writing" data-color="var(--color-quote)">
+              <span class="home-nav-icon">✍️</span>
+              <span class="home-nav-label">Writing</span>
+              <span class="home-nav-desc">Draft and edit chapters</span>
+            </button>
+            <button class="home-nav-btn" data-tab="characters" data-color="var(--color-character)">
+              <span class="home-nav-icon">👤</span>
+              <span class="home-nav-label">Characters</span>
+              <span class="home-nav-desc">Profiles and arcs</span>
+            </button>
+            <button class="home-nav-btn" data-tab="arcs" data-color="var(--color-world)">
+              <span class="home-nav-icon">📖</span>
+              <span class="home-nav-label">Arcs & Timeline</span>
+              <span class="home-nav-desc">Plot structure and ideas</span>
+            </button>
+          </div>
+
+          <div class="home-recent" id="homeRecent"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 1: STORY CANVAS -->
+    <section class="tab-panel" id="panel-canvas">
+
+      <!-- Toolbar: view toggle -->
+      <div class="canvas-toolbar">
+        <div class="view-toggle">
+          <button class="view-btn active" id="viewBoard">Board</button>
+          <button class="view-btn" id="viewMap">Map</button>
+        </div>
+        <div class="card-search-wrap" id="cardSearchWrap">
+          <input type="text" id="cardSearchInput" class="card-search-input" placeholder="Search cards…" autocomplete="off">
+          <button class="card-search-clear hidden" id="cardSearchClear" title="Clear search">✕</button>
+        </div>
+        <span class="toolbar-hint hidden" id="mapHint">Click cards to select for combining · drag to move · ⊕ to connect</span>
+        <div class="map-buttons hidden" id="mapButtons">
+          <button class="btn-map-action" id="mapSyncBtn">⊞ Sync Map</button>
+          <button class="btn-map-action" id="reorgBtn">↻ Re-organize</button>
+        </div>
+        <div class="zoom-controls hidden" id="zoomControls">
+          <button class="zoom-btn" id="zoomOut">−</button>
+          <span class="zoom-label" id="zoomLabel" title="Click to reset to 100%">100%</span>
+          <button class="zoom-btn" id="zoomIn">+</button>
+        </div>
+      </div>
+
+      <!-- Board view (columns) -->
+      <div class="board-view" id="boardView">
+        <!-- Selection mode toolbar -->
+        <div class="board-select-toolbar" id="boardSelectToolbar">
+          <button class="board-select-toggle" id="boardSelectToggle" title="Toggle selection mode">☐ Select</button>
+          <div class="board-select-actions hidden" id="boardSelectActions">
+            <span class="board-select-count" id="boardSelectCount">0 selected</span>
+            <button class="board-select-btn board-select-archive" id="boardBatchArchive">📦 Archive</button>
+            <button class="board-select-btn board-select-merge" id="boardBatchMerge">⊞ Merge</button>
+            <button class="board-select-btn board-select-delete" id="boardBatchDelete">✕ Delete</button>
+            <button class="board-select-cancel" id="boardSelectCancel">Cancel</button>
+          </div>
+        </div>
+        <!-- Batch strip: shows most recent import batch (B2) -->
+        <div id="batchStrip" class="batch-strip hidden"></div>
+        <div class="canvas-columns">
+
+          <div class="canvas-col" data-type="character">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-character)"></span>
+                <span class="col-label">Characters</span>
+                <span class="col-count" id="count-character">0</span>
+              </div>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('character')" title="Spotlight column">⊙</button>
+              </div>
+            </div>
+            <div class="col-cards" id="cards-character"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('character')">
+              <span class="col-vs-dot" style="background:var(--color-character)"></span>
+              <span class="col-vs-label">Characters</span>
+            </div>
+          </div>
+
+          <div class="canvas-col" data-type="world">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-world)"></span>
+                <span class="col-label">World Building</span>
+                <span class="col-count" id="count-world">0</span>
+              </div>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('world')" title="Spotlight column">⊙</button>
+              </div>
+            </div>
+            <div class="col-cards" id="cards-world"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('world')">
+              <span class="col-vs-dot" style="background:var(--color-world)"></span>
+              <span class="col-vs-label">World</span>
+            </div>
+          </div>
+
+          <div class="canvas-col" data-type="arc">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-arc)"></span>
+                <span class="col-label">Plot & Arcs</span>
+                <span class="col-count" id="count-arc">0</span>
+              </div>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('arc')" title="Spotlight column">⊙</button>
+              </div>
+            </div>
+            <div class="col-cards" id="cards-arc"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('arc')">
+              <span class="col-vs-dot" style="background:var(--color-arc)"></span>
+              <span class="col-vs-label">Plot & Arcs</span>
+            </div>
+          </div>
+
+          <div class="canvas-col" data-type="quote">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-quote)"></span>
+                <span class="col-label">Key Quotes</span>
+                <span class="col-count" id="count-quote">0</span>
+              </div>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('quote')" title="Spotlight column">⊙</button>
+              </div>
+            </div>
+            <div class="col-cards" id="cards-quote"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('quote')">
+              <span class="col-vs-dot" style="background:var(--color-quote)"></span>
+              <span class="col-vs-label">Key Quotes</span>
+            </div>
+          </div>
+
+          <div class="canvas-col" data-type="idea">
+            <div class="col-header">
+              <div class="col-header-left">
+                <span class="col-dot" style="background:var(--color-idea)"></span>
+                <span class="col-label">Ideas</span>
+                <span class="col-count" id="count-idea">0</span>
+              </div>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('idea')" title="Spotlight column">⊙</button>
+              </div>
+            </div>
+            <div class="col-cards" id="cards-idea"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('idea')">
+              <span class="col-vs-dot" style="background:var(--color-idea)"></span>
+              <span class="col-vs-label">Ideas</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Map view (free canvas) -->
+      <div class="map-view hidden" id="mapView">
+        <!-- map-scaler is resized by JS to match the zoomed canvas dimensions,
+             so the scroll container knows how far to scroll -->
+        <div class="map-scaler" id="mapScaler">
+          <div class="map-inner" id="mapInner">
+            <svg class="connections-svg" id="connectionsSvg" width="3000" height="2000"></svg>
+            <!-- Map cards injected here by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary bar (bottom of canvas) -->
+      <div class="summary-bar" id="summaryBar">
+        <div class="summary-bar-header">
+          <span class="summary-icon">✦</span>
+          <span class="summary-label">Story Overview</span>
+          <button class="btn-summary-refresh" id="refreshSummary" title="Refresh summary">↻ Refresh</button>
+          <button class="summary-toggle" id="toggleSummary" title="Collapse">▲</button>
+        </div>
+        <div class="summary-body" id="summaryBody">
+          <p class="summary-text" id="summaryText">Add notes to generate an AI overview of your story.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: WRITING -->
+    <section class="tab-panel" id="panel-writing">
+
+      <div class="writing-toolbar">
+        <div class="writing-toolbar-left">
+          <span class="writing-wc-label">Working Copy</span>
+          <span class="pane-wc" id="copyWc">0 words</span>
+          <input class="word-goal-input" id="wordGoalInput" type="number" min="0" placeholder="set goal" title="Daily word goal" />
+          <span class="word-goal-display hidden" id="wordGoalDisplay"></span>
+        </div>
+        <div class="word-goal-bar-wrap hidden" id="wordGoalBarWrap">
+          <div class="word-goal-bar" id="wordGoalBar"></div>
+        </div>
+        <div class="writing-toolbar-right">
+          <button class="btn-writing-tool" onclick="exportWritingAs('txt')" title="Export as plain text">⬇ .txt</button>
+          <button class="btn-writing-tool" onclick="exportWritingAs('md')" title="Export as Markdown">⬇ .md</button>
+          <button class="btn-writing-tool" id="focusModeBtn" onclick="toggleDistractFree()" title="Distraction-free mode (F11)">⛶ Focus</button>
+          <button class="btn-writing-draft-toggle" id="draftToggleBtn">Show Draft ▶</button>
+          <div class="writing-ai-menu-wrap">
+            <button class="btn-writing-ai" id="writingAiBtn">AI ▾</button>
+            <div class="writing-ai-dropdown hidden" id="writingAiDropdown">
+              <button data-action="generate">Generate Draft from Notes</button>
+              <button data-action="continue">Continue Writing</button>
+              <button data-action="improve">Improve This</button>
+              <button data-action="consistency">Check Story Consistency</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rich text formatting toolbar (above the working copy pane) -->
+      <div class="writing-format-toolbar" id="writingToolbar">
+        <button class="fmt-btn" data-cmd="undo"   title="Undo (Ctrl+Z)">↩</button>
+        <button class="fmt-btn" data-cmd="redo"   title="Redo (Ctrl+Y)">↪</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="bold"                title="Bold (Ctrl+B)"><b>B</b></button>
+        <button class="fmt-btn" data-cmd="italic"              title="Italic (Ctrl+I)"><i>I</i></button>
+        <button class="fmt-btn" data-cmd="underline"           title="Underline (Ctrl+U)"><u>U</u></button>
+        <button class="fmt-btn" data-cmd="strikeThrough"       title="Strikethrough"><s>S</s></button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="formatBlock" data-val="h1" title="Heading 1">H1</button>
+        <button class="fmt-btn" data-cmd="formatBlock" data-val="h2" title="Heading 2">H2</button>
+        <button class="fmt-btn" data-cmd="formatBlock" data-val="p"  title="Paragraph">¶</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="insertUnorderedList"   title="Bullet list">• List</button>
+        <button class="fmt-btn" data-cmd="insertOrderedList"     title="Numbered list">1. List</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="justifyLeft"   title="Align left">⬤◁</button>
+        <button class="fmt-btn" data-cmd="justifyCenter" title="Align center">⬤</button>
+        <button class="fmt-btn" data-cmd="justifyRight"  title="Align right">▷⬤</button>
+        <span class="fmt-sep"></span>
+        <select class="fmt-select" id="fontSizeSelect" title="Font size">
+          <option value="">Size</option>
+          <option value="1">Small</option>
+          <option value="3">Normal</option>
+          <option value="5">Large</option>
+          <option value="7">Huge</option>
+        </select>
+        <button class="fmt-btn fmt-btn-highlight" data-cmd="backColor" data-val="#fff59d" title="Highlight yellow">▐ Hi</button>
+        <button class="fmt-btn" data-cmd="backColor" data-val="transparent" title="Remove highlight">▐ ✕</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" data-cmd="insertHorizontalRule"  title="Divider">─</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn fmt-btn-clear" data-cmd="removeFormat" title="Clear formatting">✕ Clear</button>
+        <span class="fmt-sep"></span>
+        <button class="fmt-btn" id="historyBtn" title="Draft history">⏱ History</button>
+      </div>
+
+      <!-- Draft version history panel (5c) -->
+      <div class="draft-history-panel hidden" id="draftHistoryPanel">
+        <div class="draft-history-header">
+          <span>Draft History</span>
+          <button class="draft-history-close" id="draftHistoryClose">✕</button>
+        </div>
+        <div class="draft-history-list" id="draftHistoryList"></div>
+      </div>
+
+      <div class="writing-panes" id="writingPanes">
+        <div class="writing-pane pane-copy" id="writingCopyPane">
+          <div class="writing-page-wrap">
+            <div class="writing-editor rich-editor" id="writingCopyEditor" contenteditable="true" spellcheck="true" data-placeholder="Start writing Life of Bon..."></div>
+          </div>
+        </div>
+        <div class="writing-resize-handle hidden" id="writingResizeHandle"></div>
+        <div class="writing-pane pane-draft hidden" id="writingDraftPane">
+          <div class="draft-pane-header">
+            <span class="draft-label">Draft &nbsp;<span class="pane-wc" id="draftWc">0 words</span></span>
+            <button class="btn-promote" id="promoteBtn">← Promote to Working Copy</button>
+          </div>
+          <div class="writing-page-wrap">
+            <div class="writing-editor rich-editor draft-editor" id="writingDraftEditor" contenteditable="true" spellcheck="true" data-placeholder="AI-generated drafts and explorations appear here..."></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="writing-ai-result hidden" id="writingAiResult">
+        <div class="ai-result-header">
+          <span>AI Notes</span>
+          <button class="ai-result-close" id="closeAiResult">✕</button>
+        </div>
+        <div class="ai-result-body" id="writingAiResultBody"></div>
+      </div>
+
+      <!-- Find & Replace panel (E3) -->
+      <div id="find-replace-panel">
+        <div class="fr-header">
+          <span class="fr-title">Find & Replace</span>
+          <button class="fr-close" onclick="toggleFindReplace()">×</button>
+        </div>
+        <div class="fr-row">
+          <input id="fr-find" type="text" placeholder="Find…" />
+          <span id="fr-match-count" class="fr-match-count"></span>
+        </div>
+        <div class="fr-row">
+          <input id="fr-replace" type="text" placeholder="Replace with…" />
+        </div>
+        <div class="fr-actions">
+          <button class="fr-btn" onclick="frReplaceNext()">Replace</button>
+          <button class="fr-btn" onclick="frReplaceAll()">Replace All</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Distraction-free exit button (E4) -->
+    <button id="df-exit-btn" onclick="toggleDistractFree()" title="Exit focus mode (Esc)">✕ Exit Focus</button>
+
+    <!-- TAB 3: CHARACTERS -->
+    <section class="tab-panel" id="panel-characters">
+      <div class="characters-layout">
+
+        <div class="char-sidebar" id="charSidebar">
+          <div class="char-sidebar-header">
+            Characters <span class="char-count-badge" id="charCount">0</span>
+          </div>
+          <div class="char-list" id="charList"></div>
+        </div>
+
+        <div class="char-profile-panel" id="charProfilePanel">
+          <div class="char-empty-state" id="charEmptyState">
+            <div class="char-empty-icon">👤</div>
+            <p>Select a character to view or edit their profile.</p>
+            <p class="hint">Characters come from your Story Canvas cards.</p>
+          </div>
+          <div class="char-profile hidden" id="charProfile">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: ARCS -->
+    <section class="tab-panel" id="panel-arcs">
+      <div class="arcs-layout">
+
+        <div class="arcs-timeline-section">
+          <div class="arcs-section-label">Arc Timeline <span class="arc-count-badge" id="arcCount">0 arcs</span></div>
+          <div class="arcs-timeline-strip" id="arcsTimeline">
+            <div class="arc-timeline-empty" id="arcTimelineEmpty">No arc cards yet — add some in Story Canvas.</div>
+          </div>
+        </div>
+
+        <div class="arcs-brainstorm-section" id="brainstormSection">
+          <div class="brainstorm-subtabs">
+            <button class="brainstorm-tab active" data-btab="situations">36 Dramatic Situations</button>
+            <button class="brainstorm-tab" data-btab="sequences">8-Sequence Structure</button>
+            <button class="brainstorm-collapse-btn" id="brainstormCollapseBtn" title="Collapse/expand this section">▼</button>
+          </div>
+          <div class="brainstorm-panel" id="brainstormSituations"></div>
+          <div class="brainstorm-panel hidden" id="brainstormSequences"></div>
+        </div>
+        <div class="brainstorm-resize-handle" id="brainstormResizeHandle"></div>
+
+        <div class="arcs-ideas-section">
+          <div class="ideas-header">✦ What Could Happen Next?</div>
+          <textarea class="ideas-context" id="ideasContext" placeholder="Optional: describe the direction you're exploring..."></textarea>
+          <div class="ideas-selected-situation hidden" id="ideasSelectedSituation"></div>
+          <div class="ideas-actions">
+            <button class="btn-map-arcs" id="mapArcsBtn">Map Arcs to Sequences</button>
+            <button class="btn-generate-ideas" id="generateIdeasBtn">Generate 3 Ideas ▶</button>
+          </div>
+          <div class="ideas-result hidden" id="ideasResult"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ADD NOTES MODAL -->
+  <div class="modal-overlay hidden" id="notesModal">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-icon">✨</span>
+          <h3>Add Notes</h3>
+        </div>
+        <button class="modal-close" id="closeNotesModal">✕</button>
+      </div>
+
+      <div class="modal-modes">
+        <button class="mode-btn active" data-mode="paste">Paste Text</button>
+        <button class="mode-btn" data-mode="upload">Upload File</button>
+      </div>
+
+      <div class="mode-panel active" id="mode-paste">
+        <textarea id="pasteText" placeholder="Paste your story notes here — character descriptions, world-building ideas, plot points, anything..."></textarea>
+      </div>
+
+      <div class="mode-panel" id="mode-upload">
+        <div class="drop-zone" id="dropZone">
+          <span class="drop-icon">📁</span>
+          <p class="drop-title">Drop a file here</p>
+          <p class="drop-or">or</p>
+          <label class="btn-browse">
+            Browse Files
+            <input type="file" id="fileInput" accept=".txt,.md,.jpg,.jpeg,.png,.heic,.docx,.pdf" hidden />
+          </label>
+          <p class="drop-types">.txt · .md · .jpg · .png · .heic · .docx · .pdf</p>
+        </div>
+        <div id="filePreview" class="file-preview hidden">
+          <span id="fileName" class="file-name"></span>
+          <button class="btn-clear-file" id="clearFile">Remove</button>
+        </div>
+      </div>
+
+      <details class="api-key-section" id="apiKeyDetails">
+        <summary>🔑 API Key <span id="keyStatusChip" class="key-hint">— click to set</span></summary>
+        <div class="api-key-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+          <button id="saveApiKey" class="btn-save-key">Save</button>
+        </div>
+        <p class="api-key-note">
+          Stored locally only — never sent anywhere except Anthropic.<br>
+          To auto-load your key, save it in a file called <code>api-key.txt</code> in the
+          same folder as this app (already gitignored and safe from commits).
+        </p>
+        <button class="btn-clear-key hidden" id="clearKeyBtn">✕ Remove saved key</button>
+      </details>
+
+      <div class="modal-footer">
+        <span id="organizeStatus" class="organize-status"></span>
+        <button class="btn-organize" id="organizeBtn">Organize with AI</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BACKUP MODAL -->
+  <div class="modal-overlay hidden" id="backupModal">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-icon">💾</span>
+          <h3>Backup &amp; Restore</h3>
+        </div>
+        <button class="modal-close" id="closeBackupModal">✕</button>
+      </div>
+
+      <div class="backup-body">
+
+        <!-- Export -->
+        <div class="backup-section">
+          <div class="backup-section-title">Export</div>
+          <p class="backup-section-desc">Download all your story data as a JSON file. Read-only — your current data is never touched.</p>
+          <button class="btn-backup-export" id="exportBtn">⬇ Download Backup</button>
+        </div>
+
+        <div class="backup-divider"></div>
+
+        <!-- Import -->
+        <div class="backup-section">
+          <div class="backup-section-title">Import</div>
+          <p class="backup-section-desc">Restore from a backup file. Choose how to handle existing data:</p>
+          <div class="backup-mode-options">
+            <label class="backup-mode-opt">
+              <input type="radio" name="importMode" value="merge" checked />
+              <div class="backup-mode-text">
+                <strong>Merge</strong>
+                <span>Add new items from backup without removing anything. Safest — skips cards that already exist.</span>
+              </div>
+            </label>
+            <label class="backup-mode-opt">
+              <input type="radio" name="importMode" value="replace" />
+              <div class="backup-mode-text">
+                <strong>Replace All</strong>
+                <span>Overwrite all current data with the backup. Requires confirmation.</span>
+              </div>
+            </label>
+          </div>
+          <label class="btn-backup-import-label">
+            <input type="file" id="importFileInput" accept=".json" hidden />
+            <span class="btn-backup-import">⬆ Choose Backup File</span>
+          </label>
+          <div class="backup-status hidden" id="backupStatus"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT PREVIEW MODAL (A4) -->
+  <div class="modal-overlay hidden" id="importPreviewModal">
+    <div class="modal-box preview-box">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-icon">🗂</span>
+          <h3>Review Proposed Cards</h3>
+        </div>
+        <button class="modal-close" id="previewClose">✕</button>
+      </div>
+      <div id="previewSummary" class="preview-summary"></div>
+      <div id="previewCardList" class="preview-card-list"></div>
+      <div class="modal-footer">
+        <span id="previewCount" class="organize-status"></span>
+        <button class="btn-secondary-sm" id="previewCancel">Cancel</button>
+        <button class="btn-organize" id="previewConfirm">Create Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMBINE CARDS PANEL -->
+  <div class="combine-panel hidden" id="combinePanel">
+    <div class="combine-panel-header">
+      <span class="combine-panel-label">Combining <strong id="combineCard1Name"></strong> + <strong id="combineCard2Name"></strong></span>
+    </div>
+    <textarea id="combineContextNote" placeholder="Optional: how should they be combined? (e.g. 'make them fight', 'merge backstories')"></textarea>
+    <div class="combine-panel-actions">
+      <span id="combineStatusMsg" class="combine-status-msg"></span>
+      <button id="combineCancelBtn" class="btn-secondary-sm">Cancel</button>
+      <button id="combineConfirmBtn" class="btn-accent-sm">Combine</button>
+    </div>
+  </div>
+
+  <!-- MAP SYNC PANEL -->
+  <div class="combine-panel hidden" id="mapSyncPanel">
+    <div class="combine-panel-header">
+      <span class="combine-panel-label"><strong id="mapSyncCount">0</strong> unsynced cards — organize on map?</span>
+    </div>
+    <textarea id="mapSyncContextNote" placeholder="Optional context for the AI (e.g. 'focus on Act 2', 'new characters added')..."></textarea>
+    <div class="combine-panel-actions">
+      <span id="mapSyncStatusMsg" class="combine-status-msg"></span>
+      <button id="mapSyncSkipBtn" class="btn-secondary-sm">Just Organize</button>
+      <button id="mapSyncConfirmBtn" class="btn-accent-sm">Sync + Organize</button>
+    </div>
+  </div>
+
+  <!-- CLAUDE CHAT PANEL -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <span class="chat-title">✦ Claude</span>
+        <span class="chat-subtitle">Writing Assistant</span>
+        <span class="chat-memory-badge" id="chatMemoryBadge" style="display:none" title="Story memory active from earlier in this session">● Memory</span>
+      </div>
+      <button class="chat-close" id="chatClose">✕</button>
+    </div>
+
+    <!-- Sub-tab bar: Chat | Suggestions + Canon Review shortcut -->
+    <div class="chat-subtabs">
+      <button class="chat-subtab active" id="chatSubTabChat" data-subtab="chat">Chat</button>
+      <button class="chat-subtab" id="chatSubTabSuggestions" data-subtab="suggestions">
+        Suggestions<span class="suggestions-count-badge" id="suggestionsCountBadge" style="display:none"></span>
+      </button>
+      <button class="chat-review-btn" id="canonReviewBtn" title="Ask Claude to review all your notes for conflicts, gaps, and outdated ideas">🔍 Review Notes</button>
+    </div>
+
+    <!-- CHAT VIEW -->
+    <div class="chat-view" id="chatView">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg assistant">
+          <p>Hi! I'm here to help with "Life of Bon". Ask me about characters, plot, dialogue, world-building — anything.</p>
+        </div>
+      </div>
+      <div class="chat-footer">
+        <textarea class="chat-input" id="chatInput" placeholder="Ask about your story..." rows="1"></textarea>
+        <button class="chat-send" id="chatSend">↑</button>
+      </div>
+    </div>
+
+    <!-- SUGGESTIONS VIEW -->
+    <div class="chat-view hidden" id="suggestionsView">
+      <div class="suggestions-empty" id="suggestionsEmpty">
+        <p>No suggestions yet.</p>
+        <p>Click <strong>🔍 Review Notes</strong> to ask Claude to analyze your story notes, then save the results here.</p>
+      </div>
+      <div class="suggestions-list" id="suggestionsList"></div>
+    </div>
+  </div>
+
+  <!-- Floating chat button -->
+  <button class="fab-chat" id="openChat">✦ Ask Claude<span class="fab-dot hidden" id="chatNotifDot"></span></button>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
