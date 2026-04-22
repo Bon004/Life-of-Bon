@@ -620,5 +620,358 @@
   <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 3: Claude Code usage insights review</div>
 
 </div>
+
+<!-- ═══════════════════════════════════════════ RUN 4 ═ -->
+<div class="container" style="margin-top: 80px; padding-top: 64px; border-top: 2px solid var(--border);">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report · Run 4</div>
+    <h1>Sprint E Audit + F1 Commit</h1>
+    <p class="subtitle">Used /status to orient, then launched parallel subagents: one to audit Sprint E code (all four features pass), one to implement Sprint F1 — which was discovered to already be fully built. Committed Sprint E + F1 together in one clean commit.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-22</strong></span>
+      <span class="chip">Run <strong>4</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>c17aa7a</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session — entirely build/audit focused. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+        <li>[x] Home page / landing screen — shipped earlier</li>
+        <li>[x] Writing tab rich text toolbar — expanded earlier</li>
+        <li>[x] Character grouping by name — shipped earlier</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+        <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import — complete</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries — complete</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing — 2026-04-20</li>
+        <li>[x] Tag chip + source_section rendering — verified working</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish — Run 1 this date</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — built Run 2; code-audited + committed this session</li>
+        <li>[x] <strong>UX Sprint F1: column spotlight mode (⊙ per header, 44px collapsed strips, Esc to exit) — confirmed built + committed this session</strong></li>
+        <li>[ ] Browser test Sprint E + F1 in live browser — code passes audit; DOM interactions unverified</li>
+        <li>[ ] UX Sprint C (C1–C3): batch history, card sections, AI stale detection</li>
+        <li>[ ] First real notes import to validate 12-type extraction pipeline</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Sprint E and F1 passed code audit and are committed, but neither has been tested in a live browser. Word goal input, export download, Ctrl+H panel, distraction-free toggle, and the ⊙ spotlight collapse all need a manual walkthrough before building on top of them.</li>
+        <li>No live import test has been run since the 12-type taxonomy was added. Tag chips, source labels, and new card types (location, faction, lore, etc.) are present in code but extraction pipeline has never produced them in a real session.</li>
+        <li>The D1 override block at <code>style.css:3560+</code> remains a latent collision risk — always grep the selector before adding new CSS rules near the top of the file.</li>
+        <li>F1 collapse animation uses CSS transitions on <code>flex</code> and <code>min-width</code> — these animate inconsistently across browsers. Safari in particular may not animate flex transitions. Not a blocker, but worth noting if visual smoothness matters.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Run the first real notes import — paste a short excerpt from <code>NEW NOTES/Life-of-Bon-FINAL-MASTER.txt</code> and verify tag chips, source labels, and new card types (location, faction, lore) appear correctly.</li>
+        <li>Return to character arc gaps and world-building consistency review (deferred several sessions now).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Open the app in a browser and manually test Sprint E (word goal, export, find &amp; replace, distraction-free) and Sprint F1 (spotlight ⊙ button on each column) before starting any new sprint.</li>
+        <li>Sprint C: C1 (batch action history / undo), C2 (card sections / structured fields), C3 (AI stale detection flag on cards).</li>
+        <li>Push the 4 unpushed commits to origin: <code>git push origin main</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>c17aa7a — Sprint E + F1: writing tab features + column spotlight mode</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Unpushed</div><div class="handoff-val">4 commits ahead of origin/main — push before switching machines</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>app.js</code> — Sprint E functions (<code>updateWritingWordCounts</code>, <code>exportWritingAs</code>, <code>toggleFindReplace</code>, <code>frHighlightMatches</code>, <code>frReplaceNext</code>, <code>frReplaceAll</code>, <code>toggleDistractFree</code>) + Sprint F1 <code>spotlightColumn()</code> and <code>spotlitColumn</code> state var</li>
+        <li><code>index.html</code> — word goal input + progress bar, export buttons, find &amp; replace panel, distraction-free exit button, <code>.col-spotlight-btn</code> (⊙) per column header, <code>.col-vertical-strip</code> collapsed state per column</li>
+        <li><code>style.css</code> — word goal bar, export buttons, find &amp; replace floating panel, distraction-free overrides, F1 spotlight/collapsed/vertical-strip rules (lines ~471–518, labeled <code>/* F1 — Column Spotlight */</code>)</li>
+        <li><code>Web Build Notes/roadmaps/roadmap-future-features.html</code> — roadmap updated to reflect E and F1 completion</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Committed Sprint E + F1 together in one commit.</strong> Both were fully built and audited — splitting into two commits would have been churn with no benefit.</li>
+        <li><strong>F1 was not re-implemented — the subagent found it already complete.</strong> The implementation agent read the files, confirmed all three files had the feature (JS function, HTML markup, CSS rules), and returned without writing anything. Correct behavior — no redundant work.</li>
+        <li><strong>Skipped <code>.claude/settings.local.json</code> from the commit.</strong> The file had minor whitespace/line-ending differences — not meaningful and not worth tracking alongside feature code.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Push to origin: <code>git push origin main</code> (4 commits pending).</li>
+        <li>Browser test Sprint E + F1 — open Writing tab (word goal, export, Ctrl+H, ⛶ Focus) and Story Canvas tab (click ⊙ on a column header).</li>
+        <li>Sprint C: start with C1 (batch action history — undo last AI import) or C3 (AI stale detection — flag cards whose content may be outdated).</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>No live browser test for Sprint E or F1. Must happen before Sprint C, since C2 (card sections) touches the same card DOM as E3 (find &amp; replace).</li>
+        <li>4 commits not yet pushed to origin — if switching to the home machine, push first.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Run <code>/status</code> to orient at the start of the session.</li>
+        <li>Run subagents to complete the "Resume here" tasks from the last session report: audit Sprint E, implement Sprint F1, commit, then run <code>/insights</code>.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Parallel subagents for audit + implementation.</strong> The Explore audit agent and the general-purpose implementation agent ran simultaneously. Total wall time was ~42s for both. The audit finished with a clean all-pass; the implementation agent discovered F1 was already done and returned without writing. No wasted work in either direction.</li>
+        <li><strong>The implementation subagent read files before writing.</strong> Instead of blindly adding F1 code, it checked the actual file state first — found the feature complete, reported back accurately. This is the correct behavior and prevented a duplicate implementation.</li>
+        <li><strong>Tight subagent prompts with exact file paths and expected function names.</strong> Both agents had enough context to operate independently without follow-up. The audit prompt specified E1–E4 by function name; the implementation prompt specified exact CSS variable conventions and the D1 override block collision risk.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Include a "check if already implemented" instruction in implementation subagent prompts.</strong> The F1 agent found it on its own because the prompt said "read the files first," but making "confirm not already present" an explicit step would be cleaner and more reliable.</li>
+        <li><strong>No browser test was done.</strong> The session completed audit + commit without an actual live browser walkthrough. The next session should start with the browser test before doing any new work — this has now been deferred two sessions in a row.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Pattern confirmed:</strong> Parallel subagents (read-only audit + write implementation) running simultaneously is safe and fast — the audit doesn't block the implementation, and if the implementation finds nothing to do, it reports cleanly without side effects.<br>
+        <em>Why it works:</em> The audit agent is purely read-only; the implementation agent reads before writing. No file conflicts possible.
+      </div>
+      <div class="callout warn">
+        <strong>Recurring debt:</strong> Sprint E and F1 have been code-reviewed but never browser-tested. Each session that adds more features on top increases the cost of discovering a DOM bug. The next session must open the browser first.<br>
+        <em>Rule:</em> Before starting any new sprint, manually exercise the last one in a live browser — 5 minutes of testing is cheaper than debugging DOM issues after three layers of new code are on top.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 4: Sprint E audit + F1 commit</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ RUN 5 ═ -->
+<div class="container" style="margin-top: 80px; padding-top: 64px; border-top: 2px solid var(--border);">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report · Run 5</div>
+    <h1>Project Reorganization: docs/, design/, story/</h1>
+    <p class="subtitle">Full project structure cleanup — renamed 3 folders, merged story notes, updated all path references across CLAUDE.md, CODEBASE.md, both SKILL.md files, .gitignore, and memory. Added canonical Data Schema (12 types), Skills registry, and Project Structure sections to CODEBASE.md.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-22</strong></span>
+      <span class="chip">Run <strong>5</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>staged — not yet pushed</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session — entirely project housekeeping. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+        <li>[x] Home page / landing screen — shipped earlier</li>
+        <li>[x] Writing tab rich text toolbar — expanded earlier</li>
+        <li>[x] Character grouping by name — shipped earlier</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+        <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import — complete</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries — complete</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing — 2026-04-20</li>
+        <li>[x] Tag chip + source_section rendering — verified working</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — committed Run 4</li>
+        <li>[x] UX Sprint F1: column spotlight mode (⊙ per header, 44px collapsed strips, Esc to exit) — committed Run 4</li>
+        <li>[x] <strong>Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code> — renamed 3 folders, updated all doc/skill/gitignore references — this session</strong></li>
+        <li>[ ] Browser test Sprint E + F1 in live browser — code passes audit; DOM interactions unverified</li>
+        <li>[ ] UX Sprint C (C1–C3): batch history, card sections, AI stale detection</li>
+        <li>[ ] First real notes import to validate 12-type extraction pipeline</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Sprint E and F1 are committed but still unverified in a live browser. Word goal input, export download, Ctrl+H panel, distraction-free toggle, and ⊙ spotlight collapse all need a manual walkthrough before Sprint C begins.</li>
+        <li>No live import test has been run since the 12-type taxonomy was added. The story notes file is now at <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> — a good candidate for the first import test.</li>
+        <li>The D1 override block at <code>style.css:3560+</code> remains a latent collision risk — always grep the selector before adding new CSS.</li>
+        <li>Home machine path (<code>C:\Users\esteb\Documents\Story website</code>) still uses old folder names — needs a <code>git pull</code> to pick up the renames before working there.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Run the first real notes import — paste a short excerpt from <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> and verify tag chips, source labels, and new card types (location, faction, lore) appear correctly on cards.</li>
+        <li>Return to character arc gaps and world-building consistency review (deferred several sessions).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Commit and push the reorganization: the staged changes (folder renames + doc updates) plus this session report are ready to go.</li>
+        <li>Push all commits to origin — now 5 ahead of <code>origin/main</code>.</li>
+        <li>Browser test Sprint E + F1 before starting Sprint C — open the Writing tab and Story Canvas, exercise every new control.</li>
+        <li>Sprint C: C1 (batch action history / undo), C2 (card sections / structured fields), C3 (AI stale detection flag).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>c17aa7a — Sprint E + F1: writing tab features + column spotlight mode</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Staged (uncommitted)</div><div class="handoff-val">Full reorganization — folder renames, doc updates, this session report</div></div>
+      <div class="handoff-row"><div class="handoff-key">Unpushed</div><div class="handoff-val">4 existing + 1 pending reorganization commit = 5 ahead of origin — push after committing</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>Web Build Notes/</code> → <code>docs/</code> — all session reports and roadmap moved; cleaner conventional name</li>
+        <li><code>UI design/</code> → <code>design/</code> — reference images; shorter and unambiguous</li>
+        <li><code>Notes/</code> + <code>NEW NOTES/</code> → <code>story/</code> — all story files merged; FINAL-MASTER from NEW NOTES renamed to <code>Life-of-Bon-FINAL-MASTER-NEW.txt</code> to avoid collision</li>
+        <li><code>CLAUDE.md</code> — added "Where Things Live" table; replaced "Claude Code Commands" with "Skills" registry table; added extended card types note; updated roadmap path</li>
+        <li><code>CODEBASE.md</code> — added "Project Structure" section; fixed stale file sizes (app.js 2,100→5,100 lines); added canonical "Data Schema" with all 12 types; added "Skills" section</li>
+        <li><code>.claude/skills/insights/SKILL.md</code> — updated all 3 path references from <code>Web Build Notes/session-reports/</code> to <code>docs/session-reports/</code></li>
+        <li><code>.claude/skills/status/SKILL.md</code> — updated 1 path reference to <code>docs/session-reports/</code></li>
+        <li><code>.gitignore</code> — replaced <code>!Notes/</code> + <code>!NEW NOTES/</code> exceptions with <code>!story/</code></li>
+        <li>Memory files — updated <code>feedback_insights_save_path.md</code> and <code>MEMORY.md</code> index to reflect <code>docs/session-reports/</code></li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>No SKILLS.md file created.</strong> Skills registry lives as a table in CLAUDE.md (when to invoke) and CODEBASE.md (file map reference). Each <code>SKILL.md</code> is the single source of truth for its own workflow. A third doc would just add overlap — rejected.</li>
+        <li><strong>CODEBASE.md is the canonical home for the data schema.</strong> CLAUDE.md had a brief schema block and a full card types list. The full 12-type schema was moved to CODEBASE.md; CLAUDE.md now keeps only a 5-type summary with a pointer. Reduces drift risk — one place to update.</li>
+        <li><strong>Both Notes files kept distinct in story/.</strong> Rather than overwriting one with the other, the NEW NOTES version was renamed <code>Life-of-Bon-FINAL-MASTER-NEW.txt</code>. You can manually merge or delete the older one when ready.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit the staged reorganization: <code>git commit</code> with message "Reorganize project structure: docs/, design/, story/ + update all doc references".</li>
+        <li>Push to origin: <code>git push origin main</code> (will push 5 commits).</li>
+        <li>Open the app in a browser and manually test Sprint E (word goal, export, Ctrl+H, distraction-free) and F1 (⊙ column spotlight).</li>
+        <li>After browser test: start Sprint C or run the first real notes import from <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code>.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>Sprint E + F1: never tested in a live browser. Three sessions of deferred testing — must happen before Sprint C builds on the same DOM.</li>
+        <li>Home machine (<code>esteb</code>) still has old folder names — do a <code>git pull</code> before working there, or the renamed folders will conflict.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Survey the full project structure and propose a clearer folder + doc organization.</li>
+        <li>Explain how CLAUDE.md, CODEBASE.md, and SKILL.md files should work together — what belongs where, what's redundant.</li>
+        <li>Execute the reorganization: rename folders, update all cross-references, update memory.</li>
+        <li>Commit the changes and run <code>/insights</code>.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Spawning an Explore subagent before proposing anything.</strong> The subagent did a full project survey — file sizes, doc contents, skill files, session report state, open questions — and returned a structured summary. The proposal was grounded in actual state, not assumptions.</li>
+        <li><strong>Proposing before executing.</strong> The reorganization plan was presented as a proposal with rationale for each decision. The user approved it before any files were touched. This is the correct flow for any structural change — reversible in concept before it's a git diff.</li>
+        <li><strong>Parallel execution of file edits.</strong> All 7 file edits (CLAUDE.md ×3, CODEBASE.md ×2, insights/SKILL.md ×2, status/SKILL.md, .gitignore, memory files) were batched as parallel tool calls after the folder renames. Wall time for the entire execution was well under 2 minutes.</li>
+        <li><strong>Zero stale references after execution.</strong> A grep pass for "Web Build Notes", "UI design", and "NEW NOTES" across all .md files confirmed no missed references before committing.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Run /insights before committing, not after.</strong> The user had to correct the order — commit was initiated before the session report was generated. The correct sequence is always: /insights → include the report in the commit → push. The report documents what's in the commit, so it should be part of it.</li>
+        <li><strong>Check for duplicate filenames before merging folders.</strong> Notes/ and NEW NOTES/ both had <code>Life-of-Bon-FINAL-MASTER.txt</code>. The collision was handled gracefully (renamed one to -NEW.txt), but a quick <code>ls</code> of both folders before the merge would have made the plan explicit upfront.</li>
+      </ul>
+
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul>
+        <li>Propose structural changes before executing — even when confident. One approval prompt is cheap; undoing a bad rename is not.</li>
+        <li>After any mass rename, run a grep for the old names to confirm zero stale references before committing.</li>
+        <li>The three-doc contract (CLAUDE.md = behavior rules, CODEBASE.md = technical reference, SKILL.md = skill spec) is clean. Any new doc should fit one of these categories or not be created.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Sequence to follow every session end:</strong> run <code>/insights</code> → save report → then commit (so the report is included in the commit) → then push.<br>
+        <em>Why:</em> The session report documents what's in the commit. Committing before the report means the report lives outside its commit's context.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 5: Project reorganization — docs/, design/, story/</div>
+
+</div>
 </body>
 </html>

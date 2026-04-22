@@ -4,13 +4,25 @@ Quick reference for navigating and understanding the codebase.
 
 ---
 
+## Project Structure
+
+| Folder | Purpose |
+|---|---|
+| `docs/` | Session reports (`docs/session-reports/`) and feature roadmap (`docs/roadmaps/`) |
+| `design/` | UI reference images |
+| `story/` | Source story notes and manuscript files |
+| `tests/` | Vitest unit tests for `story-utils.js` |
+| `.claude/skills/` | Skill definitions — one subfolder per skill, each with a `SKILL.md` |
+
+---
+
 ## Files
 
 | File | Size | Purpose |
 |---|---|---|
-| `index.html` | ~300 lines | All HTML structure: board/map panels, modals, chat panel |
-| `style.css` | ~1,250 lines | All styles (dark theme, CSS variables, cards, modals) |
-| `app.js` | ~2,100 lines | All JavaScript logic |
+| `index.html` | ~700 lines | All HTML structure: board/map panels, modals, chat panel |
+| `style.css` | ~4,000 lines | All styles (dark theme, CSS variables, cards, modals) |
+| `app.js` | ~5,100 lines | All JavaScript logic |
 | `story-utils.js` | ~65 lines | Shared utilities: prompt builders, type constants |
 | `CLAUDE.md` | — | Project guide for AI-assisted development |
 
@@ -129,3 +141,48 @@ Search with **Ctrl+F** using the section name to jump directly.
 | Too many tokens used | `buildStoryContext()`, `sf_chat_memory` cap in Section 13 |
 | File not parsing | `handleFile()` in Section 7 |
 | Sync not finding files | `syncStoryNotes()` in Section 10 |
+
+---
+
+## Data Schema
+
+**Card object** (canonical — stored as JSON array in `sf_cards`):
+
+```javascript
+{
+  id:             "a3f9b2",     // generateId() — 6-char hex
+  type:           "character",  // one of 12 types (see table below)
+  title:          "Bon",
+  content:        "Main character who gets reincarnated...",
+  status:         "active",     // "active" | "archived"
+  tags:           [],           // [{ label: string, color: string }]
+  source_section: "Chapter 1",  // section header from source document
+  createdAt:      "2026-04-07T12:00:00Z"
+}
+```
+
+**Card types:**
+
+| Type | Use for |
+|---|---|
+| `character` | People, beings, named characters |
+| `world` | General world-building (legacy — prefer specific types below) |
+| `arc` | Plot arcs, story events, narrative structure |
+| `quote` | Memorable lines or exact dialogue |
+| `idea` | Loose ideas, themes, future plans |
+| `location` | Specific places |
+| `faction` | Groups, organizations |
+| `lore` | World rules, magic systems, history |
+| `event` | Specific story events |
+| `scene` | Individual scenes |
+| `relationship` | Connections between characters |
+| `theme` | Narrative themes |
+
+---
+
+## Skills
+
+| Skill | Spec | Purpose |
+|---|---|---|
+| `/insights` | `.claude/skills/insights/SKILL.md` | End-of-session HTML report — saved to `docs/session-reports/` |
+| `/status` | `.claude/skills/status/SKILL.md` | Start-of-session orientation from git + last report |

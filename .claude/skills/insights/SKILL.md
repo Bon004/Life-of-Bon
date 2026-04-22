@@ -1,6 +1,6 @@
 # /insights — Session Report Generator
 
-Generate an HTML session report for the Life-of-Bon / StoryForge project and save it to `Web Build Notes/session-reports/`.
+Generate an HTML session report for the Life-of-Bon / StoryForge project and save it to `docs/session-reports/`.
 
 ## When to Use
 Run at the end of a coding session to capture what was built, story state, decisions made, and what to do next. This is the primary continuity mechanism between work and home machines.
@@ -11,15 +11,14 @@ Run at the end of a coding session to capture what was built, story state, decis
 - `git log --oneline -10` — recent commits
 - `git diff HEAD~1 --stat` — files changed last commit
 - `git status` — uncommitted changes
-- Read the most recent session report from `Web Build Notes/session-reports/` — identifies the last sprint label, run number, and open questions
+- Read the most recent session report from `docs/session-reports/` — identifies the last sprint label, run number, and open questions
 
-### Step 2 — Determine file name
+### Step 2 — Determine file name and run number
 - Format: `session-report-YYYY-MM-DD.html`
-- If a file with that date already exists, append `-2`, `-3`, etc.
-- Save to: `Web Build Notes/session-reports/`
-
-### Step 3 — Determine run number
-- Check filenames for today's date to calculate the run number (first file = Run 1, second = Run 2, etc.)
+- If a file with that date already exists, **append the new run as a new section inside that same file** — do NOT create a `-2` file.
+- Count existing Run N sections inside the file to determine the next run number.
+- Save to: `docs/session-reports/`
+- **Before writing:** ask the user "Append Run N to today's existing report, or start a new file?" — only if ambiguous. Default is always append.
 
 ### Step 4 — Generate the HTML report
 

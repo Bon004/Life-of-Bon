@@ -12,7 +12,21 @@
       "Bash(git push *)",
       "Bash(git add *)",
       "Bash(node -c app.js)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "WebFetch(domain:composio.dev)",
+      "WebFetch(domain:github.com)",
+      "Read(//c/Users/egarza/.claude/**)",
+      "Bash(claude skills *)",
+      "Bash(mkdir -p \"C:/Users/egarza/Master File for code stuff/Life-of-Bon/.claude/skills/insights\")",
+      "Bash(mkdir -p \"C:/Users/egarza/Master File for code stuff/Life-of-Bon/.claude/skills/status\")",
+      "Bash(mv \"Web Build Notes\" \"docs\")",
+      "Bash(mv \"UI design\" \"design\")",
+      "Bash(mkdir -p \"story\")",
+      "Bash(cp \"Notes/Life-of-Bon-FINAL-MASTER.txt\" \"story/Life-of-Bon-FINAL-MASTER.txt\")",
+      "Bash(cp \"NEW NOTES/Life-of-Bon-FINAL-MASTER.txt\" \"story/Life-of-Bon-FINAL-MASTER-NEW.txt\")",
+      "Bash(cp -r Notes/. story/)",
+      "Bash(rm -rf \"Notes\")",
+      "Bash(rm -rf \"NEW NOTES\")"
     ]
   },
   "hooks": {

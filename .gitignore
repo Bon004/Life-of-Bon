@@ -16,11 +16,9 @@ Thumbs.db
 # Story notes — too large/binary for git
 story-notes/
 
-# Un-ignore story note folders (override *.txt rule above)
-!Notes/
-!Notes/**
-!NEW NOTES/
-!NEW NOTES/**
+# Un-ignore story folder (override *.txt rule above)
+!story/
+!story/**
 
 # Local development files
 node_modules/

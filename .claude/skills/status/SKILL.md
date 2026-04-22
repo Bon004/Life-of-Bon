@@ -11,7 +11,7 @@ Run these in parallel:
 - `git log --oneline -8` — recent commits
 - `git status` — uncommitted changes
 - `git branch --show-current` — current branch
-- Read the most recent file in `Web Build Notes/session-reports/` (sort by filename descending, pick the first)
+- Read the most recent file in `docs/session-reports/` (sort by filename descending, pick the first)
 
 Then produce a structured plain-text summary in this format:
 

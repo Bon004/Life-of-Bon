@@ -17,6 +17,18 @@ StoryForge is a web app for organizing your isekai/anime story called "Life of B
 - Shell: **PowerShell** — always use PowerShell-compatible syntax (`;` instead of `&&`)
 - No build steps — open index.html directly or use Live Server
 
+## Where Things Live
+
+| Folder | Purpose |
+|---|---|
+| `docs/` | Session reports (`docs/session-reports/`) and feature roadmap (`docs/roadmaps/`) |
+| `design/` | UI reference images |
+| `story/` | Source story notes and manuscript files |
+| `tests/` | Vitest unit tests for `story-utils.js` |
+| `.claude/skills/` | Skill definitions — one subfolder per skill, each with a `SKILL.md` |
+
+Full technical reference (file map, schemas, key functions): see `CODEBASE.md`.
+
 ## How to Work on This Project
 
 ### Key Data Structure
@@ -37,6 +49,8 @@ StoryForge is a web app for organizing your isekai/anime story called "Life of B
 - **arc** → plot points, story events, narrative arcs
 - **quote** → memorable lines or exact dialogue
 - **idea** → loose ideas, themes, future plans
+
+> Extended types (12 total): location, faction, lore, event, scene, relationship, theme. Full schema: see `CODEBASE.md`.
 
 ## Important Notes
 
@@ -61,10 +75,14 @@ Each card has a `status` field: `"active"` (default) or `"archived"` (superseded
 - Archive/Restore via the ⋮ AI Actions dropdown on any map card or the Archive panel
 - Archived cards are hidden from board and map views; browse them in the Archive left panel
 
-## Claude Code Commands
+## Skills
 
-- **`/insights`** — Story + project + Claude-usage session report. Implemented as a skill at `.claude/skills/insights/SKILL.md` (template in the same folder). That file is the single source of truth for the workflow, format, and save paths.
-- **`/status`** — Quick project orientation. See `.claude/skills/status/SKILL.md`.
+| Skill | Spec | When to invoke |
+|---|---|---|
+| `/insights` | `.claude/skills/insights/SKILL.md` | End of session — generates HTML report, saves to `docs/session-reports/` |
+| `/status` | `.claude/skills/status/SKILL.md` | Start of session — quick orientation from git + last report |
+
+Each `SKILL.md` is the single source of truth for that skill's workflow, output format, and save paths.
 
 ## When Editing Code
 
@@ -84,7 +102,7 @@ DOM-dependent code in `app.js` stays as manual browser testing only.
 - If something isn't working after 2 attempts, stop and explain the problem instead of retrying
 
 ## Next Phases
-See `Web Build Notes/roadmaps/roadmap-future-features.html` for the full build roadmap.
+See `docs/roadmaps/roadmap-future-features.html` for the full build roadmap.
 
 ## Workflow Guidelines
 
