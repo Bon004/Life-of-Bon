@@ -111,6 +111,9 @@ const TYPE_TO_COLUMN = {
 // The 5 physical column IDs that exist in the HTML.
 const COLUMN_TYPES = ['character', 'world', 'arc', 'quote', 'idea'];
 
+// H1 — Global card search query (empty = show all)
+var cardSearchQuery = '';
+
 // ============================================================
 // STATIC STORY DATA — Enneagram, 36 Situations, 8 Sequences
 // Used by the Characters tab and Arcs & Timeline tab.
@@ -375,9 +378,13 @@ function renderCards() {
     const col = document.getElementById('cards-' + colType);
     col.innerHTML = '';
 
-    // Collect all active cards that map to this column
+    // Collect all active cards that map to this column (filtered by search if active)
+    var searchLower = cardSearchQuery.trim().toLowerCase();
     const colCards = cards.filter(function(c) {
-      return (TYPE_TO_COLUMN[c.type] || c.type) === colType && c.status !== 'archived';
+      if ((TYPE_TO_COLUMN[c.type] || c.type) !== colType || c.status === 'archived') return false;
+      if (!searchLower) return true;
+      return (c.title  || '').toLowerCase().includes(searchLower) ||
+             (c.content || '').toLowerCase().includes(searchLower);
     });
 
     // Update count badge (active only)
@@ -1776,6 +1783,7 @@ document.getElementById('viewBoard').addEventListener('click', function() {
   document.getElementById('mapHint').classList.add('hidden');
   document.getElementById('zoomControls').classList.add('hidden');
   document.getElementById('mapButtons').classList.add('hidden');
+  document.getElementById('cardSearchWrap').classList.remove('hidden');
   cancelConnect();
   hideCombinePanel();
   hideMapSyncPanel();
@@ -1790,6 +1798,7 @@ document.getElementById('viewMap').addEventListener('click', function() {
   document.getElementById('mapHint').classList.remove('hidden');
   document.getElementById('zoomControls').classList.remove('hidden');
   document.getElementById('mapButtons').classList.remove('hidden');
+  document.getElementById('cardSearchWrap').classList.add('hidden');
   renderMap();
   applyZoom(mapZoom);
   updateSyncButtonState();
@@ -4911,9 +4920,34 @@ function exportWritingAs(format) {
 }
 
 // ============================================================
+// F1 — Column Spotlight Mode
+// ============================================================
+var spotlitColumn = null;
+
+function spotlightColumn(type) {
+  var cols = document.querySelectorAll('.canvas-col');
+  if (spotlitColumn === type) {
+    spotlitColumn = null;
+    cols.forEach(function(c) { c.classList.remove('spotlit', 'collapsed'); });
+    return;
+  }
+  spotlitColumn = type;
+  cols.forEach(function(c) {
+    if (c.dataset.type === type) {
+      c.classList.add('spotlit');
+      c.classList.remove('collapsed');
+    } else {
+      c.classList.add('collapsed');
+      c.classList.remove('spotlit');
+    }
+  });
+}
+
+// ============================================================
 // E3 — Find & Replace
 // ============================================================
 var frPanelVisible = false;
+var frCurrentMatch = -1;
 
 function toggleFindReplace() {
   var panel = document.getElementById('find-replace-panel');
@@ -4924,6 +4958,12 @@ function toggleFindReplace() {
     var fi = document.getElementById('fr-find');
     if (fi) { fi.value = ''; fi.focus(); }
     document.getElementById('fr-match-count').textContent = '';
+    frCurrentMatch = -1;
+  } else {
+    var copy  = document.getElementById('writingCopyEditor');
+    var draft = document.getElementById('writingDraftEditor');
+    if (copy)  { frClearHighlights(copy);  localStorage.setItem('sf_writing_copy',  copy.innerHTML); }
+    if (draft) { frClearHighlights(draft); localStorage.setItem('sf_writing_draft', draft.innerHTML); }
   }
 }
 
@@ -4949,12 +4989,23 @@ function frHighlightMatches() {
   var count = (plain.match(re) || []).length;
   pane.innerHTML = plain.replace(re, function(m) { return '<mark class="fr-hl">' + m + '</mark>'; });
   if (countEl) countEl.textContent = count ? count + ' match' + (count !== 1 ? 'es' : '') : 'no matches';
-  localStorage.setItem('sf_writing_copy', pane.id === 'writingCopyEditor' ? pane.innerHTML : (localStorage.getItem('sf_writing_copy') || ''));
+  if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
+  else localStorage.setItem('sf_writing_draft', pane.innerHTML);
   return count;
 }
 
 function frClearHighlights(pane) {
-  pane.innerHTML = pane.innerHTML.replace(/<mark class="fr-hl"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+  pane.innerHTML = pane.innerHTML.replace(/<mark class="fr-hl[^"]*"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+}
+
+function frNavigateMatch(dir) {
+  var marks = document.querySelectorAll('.fr-hl');
+  if (!marks.length) return;
+  marks.forEach(function(m) { m.classList.remove('fr-hl-active'); });
+  frCurrentMatch = ((frCurrentMatch + dir) % marks.length + marks.length) % marks.length;
+  var active = marks[frCurrentMatch];
+  active.classList.add('fr-hl-active');
+  active.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 function frReplaceNext() {
@@ -4996,12 +5047,21 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     if (frPanelVisible) toggleFindReplace();
     if (document.body.classList.contains('distraction-free')) toggleDistractFree();
+    if (spotlitColumn) spotlightColumn(spotlitColumn);
   }
 });
 
 (function() {
   var fi = document.getElementById('fr-find');
-  if (fi) fi.addEventListener('input', frHighlightMatches);
+  if (fi) {
+    fi.addEventListener('input', function() { frCurrentMatch = -1; frHighlightMatches(); });
+    fi.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        frNavigateMatch(e.shiftKey ? -1 : 1);
+      }
+    });
+  }
 })();
 
 // ============================================================
@@ -5017,6 +5077,33 @@ document.addEventListener('keydown', function(e) {
     toggleDistractFree();
   }
 });
+
+// ============================================================
+// H1 — Global Card Search
+// ============================================================
+(function() {
+  var input = document.getElementById('cardSearchInput');
+  var clearBtn = document.getElementById('cardSearchClear');
+  var wrap = document.getElementById('cardSearchWrap');
+  if (!input) return;
+
+  input.addEventListener('input', function() {
+    cardSearchQuery = input.value;
+    var hasQuery = cardSearchQuery.trim().length > 0;
+    clearBtn.classList.toggle('hidden', !hasQuery);
+    wrap.classList.toggle('has-query', hasQuery);
+    renderCards();
+  });
+
+  clearBtn.addEventListener('click', function() {
+    input.value = '';
+    cardSearchQuery = '';
+    clearBtn.classList.add('hidden');
+    wrap.classList.remove('has-query');
+    input.focus();
+    renderCards();
+  });
+})();
 
 // ============================================================
 // INITIALIZE — runs when the page first loads

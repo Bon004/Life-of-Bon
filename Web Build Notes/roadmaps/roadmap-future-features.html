@@ -855,29 +855,130 @@
   </div>
 
   <!-- UX Sprint F -->
-  <div class="section-header"><h2>UX Sprint F — Board Focus Mode (Do Next)</h2></div>
+  <div class="section-header"><h2>UX Sprint F — Board Focus Mode</h2></div>
   <div class="phase-block">
-    <div class="phase-label">Lets you zoom into 1–2 card types at a time without losing any data or navigation</div>
+    <div class="phase-label">Lets you zoom into 1 card type at a time without losing any data or navigation</div>
 
     <div class="feature-card">
       <div class="feature-header">
         <div class="feature-title">Column Spotlight Mode</div>
-        <div class="feature-id">F1</div>
+        <div class="feature-id" style="color: var(--green); background: var(--green-dim);">F1 ✓</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge-complete">✓ Complete — 2026-04-22</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> User can spotlight a board column to view it at full width, while others shrink to labeled 44px strips that are clickable to switch focus</div>
+      <ul class="task-list">
+        <li>⊙ spotlight button added to each column header</li>
+        <li>Clicking spotlights that column (flex: 5, min-width: 380px); all others collapse to 44px vertical strips</li>
+        <li>Collapsed strips show a colored dot + rotated label; clicking switches the spotlight to that column</li>
+        <li>Second click on spotlit column exits spotlight; Esc also exits</li>
+        <li>State in-memory only — not persisted across reloads</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- UX Sprint H -->
+  <div class="section-header"><h2>UX Sprint H — Discovery &amp; Retrieval (Do Next)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Tools for finding and surfacing information across a growing card library</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Global Card Search</div>
+        <div class="feature-id" style="color: var(--green); background: var(--green-dim);">H1 ✓</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge-complete">✓ Complete — 2026-04-22</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Search input in canvas toolbar filters all board cards in real time by title + content; clear button resets</div>
+      <ul class="task-list">
+        <li>Search input in canvas toolbar (board view only; hidden in map view)</li>
+        <li>Live filter: cards not matching query are hidden; columns show remaining count</li>
+        <li>Clear (✕) button resets filter; input widens on focus; accent border when active</li>
+        <li>No AI — pure client-side string match, case-insensitive</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Story Bible Export</div>
+        <div class="feature-id">H2</div>
       </div>
       <div class="feature-meta">
         <span class="badge badge-high">High Priority</span>
         <span class="badge badge-dep">No dependencies</span>
       </div>
-      <div class="done-when"><strong>Done when:</strong> User can spotlight 1–2 board columns to view them at full width, while non-spotlighted columns shrink to labeled icon strips on the side</div>
+      <div class="done-when"><strong>Done when:</strong> One-click export of all active cards as a styled HTML or Markdown document, grouped by type — shareable as a story bible</div>
       <ul class="task-list">
-        <li>Add a small spotlight icon button (⊞ or ⤢) to each column header</li>
-        <li>Clicking it marks that column as "spotlighted" — all other columns shrink to ~48px labeled strips with a rotated type label and card count</li>
-        <li>Up to 2 columns spotlighted simultaneously; activating a 3rd deselects the oldest</li>
-        <li>Spotlighted columns expand evenly to fill available space via <code>flex-grow</code></li>
-        <li>Thin strips still show count badge and are clickable to swap spotlight focus</li>
-        <li>"✕ Reset" button in the board toolbar clears all spotlight state — not persisted across reloads</li>
+        <li>"Export Story Bible" button in the canvas toolbar or home page</li>
+        <li>Groups cards: Characters → World → Plot &amp; Arcs → Key Quotes → Ideas</li>
+        <li>HTML export: styled page with the app's color system; Markdown: clean headings and bullet lists</li>
+        <li>Archived cards excluded by default; option to include them</li>
       </ul>
-      <div class="dep-note">UX pattern: "expand-to-spotlight" — non-selected columns fold to icon strips, no data is hidden or modified</div>
+      <div class="dep-note">No dependencies. Good follow-up to H1 (search) since a rich card corpus makes export more valuable</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Consistency Checker</div>
+        <div class="feature-id">H3</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">Requires API key</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> AI scans all active cards and returns a list of potential contradictions, anachronisms, or redundant entries for author review</div>
+      <ul class="task-list">
+        <li>"Check Consistency" AI action button (Story Canvas toolbar or AI panel)</li>
+        <li>Sends all card titles + content to Claude; prompt asks for flagged contradictions with card references</li>
+        <li>Returns a formatted report with specific card pairs that may conflict</li>
+        <li>Author can dismiss each finding or navigate to the relevant card</li>
+      </ul>
+      <div class="dep-note">Best used once card corpus is rich (20+ cards); can be expensive on large libraries — warn the user before sending</div>
+    </div>
+  </div>
+
+  <!-- UX Sprint I -->
+  <div class="section-header"><h2>UX Sprint I — Planning Tools (Later)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Lightweight planning and overview tools for authors structuring a long story</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Chapter Planning Mini-Board</div>
+        <div class="feature-id">I1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">Independent</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> A lightweight card-based board for chapter-by-chapter scene planning, separate from the main Story Canvas</div>
+      <ul class="task-list">
+        <li>New sub-view inside Arcs &amp; Timeline tab (or a standalone panel)</li>
+        <li>Each chapter is a column; scenes are small cards that can be drag-reordered</li>
+        <li>Cards store: scene title, characters involved, goal, outcome</li>
+        <li>Not AI-extracted — manually authored by the user</li>
+        <li>Data persisted in a new localStorage key <code>sf_chapters</code></li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Tag Cloud Overview Panel</div>
+        <div class="feature-id">I2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Low Priority</span>
+        <span class="badge badge-dep">Independent</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> A visual tag cloud in the Home tab shows the most-used card tags at a glance, with size proportional to frequency</div>
+      <ul class="task-list">
+        <li>Tag frequency computed from all active cards' <code>tags</code> arrays</li>
+        <li>Rendered as a word cloud in the Home tab stats section</li>
+        <li>Clicking a tag filters the board to cards with that tag</li>
+        <li>Updates in real time when cards are added or archived</li>
+      </ul>
     </div>
   </div>
 
@@ -1092,12 +1193,14 @@
   <ol class="next-list">
     <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint A (A1–A4)</strong> — Card visual refresh, collapsible content, quick-add, staged import preview. <em>Complete — 2026-04-16.</em></div></li>
     <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint B (B1–B4)</strong> — Smarter AI prompt, batch strip, character role chips, archive AI summary. <em>Complete — 2026-04-17.</em></div></li>
-    <li><div class="next-num">3</div><div><strong>UX Sprint D (D1–D3)</strong> — Design system refresh, animated tab transitions, branding &amp; logo area. Highest visual impact for the least code risk — pure CSS/style changes. <em>Do now.</em></div></li>
-    <li><div class="next-num">4</div><div><strong>UX Sprint E (E1–E4) + F1</strong> — Writing stats, export to .txt/.md, find &amp; replace, distraction-free mode, and column spotlight mode on the board. All independent — can be tackled in any order within this step.</div></li>
-    <li><div class="next-num">5</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the core UX is polished.</div></li>
-    <li><div class="next-num">6</div><div><strong>UX Sprint G (G1–G2)</strong> — Structured map zones and background labels. Moderate complexity; best done once card data is rich and connections are populated.</div></li>
-    <li><div class="next-num">7</div><div>Choose: <strong>Phase 5</strong> (writing depth: highlights, scene links) or <strong>Phase 6</strong> (character depth: relationship web, avatars) based on story priorities at the time.</div></li>
-    <li><div class="next-num">8</div><div><strong>Phase 4c</strong> — iPad / mobile layout. <strong>Phase 7b</strong> — Chapter/scene breakdown per arc. <strong>Phase 8</strong> — Settings panel.</div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint D (D1–D3)</strong> — Design system refresh, animated tab transitions, branding &amp; logo area. <em>Complete — 2026-04-22.</em></div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint E (E1–E4)</strong> — Writing stats + word goal, export .txt/.md, find &amp; replace with keyboard navigation, distraction-free mode. <em>Complete — 2026-04-22.</em></div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint F1 + H1</strong> — Column spotlight mode (board focus) and global card search. <em>Complete — 2026-04-22.</em></div></li>
+    <li><div class="next-num">6</div><div><strong>UX Sprint H (H2–H3)</strong> — Story Bible export and AI Consistency Checker. H2 is the higher-value next step; do before H3 which requires a larger card corpus.</div></li>
+    <li><div class="next-num">7</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the core UX is polished.</div></li>
+    <li><div class="next-num">8</div><div><strong>Phase 5a</strong> (character name auto-highlight in Writing tab) — high value, low complexity. <strong>Phase 5b/5c</strong> (scene-to-card links, draft version history) — deeper writing/canvas integration.</div></li>
+    <li><div class="next-num">9</div><div><strong>UX Sprint G (G1–G2)</strong> — Structured map zones and background labels. Moderate complexity; best done once card data is rich and connections are populated.</div></li>
+    <li><div class="next-num">10</div><div><strong>UX Sprint I (I1–I2)</strong> — Chapter planning mini-board and tag cloud. <strong>Phase 6</strong> (character relationship web, avatars). <strong>Phase 4c</strong> (mobile). <strong>Phase 8</strong> (settings panel).</div></li>
   </ol>
 
   <!-- Not Planned -->

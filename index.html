@@ -142,6 +142,10 @@
           <button class="view-btn active" id="viewBoard">Board</button>
           <button class="view-btn" id="viewMap">Map</button>
         </div>
+        <div class="card-search-wrap" id="cardSearchWrap">
+          <input type="text" id="cardSearchInput" class="card-search-input" placeholder="Search cards…" autocomplete="off">
+          <button class="card-search-clear hidden" id="cardSearchClear" title="Clear search">✕</button>
+        </div>
         <span class="toolbar-hint hidden" id="mapHint">Click cards to select for combining · drag to move · ⊕ to connect</span>
         <div class="map-buttons hidden" id="mapButtons">
           <button class="btn-map-action" id="mapSyncBtn">⊞ Sync Map</button>
@@ -178,9 +182,16 @@
                 <span class="col-label">Characters</span>
                 <span class="col-count" id="count-character">0</span>
               </div>
-              <button class="btn-add-card" title="Add card">+</button>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('character')" title="Spotlight column">⊙</button>
+              </div>
             </div>
             <div class="col-cards" id="cards-character"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('character')">
+              <span class="col-vs-dot" style="background:var(--color-character)"></span>
+              <span class="col-vs-label">Characters</span>
+            </div>
           </div>
 
           <div class="canvas-col" data-type="world">
@@ -190,9 +201,16 @@
                 <span class="col-label">World Building</span>
                 <span class="col-count" id="count-world">0</span>
               </div>
-              <button class="btn-add-card" title="Add card">+</button>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('world')" title="Spotlight column">⊙</button>
+              </div>
             </div>
             <div class="col-cards" id="cards-world"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('world')">
+              <span class="col-vs-dot" style="background:var(--color-world)"></span>
+              <span class="col-vs-label">World</span>
+            </div>
           </div>
 
           <div class="canvas-col" data-type="arc">
@@ -202,9 +220,16 @@
                 <span class="col-label">Plot & Arcs</span>
                 <span class="col-count" id="count-arc">0</span>
               </div>
-              <button class="btn-add-card" title="Add card">+</button>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('arc')" title="Spotlight column">⊙</button>
+              </div>
             </div>
             <div class="col-cards" id="cards-arc"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('arc')">
+              <span class="col-vs-dot" style="background:var(--color-arc)"></span>
+              <span class="col-vs-label">Plot & Arcs</span>
+            </div>
           </div>
 
           <div class="canvas-col" data-type="quote">
@@ -214,9 +239,16 @@
                 <span class="col-label">Key Quotes</span>
                 <span class="col-count" id="count-quote">0</span>
               </div>
-              <button class="btn-add-card" title="Add card">+</button>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('quote')" title="Spotlight column">⊙</button>
+              </div>
             </div>
             <div class="col-cards" id="cards-quote"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('quote')">
+              <span class="col-vs-dot" style="background:var(--color-quote)"></span>
+              <span class="col-vs-label">Key Quotes</span>
+            </div>
           </div>
 
           <div class="canvas-col" data-type="idea">
@@ -226,9 +258,16 @@
                 <span class="col-label">Ideas</span>
                 <span class="col-count" id="count-idea">0</span>
               </div>
-              <button class="btn-add-card" title="Add card">+</button>
+              <div class="col-header-right">
+                <button class="btn-add-card" title="Add card">+</button>
+                <button class="col-spotlight-btn" onclick="spotlightColumn('idea')" title="Spotlight column">⊙</button>
+              </div>
             </div>
             <div class="col-cards" id="cards-idea"></div>
+            <div class="col-vertical-strip" onclick="spotlightColumn('idea')">
+              <span class="col-vs-dot" style="background:var(--color-idea)"></span>
+              <span class="col-vs-label">Ideas</span>
+            </div>
           </div>
 
         </div>
