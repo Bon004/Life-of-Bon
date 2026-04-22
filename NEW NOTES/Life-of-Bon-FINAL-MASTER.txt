@@ -1,0 +1,1452 @@
+================================================================================
+LIFE OF BON — FINAL MASTER DOCUMENT
+================================================================================
+
+By: Esteban Andres Garza
+Compiled from: Master Source Material, Working Canon Notes, Unified Draft
+Last Updated: April 2026
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+  1.  Core Concept & Identity
+  2.  Inspirations & Tone References
+  3.  Character: Bon (Pre-Reincarnation)
+  4.  Character: Bon (Post-Reincarnation / Core Arc)
+  5.  Supporting Characters
+  6.  Main Antagonist — Vaela (The Unnamed / She Who Remains)
+  7.  World Building — Aetheria / Eldarion
+  8.  Magic & Combat Systems
+  9.  Story Structure & Arcs (Full Timeline)
+  10. Writing Notes & Craft Guidance
+  11. Key Quotes & Thematic Inspiration
+  12. Open Decisions (Deliberately Unresolved)
+  13. Contradictions & Continuity Audit
+
+================================================================================
+SECTION 1: CORE CONCEPT & IDENTITY
+================================================================================
+
+Title: Life of Bon (Series)
+Working Series Title: "Chronicles of Aetheria: The Awakening of Bon"
+Genre: Dark Isekai / Seinen / Shonen
+Target Feel: Isekai + Seinen + Shonen Jump crossover
+
+--- One-Line Pitch ---
+
+A man who never truly lived dies saving a child — and wakes up in a new world
+with every memory intact, forced to become the person he never was, in a world
+that won't let him rest.
+
+--- Core Theme ---
+
+What does it mean to deserve love? To deserve a second chance? And what does
+it cost to become the person you were always supposed to be?
+
+--- Philosophical Core ---
+
+The story explores the conflict between physical existence and consciousness —
+whether relationships require presence to be meaningful, and whether someone
+can truly heal from a life they never wanted to leave behind.
+
+--- Core Emotional Engine ---
+
+- Old life: "I was only living because it was too much trouble to die." He avoids
+  responsibility, hurts his family, and runs from everything.
+- Death: He finally does one unquestionably good thing — saving a child — and
+  dies wondering if it's enough to balance all the damage he caused.
+- New life: He is loved far more than he deserves, and spends his second life
+  trying to become the kind of person who could deserve it.
+
+--- Major Themes ---
+
+- Connection vs. avoidance — learning that letting people matter is painful but necessary
+- Redemption vs. self-hatred — can someone who really messed up ever feel worthy of love?
+- Power vs. responsibility — gaining strength through war and trauma, and choosing how to use it
+- Memory, identity, and reality — what happens when cosmic beings treat memories
+  and relationships as manipulable systems rather than sacred things
+
+--- Tone Anchors ---
+
+- Psychological depth of Attack on Titan
+- Emotional pacing of Mushoku Tensei
+- Gritty survival of Vinland Saga
+- Moral ambiguity of Berserk
+- Raw self-loathing of Re:Zero
+- Strategic intelligence of Code Geass / Classroom of the Elite
+
+================================================================================
+SECTION 2: INSPIRATIONS & TONE REFERENCES
+================================================================================
+
+--- Primary Anime/Manga Influences ---
+
+- Mushoku Tensei — structure, pacing, world feel
+- Vinland Saga — mercenary arc, moral weight of violence; Thorfinn as the
+  "rage + quiet compassion" model
+- Berserk — Guts as emotional template (rage, isolation, compassion beneath)
+- Re:Zero — Subaru's self-loathing as character psychology template
+- Attack on Titan — Armin's breakdown as the defining internal moment
+- Naruto — Sasuke's trajectory (trauma → darkness → redemption)
+- Tokyo Ghoul — Ken Kaneki, duality of nature, losing oneself
+- Arifureta — near-death → emergence arc
+- Eminence in Shadow / Code Geass — Bon's strategic/hidden intelligence layer
+- Elden Ring — Vyke & Ranni as templates for tragic champion & antagonist
+- Almark (manga) — mercenary/child soldier arc as direct structural inspiration
+- Star Wars (Anakin/Vader arc) — fall-to-darkness and return before death
+- A Silent Voice — guilt, self-isolation, the cost of pushing everyone away
+
+--- Character Inspirations for Bon ---
+
+| Reference              | What It Gives Bon                                              |
+|------------------------|----------------------------------------------------------------|
+| Guts (Berserk)         | Rage, isolation, protecting others despite himself             |
+| Thorfinn (Vinland Saga)| Quiet, scarred, capable of deep compassion                     |
+| Subaru (Re:Zero)       | Self-loathing, unworthiness, desperate desire to be enough     |
+| Armin (AoT)            | Screaming self-hatred when he fails the people he loves        |
+| Sasuke (Naruto)        | Trauma-driven darkness, capable of redemption                  |
+| Ken Kaneki (TG)        | Duality of self, loss of identity under pressure               |
+| Anakin Skywalker       | The fall, the seduction of power, the return before death      |
+| Ayanokoji / Shadow     | Hidden intelligence, reads the room, never shows full hand     |
+| Rock Lee (Naruto)      | Earns everything through pure work — no shortcuts              |
+
+--- Character Inspirations for Villain(s) ---
+
+"In all the galaxies I've traveled, all you species are the same — you all
+think you're the center of the universe. You have no idea."
+
+"To me, the real question is: why are you all so weak? Why do such weaklings
+cling so fiercely to life? How can a creature that falls apart at a touch say
+that it wants to be happy? Your suffering is only natural. You people are
+meant to be chewed up."
+
+"Now I want you to think as hard as those puny brains of yours can manage —
+have you ever spared a pig or a cow because it begged you for its life?"
+
+--- Elden Ring Reference Templates ---
+
+- Vyke: A Tarnished champion who fell because he couldn't let go of what he loved.
+  Template for the Tragic Champion.
+- Ranni: An incorporeal being who rejected the established order to write her own
+  ending. Template for Vaela / The Unnamed.
+
+--- Why People Turn Evil (Thematic Note) ---
+
+- Dehumanizing the enemy
+- Believing the ends justify the means
+- Loss of someone irreplaceable
+- A system that failed them
+- Power filling the void where love used to be
+
+================================================================================
+SECTION 3: CHARACTER — BON (PRE-REINCARNATION)
+================================================================================
+
+Name: Bon
+Origin: Japan
+Age at death: Mid-20s (approximately 25–28)
+
+  > Canon Note: The original Master Source listed "early 20s" but Working Canon
+  > establishes mid-20s. Mid-20s is retained — it gives him enough time to build,
+  > neglect, and destroy his family relationships in a way that feels earned, not rushed.
+
+--- Mental State ---
+
+Functional depression — maintains outward normalcy while feeling completely empty.
+He over-analyzes everything to the point where he no longer feels anything. He can
+see every perspective so clearly that he loses his own. No ambitions, no motivation
+— just drifting.
+
+His core feeling: Not that he has nobody. That nobody HAS him.
+(Inspired by Theo Von: "Sometimes feeling alone isn't about feeling like you don't
+have anybody — sometimes it's feeling like nobody has you.")
+
+He views himself as dead weight who wears people down. Believes his life is mostly
+an exaggeration of emotions and regrets. Thinks of himself as a liar and a coward
+— and he's not entirely wrong.
+
+--- 3.1 Daily Life ---
+
+Apartment details:
+- Small cramped apartment, blinds half broken, water stain on the ceiling
+- Wilted spider plant he never waters
+- Smell of old takeout containers and empty beer cans
+- Half-empty bottle of Jinro soju on the nightstand, joint in the ashtray
+
+  > Canon Note: Master Source said "cheap sake." Working Canon says "Jinro soju."
+  > Jinro soju is retained — more specific, more evocative, better writing.
+
+- Cracked phone screen with unread messages from his mother: "Call me when you're ready to talk."
+- Graduation photo: him grinning, father's hand on his shoulder — glass cracked
+  diagonally across his own face
+
+Daily routine:
+- 6 AM alarm → stares at the ceiling
+- Mechanical shower, dress, coffee
+- Walks past the graduation photo without looking
+- Dead-end job doing mindless data entry
+- Eats lunch alone, scrolling his phone to avoid interaction
+- Stops at convenience store, buys cheap food
+- Watches families in parks, feeling invisible
+- Goes home slightly buzzed, does it all again tomorrow
+
+--- Key Mindset Quotes (use in writing) ---
+
+"I was only living because it was too much trouble to die. I got up in the morning,
+I went to work, I made dinner and I went to sleep at night. My body was doing it out
+of habit. That's how I lived every day of my life. I threw my money away just to kill
+time, to stay away from home. I was hiding from reality because I was the only thing
+holding me together."
+
+"I just keep losing. Are some people just supposed to lose? For balancing the universe?
+Like, are there just some people on Earth who are supposed to be here just to make it
+easier for the winners?"
+
+"Resistance is a symptom of the way things are, not the way things necessarily should be.
+Actual victory belongs to things that simply do not see that push — like a broken branch
+in the river current."
+  — Atlanta (show by Childish Gambino)
+
+--- 3.2 The "One Big Sin" — His Family ---
+
+The family crisis:
+- A parent loses a job or gets seriously ill; family finances and emotions collapse
+- His younger sibling is in real trouble (bullying, mental health, or medical issue)
+- They call Bon and ask him to come home, help financially, be present
+
+Bon's response:
+- Ignores calls, delays responses, "forgets" to call back
+- Keeps his dead-end routine — spending money on himself (convenience store food,
+  Jinro, weed, games) instead of helping
+- Tells himself "it's not my responsibility" and "I have my own problems"
+
+The final fight:
+They confront him (phone or in person): "We sacrificed everything for you. Why won't you help?"
+
+He snaps. He says things like:
+  - "I never asked you to sacrifice anything."
+  - "I don't owe you my life."
+  - "Maybe if you'd made better choices, you wouldn't be in this mess."
+
+He hangs up / walks away. No apology. No follow-up. Full no-contact.
+
+The result:
+- Family eventually stops reaching out
+- Bon lives alone, telling himself "they're better off without me"
+- Deep down, he believes they were right about him
+- This is the root of his self-hatred: he knows he turned his back when it mattered most
+- The unread texts from his mother are his daily reminder that he chose this
+
+He is not a predator or a cartoon villain. He is genuinely a piece of shit in how he
+treated the people who loved him — and he knows it. That matters.
+
+--- 3.3 Key Relationships (Pre-Reincarnation) ---
+
+Aki — neighbor girl, approximately 6–7 years old
+
+  > Canon Note: Master Source listed Aki as 8. Working Canon establishes 6–7.
+  > Younger age is retained — more physically helpless in the road, making the
+  > instinctive sacrifice feel more natural.
+
+- Neon pink ball, an "AKI" glitter keychain, a missing baby tooth, pigtails
+- She's the only real warmth in his daily life
+- He helps with her homework occasionally; she treats him like a reliable big brother
+- He acts gruff, but secretly values the connection — it's the one relationship
+  that doesn't remind him of who he failed
+- Her mother's warm smile toward him contrasts sharply with his own family's disappointment
+
+His parents:
+- Demanding, disappointed — "When will you make something of yourself?" "Your cousins
+  all have careers." "We didn't move here for you to waste your life."
+- He sees their love as conditional, which makes it easier to run from it
+
+--- 3.4 The Death Scene ---
+
+Setting: Evening walk, slightly buzzed on soju, convenience store bag in hand,
+streetlights casting long shadows.
+
+What happens:
+- Aki is in the street chasing her neon pink ball
+
+  > Canon Note: Master Source described Aki chasing a cat. Working Canon describes her
+  > chasing her neon pink ball. The ball is retained — more specific, more visual, tied
+  > to her established characterization. It also lands harder: the truck comes, and the
+  > ball keeps rolling.
+
+- A truck's headlights fill the street
+- His body moves before his mind can catch up — he shoves Aki clear and takes the hit
+- He doesn't feel pain. Only relief — like something finally resolving
+
+His last thoughts:
+  - "Will they be proud of me now?"
+  - "Maybe this is what I was meant to do."
+
+This is his first selfless act without self-doubt. The first moment of clarity. He dies
+knowing he did something real — but it does not erase his guilt. That tension is
+intentional and carries into his new life.
+
+--- 3.5 Drafted Opening — Pre-Reincarnation (Third Person) ---
+
+Morning light seeped through the uneven slats of Bon's blinds, casting fractured
+beams across a landscape of neglect. The air hung heavy with the acrid sting of
+yesterday's takeout containers and the faint metallic odor of empty beer cans piled
+beneath the desk. A lone spider plant wilted on the windowsill, its once-vibrant
+green leaves now brittle and curled inward — a silent casualty of Bon's apathy.
+He lay motionless on the mattress, its springs groaning as he traced the water stain
+on the ceiling with bloodshot eyes. The pattern had long since stopped resembling
+anything recognizable, much like his own reflection in the dust-coated mirror across
+the room.
+
+His phone buzzed on the nightstand — "Call me when you're ready to talk" — the fifth
+unanswered message from his mother this week. Outside, children's laughter floated up
+from the street, sharp and distant, as a soccer ball thudded against the pavement in
+rhythmic bursts. Bon's gaze drifted to the graduation photo tucked behind the mirror:
+a younger version of himself, grinning beside his parents in a crisp suit, his father's
+hand resting proudly on his shoulder. The glass pane was cracked diagonally across his
+own face, splitting the memory in two.
+
+He didn't bother closing the blinds. The light filtering through only made the room
+feel smaller, the walls closer.
+
+POV Note: The story begins in THIRD PERSON (distance, detachment — he is not connected
+to himself). After reincarnation, it transitions to FIRST PERSON (intimacy — he is
+waking up for the first time). This shift is intentional and meaningful.
+
+--- 3.6 First-Person Transition — After Rebirth ---
+
+Warmth enveloped me like a cocoon, soft and unfamiliar. I blinked against the harsh
+light, my vision swimming with colors more vivid than anything I'd ever seen before.
+My limbs felt small — fragile — and when I tried to move, a soft cry escaped my lips
+instead of words. Where am I? The thought came unbidden, but it was quickly drowned
+out by something else: an overwhelming sense of safety. For the first time in what felt
+like an eternity, I wasn't alone. A gentle voice hummed above me, soothing and melodic,
+and I realized with a start that I was being held — cradled — by someone who cared.
+Tears welled up before I could stop them. Is this what it feels like to be alive?
+
+================================================================================
+SECTION 4: CHARACTER — BON (POST-REINCARNATION / CORE ARC)
+================================================================================
+
+--- Identity ---
+
+- Reborn as a baby to Elena and Leon, who run a small herb shop in a peaceful town
+- World: Aetheria / Eldarion (see Section 7)
+- He retains full memory of his past life — he knows who he was, and he knows he was
+  a "piece of shit"
+- Core struggle: Self-hatred from his previous life vs. the desire for connection in this one
+
+--- Emotional Journey Map ---
+
+| Phase              | Internal Arc                                                                |
+|--------------------|-----------------------------------------------------------------------------|
+| Pre-Reincarnation  | Numbness → Over-analysis → Paralysis → Emptiness → Sacrifice (first real act)|
+| Early Childhood    | Overwhelming sensory warmth → Confusion about deserving love → Gradual opening
+                     → First real joy → Still haunted by dreams of past life              |
+| The Turn / War     | Loss / Separation → Grief → Guilt → Rage as defense → Isolation →
+                     Survivor first, person second                                         |
+| Mercenary Phase    | Killing becomes easy → Danger of sliding back into old selfishness →
+                     War between past-life ego and the humanity his family gave him       |
+| Academy / Older    | PTSD-scarred veteran among children → Thousand-yard stare → First bonds
+                     since family → Self-sabotage in romance → Slowly accepting he can
+                     deserve things                                                       |
+| Final Arc          | Rage + Compassion → Acceptance → Choosing vulnerability → Grief as proof of love |
+
+--- Core Character Traits ---
+
+- Listens to music constantly (emotional armor / isolation tool)
+- Intelligent: reads situations, thinks several steps ahead
+- Compassionate beneath the anger — cannot fully ignore suffering in others
+- Self-sabotages relationships because he doesn't believe he deserves them
+- Fights dirty (mercenary-style, not duelist style)
+- Quiet and aloof — carries the weight of what he's seen
+- His moments of raw honesty are rare, and therefore devastating when they come
+- He doesn't give speeches about his pain. He deflects. He goes quiet.
+
+--- Bon's Magic — The Rock Lee Question ---
+
+Bon's mana reserve is large — but not because he's talented.
+
+The working theory: His emotional depth and resilience from a life of suffering is the
+reservoir. Every time he pushed through pain, every time he kept going when he was
+broken, that capacity built in him. Magic, for Bon, is tied to emotion rather than theory.
+
+He earns everything through work. He masters nothing effortlessly. Silent casting should
+feel hard-won, not given.
+
+"I keep thinking all my efforts will pay off, but it's always the same."
+"Sometimes this whole thing seems pointless. Like I am a loser and I will always be."
+"I want to show I can be a splendid ninja as well." — Rock Lee
+
+--- Bon's Combat Style ---
+
+He doesn't fight like a duelist. He fights like someone trying to survive.
+- Cauterizes wounds with fire magic in the field
+- Creates cover with earth magic
+- Digs trenches
+- Exploits blind spots, fights dirty, uses every terrain advantage
+This is practical combat, not clean competition.
+
+--- Unique Situation Templates for Bon ---
+
+- MC accidentally creates a problem, almost fixes it, then something unexpected makes
+  it worse than before. (Escalating consequence structure)
+- Anakin arc: starts good, desperately tries to prevent a bad outcome, ends up BEING
+  the cause of it, turns, then comes back to himself right before death
+- Obi-Wan / Anakin goodbye: applies to Bon vs. the Tragic Champion — also mirrors
+  Bjorn and Askeladd from Vinland Saga (fighting someone you love, telling them they
+  were the only real friend you ever had)
+- Bon in a situation that mirrors something from his past life that he was ashamed of
+  — and he's terrified he's about to repeat the same mistake in this new world
+
+--- Subaru / Armin Internal Voice ---
+
+When things go wrong, this is Bon's inner monologue:
+
+"I'll tell you what kind of man I really am. I have no strength, but I want it all.
+I have no knowledge, but all I do is dream. There's nothing I can do, but I struggle
+in vain like an idiot. I… I hate… I hate myself! All I do is talk a big game and make
+myself sound like a big shot when I can't do anything."
+  — Natsuki Subaru (Re:Zero) — template for Bon's inner voice
+
+"Come on, move! You're my body! Why won't you move? I'm begging you! Move!
+Everyone's going to die! ...Get up, you human garbage! Piece of shit! Waste of space!
+I hate you! I hate you! And I always have!"
+  — Armin (Attack on Titan) — the single scene that best captures Bon's relationship
+  with himself when he fails the people he loves
+
+--- Possible Endings (All Open) ---
+
+1. Killed by the hero (moral ambiguity taken too far — redemption through death)
+2. Retires after great battle, lives humbly to old age
+3. Dies saving his love interest (echoes saving Aki — bookend)
+4. FAVORITE: Dies with a genuine smile, becomes a legend — acceptance achieved at the very end
+
+================================================================================
+SECTION 5: SUPPORTING CHARACTERS
+================================================================================
+
+--- Elena (Mother) ---
+
+- Loving, emotionally intelligent
+- Runs the herb shop; it's where Bon learns usefulness feels good
+- Falls ill from rare imported herbs around ages 7–8 — this is Bon's first major crisis
+- Her recovery and bond with Bon deepens his attachment to this new life
+- Primary symbol of the warmth he never had in Japan — the love he never felt he deserved
+- Canon fate: Displaced and enslaved during the Arc 2 disaster. Finding and freeing her
+  is Bon's core motivation through Arc 3. When the reunion finally comes, Bon must decide
+  whether to tell her the truth about what happened — that his panic caused the chain of
+  events that killed Leon, and that he ran rather than searched for her immediately.
+- The confession question: If he tells her, he's finally stopped running from himself.
+  If he doesn't, the old pattern isn't dead — just quieter. This decision is left open
+  until the scene is written.
+
+--- Leon (Father) ---
+
+- Hardworking, physically capable, deeply caring — and in his younger days, a charming
+  ladies' man in the vein of Paul from Mushoku Tensei
+- Teaches Bon basic combat and meditation from age 4
+- Takes dangerous escort missions to fund Elena's cure from Brynth
+- A good father — the father Bon never had in Japan and never felt he deserved
+- Canon fate: Dies during the Arc 2 dungeon collapse disaster — not because he was weak,
+  but because Bon's panic put people in danger and Leon ran toward it. His greatest quality
+  — his instinct to protect — is what gets him killed. Bon knows this. He carries it forever.
+- What Leon's death does to Bon: His entire arc is about becoming strong enough to protect
+  the people he loves. But Leon was strong — and it wasn't enough, because Bon put him in
+  an impossible position. Somewhere beneath every rank Bon climbs is a question he can
+  never silence: What's the point of getting stronger if it was my weakness that killed
+  him in the first place?
+- Leon as a ghost: He doesn't appear after Arc 2, but he never leaves. His training, his
+  voice, the way he stepped in front of danger — all of it becomes fuel. Finding Elena is
+  what Bon tells himself. Becoming someone Leon would have been proud of is what he's
+  actually doing.
+
+Leon's Backstory — Why He Retired (Canon):
+
+Leon was a skilled and well-regarded adventurer — capable, charismatic, the kind of man
+people naturally followed. He was also, in his younger years, someone who loved the life:
+the freedom, the camaraderie, the attention. A ladies' man in the way of someone who
+genuinely enjoyed people rather than someone who used them.
+
+The event that ended his adventuring career draws from Dramatic Situation #23 — Necessity
+of Sacrificing Loved Ones layered over #34 — Remorse:
+
+His party was deep in a dungeon or caught in a military conflict — a mission with real
+stakes and a clear objective. Something went wrong. A moment arrived where Leon had to
+make a call — push forward and complete the mission, or pull back and try to save a party
+member who was already in a position that probably couldn't be saved. He made the call
+to push forward. They completed the mission. The party member died.
+
+The conflicting feelings this left him with are what make him interesting:
+- They succeeded. The mission mattered. Lives were saved by completing it.
+- And someone he cared about died because of a decision he made in a fraction of a second.
+- He was right. He also has never forgiven himself. Both things are true.
+
+He retired not because he broke — but because he looked at who he was becoming and didn't
+like the answer. A man who could make that call cleanly, efficiently, without flinching.
+He was good at it. That was the problem.
+
+Elena was part of what pulled him out. She didn't fix him — but she gave him something
+worth building instead of something worth conquering.
+
+What this gives Bon:
+Leon never talks about his adventuring days in detail. But it comes out in small ways —
+the way he teaches combat with a practicality that has no room for ego, the way he goes
+still and quiet when danger is near rather than tense, the way he sometimes looks at Bon
+with an expression Bon can't read.
+
+When Leon dies running toward the danger Bon caused — it isn't just tragedy. It's the
+final repetition of the pattern that defined Leon's life. He made the call again. This
+time the mission was his son.
+
+Family Timeline:
+
+| Age   | Event                                                                      |
+|-------|----------------------------------------------------------------------------|
+| 0–3   | Basic bonds form. Elena manages night terrors.                             |
+| 4–6   | Bon shows magical aptitude. Begins helping in herb shop.                   |
+| 7–8   | Elena contracts illness from rare imported herbs. Crisis begins.
+         Leon leaves for Brynth.                                                     |
+| 9–10  | Leon returns with the cure from Brynth. Family recovers and grows closer.  |
+| 11–12 | "Normal" life resumes — but war is coming. The quiet before the storm.     |
+
+Gap (Issue #9): While Leon is away in Brynth (ages 7–8), who continues Bon's
+combat/magic training? Options: a secondary teacher in town, self-directed training
+(which says something about his character), or Elena picks it up in a limited way.
+
+--- Best Friend (Name TBD) ---
+
+- Background: Street orphan → legitimate noble heir
+- Goal: Prove legitimacy, complete knight training, claim inheritance before 18th birthday
+- Arc: Driven by need for validation and belonging — mirrors Bon in some ways
+- Relationship with Bon: Refuses to be pushed away despite Bon's self-destructive patterns.
+  The person who stays when Bon tries to leave.
+- Dynamic: Loyal to a fault. Noble ideals that contrast with Bon's pragmatism.
+  During Bon's dark phase, acts as his moral anchor.
+- Long-term tragedy: The most naturally gifted of their generation. When his beloved
+  dies, the antagonist offers to "preserve" her consciousness. He accepts. He cannot let go.
+
+--- Love Interest (Name TBD) ---
+
+- Core trait: Emotionally intelligent — sees through Bon's self-sabotage without being
+  overwhelmed by it or trying to fix him
+- Goal: Master healer atoning for failing to save her younger brother; must successfully
+  treat 100 patients without losing one
+- Dynamic: Challenges Bon's negative self-talk while maintaining healthy boundaries.
+  Does not enable. Does not abandon. Does not need to be saved herself.
+- How she sees him: Not because she's naive — but because she understands pain well
+  enough to recognize it in others
+
+What Bon's self-hatred looks like in romance:
+- Avoids genuine connection even when he desperately craves it
+- Drawn to "safe" relationships that won't challenge his self-perception
+- Pushes people away not because he doesn't care — because he doesn't believe he deserves them
+- Needs a partner who refuses to misread that as rejection
+
+--- The Tragic Champion (Inspired by Vyke, Elden Ring) ---
+
+- Role: Bon's closest friend who becomes the final antagonist's champion
+- Background: The most naturally gifted of their generation. Deeply in love.
+- Fall: His beloved dies. The antagonist offers to "preserve" her consciousness.
+  He accepts. He cannot let go.
+- Tragedy: The preserved consciousness is not truly his beloved — but he cannot bring
+  himself to acknowledge this. He knows, somewhere deep down. He can't face it.
+- Final battle: Brother vs. brother. Bon must deliver the mercy kill.
+  This is the Obi-Wan/Anakin goodbye. The Bjorn/Askeladd moment.
+  "You were the only real friend I ever had."
+
+================================================================================
+SECTION 6: MAIN ANTAGONIST — VAELA
+================================================================================
+
+Inspired by: Ranni, Marika, and the Frenzied Flame (Elden Ring) — tonal and
+structural reference only, not copied.
+Enneagram: Type 5 — The Investigator
+
+--- Naming Structure ---
+
+| Layer                    | Name              | Who Uses It                                              |
+|--------------------------|-------------------|----------------------------------------------------------|
+| What the world calls her | The Unnamed       | Everyone — because nobody knows her true name. Scholars,
+                                                survivors of anchor exposure, priests, soldiers — all
+                                                refer to her this way. It isn't irony. It's ignorance.  |
+| What ancient texts call  | She Who Remains   | Found in texts that predate living memory. Speaks to what
+  her                                           she is rather than what she's called — the thing that
+                                                persisted when everything else ended.                    |
+| Her true name            | Vaela             | Known by essentially nobody alive. The moment someone
+                                                learns this name and speaks it to her is a significant
+                                                plot beat — she hasn't heard it in so long it barely
+                                                feels like hers anymore. Reveals that she was once a
+                                                specific person, not just a force.                       |
+
+The contradiction built into her identity: the world calls her The Unnamed.
+Her true name is Vaela. She is simultaneously the most named and most nameless thing
+in the world.
+
+--- What She Is ---
+
+A dying incorporeal being — consciousness without a physical anchor, slowly dissolving.
+Unable to touch, taste, feel, or be seen. She has been this way for so long that she has
+lost count of the centuries.
+
+She is not a god. She was not always this. She was something before — but what exactly
+is buried under the weight of every memory she has ever absorbed. Even she cannot clearly
+find it anymore.
+
+--- Enneagram Core — Type 5 ---
+
+Her tragedy is that she is the endpoint of Bon's worst tendencies taken to their
+cosmic conclusion.
+
+Bon over-analyzes everything to the point where he stops feeling. He loses himself in
+other people's perspectives. He numbs himself to survive. Vaela did the same thing —
+across centuries, at a cosmic scale. She observed so many lives, absorbed so many
+memories, that she lost the ability to feel anything of her own.
+
+She doesn't know she's lost her humanity. That's what makes her terrifying. She isn't
+performing coldness — she genuinely cannot access warmth anymore. She thinks this is
+clarity.
+
+She is what Bon becomes if he never heals. His shadow self. His worst ending made real.
+
+--- Motivation ---
+
+- Core philosophy: Consciousness is the only thing worth preserving. The body is a
+  limitation, not a gift.
+- Goal: Restructure reality so consciousness can exist permanently without physical form
+  — eliminating physical death entirely
+- Her conviction: Completely, totally convinced she is right. No doubt. No grief she can
+  access anymore. She isn't saving herself — she's upgrading everyone, whether they want
+  it or not.
+- The flaw she cannot see: What makes consciousness worth preserving is exactly what she
+  has already lost — connection, feeling, the ability to be surprised, the experience of
+  being truly known by another person.
+- Her error: Believes "any existence is better than death" and undervalues physical
+  presence, touch, and grounded relationships.
+
+--- The Memory Observation Network ---
+
+The Anchors:
+- Ancient structures scattered across the world in locations that feel significant —
+  not random, but why those specific places is a mystery the story gradually reveals
+- Can be destroyed — no immediate catastrophic consequence, but what happens to the
+  memories stored within them is an open question
+- Age unknown — to be discovered through the story
+
+How She Reads:
+- She experiences memories as if she were living through them herself — fully immersive,
+  almost instantaneous
+- She can read the same person multiple times, drawing different memories each time
+- Extended or repeated reading leaves a residue in the person — not a barrier preventing
+  re-reading, but something changed that doesn't fully change back
+- She can no longer distinguish her absorbed memories from her own. She has lived so many
+  lives she has lost the thread of which one was hers.
+
+What She Does With the Memories — Open.
+This is the answer that likely unlocks her entire plan. Left unresolved until the story
+reveals it naturally.
+
+--- The Anchor Experience — Spectrum ---
+
+Brief exposure — passing by:
+Goosebumps for no reason. The distinct sensation of breath on the back of the neck when
+nobody is there. You look. Nothing. You keep walking and forget about it within the hour.
+
+Moderate exposure — stopping near it, touching it:
+Brain fog. Thoughts feel slow, like thinking through water. Time becomes unreliable —
+thirty seconds or thirty minutes, impossible to tell. A dreamlike quality — not sleep,
+not waking, something in between. Like the world lost one layer of reality.
+
+Extended exposure — lingering, returning, sleeping near it:
+Bleeds into dreams. Not nightmares — something worse. Dreams that feel more real than
+waking life. Loving people you've never met. Recognizing places you've never been.
+Waking up not knowing who you are for a moment that stretches longer each time.
+
+The crucial detail: It doesn't feel wrong. It feels like comfort. Like being understood.
+Like finally being seen. People near anchors sometimes return voluntarily without knowing
+why. That is the horror — she isn't hurting them. She's reading them. And being read
+feels like intimacy.
+
+Severe, repeated exposure:
+Identity erosion. Personality drift that compounds. In the worst cases — people who
+become hollow. Present but not there. The world has folk names for what happens to them.
+Nobody connects it to the anchors yet.
+
+--- She Is Not Aware of Bon — Until She Is ---
+
+Vaela has been running her long game on this world for centuries. She believes she
+understands every variable. Bon's reincarnation happened through a process entirely
+independent of her network — she had no hand in it, no awareness of it.
+
+The moment she reads him — when he gets too close to an anchor — she experiences
+something she hasn't felt in centuries: surprise. His memories of Japan are so foreign
+to this world, so completely outside anything she has ever absorbed, that there is
+interference. A frequency she has never encountered before.
+
+That moment does two things at once:
+1. Bon goes on her radar for the first time
+2. She realizes consciousness can move between worlds in a way she never accounted for
+   — her plan to restructure reality has a variable she missed
+
+What she does with that information is deliberately open — to be decided when the story
+reaches that point.
+
+--- Her Early Presence in the Story ---
+
+She must be felt from the very first arc even though she isn't understood until much later:
+- The goosebumps sensation near old monuments that the townspeople brush off as superstition
+- A scholar or priest who studied an anchor too long and now seems slightly hollow —
+  words right, affect wrong
+- Dreams that bleed strangely for people who live near certain old structures
+- Folk legends and ghost stories that, in hindsight, were always describing her anchors
+- Plant the wrongness before the reader knows what they're looking at
+
+--- The Void Weaver / Eternal Sentinel — Folded In ---
+
+Two additional cosmic frameworks from earlier notes are now absorbed into Vaela's structure:
+- The Void Weaver energy (probability manipulation, reality cracks, subtle influence from
+  a distance) describes how Vaela operates — her methodology in the world
+- The Eternal Sentinel concept (inherited memories, balance, preservation) may describe
+  a counterforce — a faction, a bloodline, or an individual who has been quietly working
+  against her without ever knowing her name. This remains open for later arcs.
+
+================================================================================
+SECTION 7: WORLD BUILDING — AETHERIA / ELDARION
+================================================================================
+
+World Name — Working Status: Both "Aetheria" and "Eldarion" appear across the notes.
+They describe the same world. Final name is unresolved (see Section 12). For now, use
+"Aetheria/Eldarion" or simply "the world" in draft writing. Choose the final name
+before line-editing the manuscript.
+
+--- The Six Continents ---
+
+| Name   | Shape / Location                   | Climate                        | Primary Inhabitants                          |
+|--------|------------------------------------|--------------------------------|----------------------------------------------|
+| Aldor  | Oval, near north pole. 3rd-largest | Mildly cold year-round         | Sky People — one centralized kingdom         |
+| Brynth | Like Greenland. 2nd-largest        | Temperate, dense ancient forests| Elves (dominant) + Demi-Human tribes.
+                                                                                Source of rare Elven medicine.               |
+| Caelum | Like Australia. 4th-largest        | Warm and diverse               | Dwarves (underground metropolis) + Demi-Humans|
+| Dorwin | Top half of Africa. LARGEST        | Vast savannas                  | Humans — multiple kingdoms, empires, govts.
+                                                                                Most politically complex.                    |
+| Eldan  | NE peninsula. Mountainous. 5th     | Cooler, perpetual gloom near capital| Demons (dark kingdom) + Demi-Human tribes  |
+| Firn   | Group of small islands, far NE     | Diverse ecosystems             | Serenity Archipelago — neutral territory,
+                                                                                no dominant race, mixed settlements          |
+
+--- The Races ---
+
+Sky People (Aldor)
+- Humanoid with translucent wings, iridescent skin, vibrant blue eyes
+- Guardians of the skies; skilled navigators; sought as aerial guides
+- Connection to wind — can manipulate it; voices carry vast distances; known for musical ability
+
+Elves (Brynth)
+- Slender, graceful; pointed ears; almond eyes; earthy skin tones; hair often adorned
+  with flowers or natural elements
+- Keepers of the forests; skilled archers and craftsmen
+- Can communicate with animals; much longer lifespan than humans
+
+Dwarves (Caelum)
+- Stocky, sturdy; thick beards; deep earthy skin; piercing blue or green eyes;
+  love intricate jewelry
+- Master craftsmen — metalworking, gem-cutting, engineering; live underground
+- Connection to the Earth; famous for holding their ale
+
+Demi-Humans (multiple continents)
+- Varies widely — some humanoid with animal ears or tails
+- Diverse roles: warriors, musicians, healers; found in communities or integrated
+  into human society
+- Connection to their animalistic features; adaptable and resilient
+
+Demons (Eldan)
+- Wide range: humanoid with horns/tails, or more abstract (smoke, swarms); some
+  have wings; skin and eye tones vary
+- Often perceived as chaos/destruction, but sought for magical knowledge
+- Connection to darkness and chaos; can manipulate these forces; shapeshifting;
+  known for cunning
+
+Humans (Dorwin)
+- Most numerous and politically diverse
+- Multiple kingdoms, empires, republics, city-states
+- The most complex civilization on the world stage
+
+--- The 10 Great Monarchs ---
+
+Ranked by strength — racial/continental assignments TBD (see Section 13, Issue #5):
+
+1. Morgath, the Deathlord
+2. Zane, the Blade King
+3. Talia, the Aura Mistress
+4. Rhys, the Mountain Lord
+5. Aria, the Elemental Queen
+6. Elysia, the Mystic Seer
+7. Kael, the War Master
+8. Lirien, the Guardian Knight
+9. Soren, the Nature Sage
+10. Niamh, the Shadow Warden
+
+--- Regional Monsters ---
+
+- Aldor: Ice giants, frost wolves
+- Brynth: Forest spirits, treants
+- Caelum: Fire drakes, sand serpents
+- Eldan: Shadow beasts, rock golems
+- Threat levels range from common beasts to legendary creatures requiring full parties
+
+--- Dungeons / Labyrinths ---
+
+- Naturally occurring magical phenomena
+- Bigger on the inside than outside (spatial folding magic)
+- Dangerous and unpredictable — rich resources, but no guaranteed exits
+- Ancient ruins exist within — remnants of a civilization that thrived before the
+  continents separated
+- Plot relevance: Central to the disaster that separates Bon from his family. A researcher
+  attempts to create controlled dungeon portals, underestimates the complexity, and causes
+  a cascading spatial collapse — randomly displacing people through unstable dimensional pockets.
+
+--- Adventure Guild System ---
+
+Ranks: E → D → C → B → A → S
+
+  > Canon Note: A Bronze–Diamond ranking system also appeared in earlier notes. That
+  > system is cut. E→S is the single canonical rank structure.
+
+- Purpose: Structure adventurer progression, clear goals, party formation, quest boards
+- Quests: Monster hunting, dungeon exploration, escort missions, treasure hunts
+- Support: Training, equipment, information networks
+
+--- Governments ---
+
+- Human kingdoms (Dorwin): Monarchies, republics, city-states — complex political web
+- Other races: Centralized kingdoms or tribal societies depending on culture
+- The Underworld: Shadow network — criminals, smugglers, mercenaries. Black markets
+  in major cities selling rare and forbidden items.
+
+--- Religion — The Church of the Divine Light ---
+
+- Similar in structure to Christianity, but unique to this world
+- Worship: The Divine Light — a benevolent force that guides and protects the faithful
+- Values: Compassion, charity, pursuit of knowledge
+- Hierarchy: High Priest/Priestess → Council of Bishops → Priests
+- Influence: Significant. Often works with the Seers and other powerful groups.
+
+  > Note: "The Seers" are mentioned here but never defined anywhere else in the notes
+  > (see Section 13, Issue #10). Either define them or cut the reference.
+
+================================================================================
+SECTION 8: MAGIC & COMBAT SYSTEMS
+================================================================================
+
+--- Magic System ---
+
+Elemental Schools:
+- Fire, Water, Earth, Wind (similar to Mushoku Tensei)
+- Mystic Magic: divination, mind manipulation, illusions
+
+Activation Methods:
+1. Incantations (words / chants)
+2. Mental focus (willpower — advanced practitioners)
+3. Gestures (hand signs, body movements)
+
+Power Levels (Magic):
+Novice → Adept → Elite → Master → Grandmaster → Archmage
+(Archmage: their understanding can shape or redefine magical laws)
+
+Silent Casting:
+Available to advanced practitioners. A mark of true mastery.
+Bon will eventually achieve this. It should feel earned, not given.
+
+Bon's Magic Note:
+His mana reserve is large — but not because of raw talent. It is tied to emotional
+resilience. Every time he pushed past pain, kept going when broken — that is the reservoir.
+Magic feels different to him. It's tied to emotion, not theory.
+
+Elven Medicine & Magic (Canon):
+Elves are the only race with mastery over two distinct healing disciplines:
+- Elven Herbal Medicine (Alchemical): Ancient plant knowledge passed down over millennia
+  — rare, slow to prepare, but capable of treating diseases that resist magical intervention
+  entirely. Works with the body's natural systems rather than overriding them.
+- Elven Restorative Magic (Biological School): A unique school of magic unavailable to
+  other races. Rather than elemental manipulation, it interacts directly with living tissue
+  — closing wounds, purging poisons, slowing decay. Not unlimited: it cannot reverse death,
+  regrow lost limbs, or cure illness that is rooted in the soul or spirit rather than the body.
+This dual mastery is why Brynth is the destination for Elena's cure — and why Elves are
+so sought after (and so cautious about who they help).
+
+--- Combat System ---
+
+Combat Styles:
+1. Blade Dance — balanced offense/defense; fluid strikes, parries, footwork
+2. Guardian's Vigil — defense-focused; shields, countering, outlasting opponents
+3. Shadow Step — evasion and speed; stealth, dodging, exploiting blind spots
+4. Mountain Stance — power strikes; heavy weapons or fists; dominating blows
+
+Power Levels (Combat):
+Novice → Adept → Elite → Master → Grandmaster → Champion
+
+Bon's Combat Note:
+He doesn't fit any style cleanly. He fights dirty — mercenary style.
+- Cauterizes wounds with fire in the field
+- Creates cover with earth
+- Digs trenches, uses terrain, fights in ways duelists consider dishonorable
+"Why is he good at fighting? He isn't a duelist — he fights like someone trying to survive."
+
+--- Battle Aura (Touki) ---
+
+An instinctual protective aura around a combatant. Not visible to the naked eye —
+sensed by those attuned to it.
+
+Functions:
+- Defense: Reduces impact of attacks
+- Intimidation: Projects outward to unnerve opponents
+- Enhancement: Boosts physical attributes momentarily
+- Detection: Sense other Touki; gauge strength and intent
+
+================================================================================
+SECTION 9: STORY STRUCTURE & ARCS (FULL TIMELINE)
+================================================================================
+
+--- Narrative Framework ---
+
+- Measurable goals in every arc — concrete objectives with success/failure conditions
+- Time constraints create urgency; progress readers can track
+- Escalating stakes: Personal → Community → Regional → Global → Cosmic
+
+--- Pre-Reincarnation (Chapters 1–3) ---
+
+Goal: Establish Bon's psychological state and the sacrifice.
+
+| Chapter | Content                                                                              |
+|---------|--------------------------------------------------------------------------------------|
+| Ch. 1   | Daily routine — functional depression shown through behavior, not told. Avoiding
+           calls. Mechanical mornings. Clock-watching at work.                               |
+| Ch. 2   | The Aki connection. Failed job interview. Feeling invisible. The unread messages.    |
+| Ch. 3   | Aki chases her neon pink ball into the road. Truck. Bon moves. He dies.
+           "Will they be proud of me now?"                                                   |
+
+Scene Cards (Pre-Reincarnation):
+
+1. Morning Routine — Emptiness: Alarm → stare at ceiling → mechanical routine.
+   Walk past the graduation photo. Establish core thought: "I was only living because
+   it was too much trouble to die."
+
+2. Ghost Calls — The Big Sin in Flashback: A missed call from an old number triggers it.
+   Flashbacks to the family crisis, the event he no-showed, the final argument. Internal:
+   he recognizes this is the one thing he cannot forgive himself for.
+
+3. Aki Scene — One Decent Part of Him: Stairwell, neon pink ball, AKI keychain.
+   He helps, gruff but kind. Tiny echo of "maybe I can still do something right."
+
+4. Truck — Instinctive Sacrifice: Night walk, slight buzz. Aki in the road, neon ball
+   still rolling. Truck headlights. His body moves. He takes the hit. His last thought
+   connects back to his family and guilt.
+
+--- Arc 1 — Childhood Foundation (Ages 0–11/12, Chapters 4–25) ---
+
+Overarching Goal: Become strong enough to protect this new family.
+Theme: Can he accept love he doesn't believe he deserves?
+
+Scene Cards (Reincarnation + Childhood):
+
+5. Void → Newborn: Darkness; fragments of sound and regret (family voices, Aki, his
+   own cruel words). Sudden flood of sensory input. Cannot speak — his body is a baby
+   but his consciousness is there. He tries to keep emotional distance ("I don't deserve
+   this"), but his baby body instinctively clings and cries.
+
+6. Night Terrors and Comfort (Ages 0–3): He wakes screaming; Elena and Leon hold him,
+   sing, stay up all night. First crack in his "I shouldn't rely on anyone" defense.
+
+7. Little Helper in the Herb Shop (Ages 4–6): Helps pass jars, grind herbs. Elena teaches
+   him plant names. He feels useful in a healthy way — echoes Aki but in a stable environment.
+
+8. First Friend / Neighbor Kid: Another child wants to play. Bon hangs back, then joins.
+   He laughs harder than he expects and is startled by his own joy. Internal: "this feels
+   dangerous" — but also "I want more."
+
+9. First Magic Spark: He accidentally produces a small flame or magical effect. Parents
+   are proud and supportive rather than demanding. Pride mixes with fear: "What if I fail
+   them like before?"
+
+10. Elena's Illness — Mini Crisis (Ages 7–8): Elena falls ill; cure requires rare Elven
+    herbs from Brynth. Leon takes dangerous escort jobs; Bon does what a child can. They
+    ultimately succeed — with costs (debt, injury, scars). Bon's vow: "I almost lost them
+    because I was weak."
+
+11. Quiet Before the Storm — Arc 1 Ending (Ages 11–12): Peaceful family dinner scene.
+    Rumors of war — passing soldiers, rising prices, distant smoke. Bon's internal thought:
+    "Whatever comes, I'll protect them."
+
+Milestone Goals:
+- Age 5: Master basic fire magic
+- Age 7: Earn 50 silver helping the family shop
+- Age 8: Gather 20 moonflower petals for Elena's cure within a 30-day deadline
+- Ages 9–10: Leon returns from Brynth with the cure
+
+--- Arc 2 — The Turn / War & Separation (Ages 11–13, Chapters 26–35) ---
+
+Overarching Goal: Survive the disaster. Find information about family.
+Theme: The second chance can be taken away too.
+
+The Disaster:
+A researcher attempts to create controlled dungeon portals. Underestimates the
+complexity. Cascading spatial collapse. Bon is separated from his family.
+
+CANON — The Turn:
+Bon's panic during the dungeon collapse causes a fire magic misfire that puts people
+in danger. Leon runs toward the danger to contain it — and is killed in the process,
+either by the collapse itself or by being swept into a fatal spatial displacement while
+saving others. Bon is physically separated by the chaos before he can reach his father.
+Alone, consumed by guilt, and paralyzed — the mercenary band finds him rather than him
+choosing them. He doesn't fight his way back to his family immediately. That choice,
+driven by shame, is The Turn.
+
+CANON — Parents' Fate:
+Leon is dead. He died in the dungeon collapse as a direct consequence of Bon's mistake.
+He didn't die because he was weak — he died because protecting Bon's mess was exactly
+the kind of man he was.
+Elena is alive but displaced — enslaved or taken captive in the chaos of the war and
+collapse. Finding and freeing her is Bon's core motivation through Arc 3. The surviving
+parent never learns Bon ran — she believes the disaster separated them. That gap is one
+of the heaviest things Bon carries.
+
+Immediate Survival Goals:
+- Survive the first week in a hostile region
+- Find shelter within 3 days
+- Earn 100 silver for basic supplies
+- Locate any information about family's whereabouts
+
+--- Arc 2.5 — The Mercenary Years (Ages 12–15, Chapters 36–50) ---
+
+  > Note: This arc had no chapter range assigned in earlier notes. It is now placed
+  > between Chapters 36–50, which pushes Arc 3 to start at Chapter 51. This is a
+  > working estimate — adjust chapter counts once arc beats are written out.
+
+Inspired by: Vinland Saga, Almark
+Theme: What does it cost to become strong? Can power corrupt someone who was already broken?
+
+Canon — The Turn:
+During the dungeon collapse, Bon panics and loses control of his fire magic. He doesn't
+hurt anyone directly — but he puts people in danger. His father Leon steps in to contain
+the situation, paying a real cost because of Bon's mistake.
+
+Bon watches his father pay for what he did. In the chaos and shame that follows, he makes
+a choice — the same choice he made in Japan. He decides he is the danger. That his family
+is safer without him. That disappearing is a form of protection.
+
+He runs. Not because anyone told him to. Because he told himself the same lie he always
+tells: "They're better off without me."
+
+A mercenary band finds a boy alone in a war zone. He becomes a recruit.
+
+The critical gap: The surviving parent never sees him run. They believe the spatial
+collapse took him. Bon knows the truth. That gap — parent thinking it was the disaster's
+fault, Bon knowing he chose to leave — is one of the heaviest weights he carries through
+Arc 3.
+
+The Danger: The mercenary arc seduces him. Killing is easy. Having power is easy. It
+feeds his old ego. The battle isn't just surviving the war — it's surviving it without
+losing the humanity his family gave him.
+
+What he learns here:
+- Practical magic: digging trenches, cauterizing wounds, creating cover
+- Fights dirty because losing means dying
+- Gets good — not because he's gifted, but because the alternative is death
+
+He starts to feel at home in it. The killing gets easier. His old ego returns — power
+feels good, control feels good. He has to decide every day who he is.
+
+Antagonist options for this arc:
+
+A — The Corrupt Mentor ("Askeladd" type)
+- Leader of the band; sees Bon's darkness and cultivates it
+- "You were born for this, kid. Stop pretending you're a good person."
+- When Bon tries to leave for education/redemption, the Mentor takes it personally
+- May reappear later threatening Bon's new life
+
+B — The Sanctimonious Noble (bridges into Academy)
+- Knows Bon's past as a mercenary; represents Order vs. Chaos
+- Tries to get Bon expelled because "a dog like you doesn't belong here"
+- Forces Bon to use mercenary instincts to survive school politics
+
+C — The Mirror — The Rival Child Soldier
+- Another kid from the mercenary group; Bon escapes, this kid stays
+- Years later, the Rival is what Bon would have become
+- Hates Bon for "abandoning" them
+- Fits the Naruto/Sasuke or Guts/Griffith dynamic
+
+--- Arc 3 — Solo Adventurer Period (Ages 15–17, Chapters 51–80) ---
+
+Overarching Goal: Become strong enough to cross continents and reunite with family.
+Theme: Learning to form real bonds again after the war.
+
+Progression Goals:
+- Guild rank: E → D → C
+- Accumulate 5,000 gold for inter-continental travel
+- Master advanced magic in at least 2 schools
+- Defeat a B-rank monster solo
+
+Key Relationships:
+- Mentor figure (Rock Lee archetype — pure hard work, no shortcuts, earned everything)
+- Rival adventurer
+- First tragic romance (ends badly — either through death or Bon's self-sabotage)
+
+Character micro-developments:
+- Learning to accept help from mentor without feeling worthless
+- Forming first genuine friendship since his family
+- Experiencing romantic attraction and the terror of vulnerability
+
+--- Arc 4 — Academy / Political Arc (Ages 17–20, Chapters 81–110) ---
+
+Overarching Goal: Navigate politics while protecting best friend's succession claim.
+Theme: Can intelligence without connection win? At what cost?
+
+Key Events:
+- Graduate Magic Academy with honors
+- Win Academy Tournament
+- Prevent war between two kingdoms
+- Meet the main love interest
+- First encounters with the antagonist's subtle influence — memory anomalies near
+  ancient monuments
+
+Bon's condition at entry:
+A traumatized, battle-hardened veteran among students who worry about grades and
+dueling. He instinctively assesses kill zones while they study. The thousand-yard stare
+makes him an outsider again — just like Japan.
+
+--- Arc 5 — The Champion's Fall (Ages 20–23, Chapters 111–130) ---
+
+Overarching Goal: Prevent best friend's corruption while facing a growing cosmic threat.
+Theme: When you love someone, what are you willing to do to save them?
+
+Tragic Events:
+- Best friend's beloved dies in conflict
+- The antagonist offers to "preserve" her consciousness
+- Best friend becomes willing champion
+- Bon watches the deterioration — the preserved consciousness is not truly her
+- Best friend cannot let go. Knows it's wrong. Cannot stop.
+
+  > Note — The Anakin Question (Issue #3): Arc 5 currently gives the "fall-to-darkness"
+  > trajectory to the Tragic Champion. But earlier notes also describe a full Anakin arc
+  > for Bon himself — where he becomes a villain, causes the thing he feared, and redeems
+  > before death. These cannot both be equally true without explicit story design. If Bon
+  > has his own villain phase, it likely belongs here (ages 20–23), overlapping with or
+  > preceding the Champion's fall. Decide: does Bon fall too, or does he watch someone
+  > else fall while holding himself together by a thread?
+
+--- Arc 6 — Final Confrontation (Ages 23+, Chapters 131–150+) ---
+
+Overarching Goal: Stop the reality restructuring while saving best friend's soul.
+Theme: Sometimes saving someone means letting them go.
+
+Climax Structure:
+- Physical battle: Champion's enhanced power vs. Bon's full growth
+- Emotional battle: Reaching through the friend's denial and desperation
+- Resolution: The Champion chooses to let go — breaks the antagonist's power from within
+- Aftermath: Bittersweet. Reality saved. Friend lost.
+- The Obi-Wan moment. The Bjorn/Askeladd farewell. "You were the only real friend I ever had."
+
+================================================================================
+SECTION 10: WRITING NOTES & CRAFT GUIDANCE
+================================================================================
+
+--- Narrative Technique ---
+
+Show, don't tell:
+- Depression: Show through behavior — avoiding calls, mechanical routines, clock-watching
+- Growth: Demonstrate through increasingly difficult choices, not internal announcements
+- Relationships: Build through shared adversity and mutual support
+- Magic progress: Track through specific, measurable achievements
+
+Point of View:
+- Pre-reincarnation: Third person (distance, detachment — he's not connected to himself)
+- Post-reincarnation: First person (intimacy, connection — he's waking up)
+
+Emotional Pacing:
+- Contrast light moments with heavy ones — don't stay in darkness without relief
+- Small moments of joy matter: they are what Bon is fighting for
+- His compassion shows up in the quietest ways (giving bread to a starving child
+  without making eye contact)
+
+Foreshadowing:
+- Plant subtle signs of the antagonist's influence early — memory distortions, strange
+  monument behavior, people who seem "not quite themselves"
+- Foreshadow Bon's greatest failure before it happens — let readers feel the dread
+
+Character Voice:
+- Bon doesn't give speeches about his pain. He deflects. He goes quiet.
+- His moments of raw honesty should feel rare — and therefore devastating when they come.
+
+--- Areas Needing More Depth (From Analysis Sessions) ---
+
+1. Character micro-relationships in each arc: How does the mentor relationship evolve
+   beyond teaching? What specific daily conflicts arise between Bon and his best friend?
+   How does the love interest challenge his self-sabotage in small moments?
+
+2. World texture: How do the races actually influence Bon's journey — not just exist
+   as background? What does daily life look like with spatial dungeons in the world?
+   How does the guild system shape his relationships?
+
+3. Antagonist's early presence: Subtle in early arcs. Ancient monuments. Emotional
+   resonance in wrong places. Escalate deliberately toward the final confrontation.
+
+4. Emotional specificity: What does Bon's functional depression look like in a magical
+   world? What are the small daily moments that show growth between big plot points?
+
+5. Philosophical integration: How do dungeon encounters reflect Bon's internal struggles?
+   How does guild ranking mirror his psychological state?
+
+================================================================================
+SECTION 11: KEY QUOTES & THEMATIC INSPIRATION
+================================================================================
+
+--- Quotes for Bon's Character ---
+
+"I've heard this laughter before, the voice of a man I hated to death. No — it's me.
+I'm laughing at myself. A dream… I saw a dream. A dream that wouldn't end.
+Over and over again, I repeated and corrected every mistake. But before I knew it,
+I lost count. I died over 100 million times, and yet there was still a place I wanted
+to reach, a wish I wanted to protect. No matter what, I had to save everyone,
+and that's why I took her hand."
+
+"Not about being strong. I don't know what he went through. I know it was bad.
+But I also know that you came out the other side because you are strong.
+But even when we're strong, bad things are gonna happen. We're gonna make mistakes.
+Nobody's perfect. But we can get better every day."
+
+"If so powerful you are, why leave?" — Master Yoda
+
+"Yesterday I was planning to jump off a really tall bridge and kill myself.
+It was, hands down, the greatest test of courage I'd ever faced.
+Well, it was supposed to be. I knew I royally screwed up and I needed to pay for being
+a jerk. And so… I pushed everyone away." — A Silent Voice
+
+"It's difficult for a dude in my spot to receive love because you don't feel like you
+deserve it — and so you wind up dipping on a lot of people even when they showed up."
+
+"Heal. So when someone tries to love you, you let them."
+
+"The way I detach myself from people is by far the scariest part of me — because I can
+love you to death and never speak to you again."
+
+--- Quotes for Theme & World ---
+
+"In hindsight, I think everything was probably duller than I made it seem, as if my
+memory is an over-enthusiastic child with paint hands, splashing hues where there was
+no color, writing names in blank spaces."
+
+"If you can keep your head when all about you are losing theirs and blaming it on you…
+If you can meet with Triumph and Disaster and treat those two impostors just the same…
+Yours is the Earth and everything that's in it."
+  — Rudyard Kipling, "If"
+
+"You're not required to set yourself on fire to keep other people warm."
+
+"The world breaks everyone, Travis. The very good, the very gentle, the very brave.
+And those it doesn't break, it kills. There's no shame in being a broken man.
+I should know. You just pick up the pieces and start building."
+
+"It's strange, isn't it? How men can't live in the moment. Always chasing the shadows
+of what's gone or dreaming of places they'll never reach. The present slips through
+their fingers like rain on a crowded street."
+
+"The ironic tragedy is that life has to be lived forward, but only makes sense in reverse."
+
+"The ironic thing about life is that you are a different person to everyone you meet.
+People don't see you as you are. They see you as they are."
+
+"Until you get comfortable with being alone, you'll never know if you're choosing
+someone out of love or loneliness."
+
+--- Quotes for Villain Philosophy ---
+
+"In all the galaxies I've traveled, all you species are the same — you all think
+you're the center of the universe. You have no idea."
+
+"To me, the real question is: why are you all so weak? Why do such weaklings cling
+so fiercely to life? How can a creature that falls apart at a touch say that it wants
+to be happy? Your suffering is only natural. You people are meant to be chewed up."
+
+"Now I want you to think as hard as those puny brains of yours can manage — have you
+ever spared a pig or a cow because it begged you for its life?"
+
+--- Thematic Questions to Hold ---
+
+- Does someone who was never truly alive have to learn to die well?
+- Is choosing connection the same as accepting that you can lose it?
+- What is the difference between surviving and living?
+- If you become strong enough to protect everything you love, are you still the person
+  those things fell in love with?
+
+================================================================================
+SECTION 12: OPEN DECISIONS (DELIBERATELY UNRESOLVED)
+================================================================================
+
+These are intentional forks — not mistakes — to be decided when the story demands it.
+
+1. World name: Aetheria vs. Eldarion. Choose one as the world name; the other could
+   be a region, a historical name, or simply cut. Decide before line-editing the manuscript.
+
+2. Parents' exact fate in the war: RESOLVED in canon above. Leon dies; Elena is enslaved.
+   Still open: Who is Elena enslaved by, where, and under what conditions?
+
+3. Cosmic antagonist model: Vaela / The Unnamed is the established main villain.
+   Still open: Does the Eternal Sentinel counterforce (see Section 6) develop into its
+   own named character or faction? Let early arc drafting reveal which angle lands best.
+
+4. Bon's final ending: Killed by a hero; retires to old age; dies saving the love
+   interest (Aki bookend); or dies with a genuine smile and becomes a legend.
+   Leave open until the trajectory of his growth is fully felt.
+
+5. Names (partially resolved): Antagonist is Vaela (The Unnamed / She Who Remains).
+   Still TBD: best friend, love interest, Tragic Champion, mercenary band.
+
+6. Bon's unique magical signature: Something that makes him distinctly Bon — not just
+   "hard worker with big mana." What does his magic look like that no one else's does?
+
+7. The mentor figure (Arc 3): Who are they? What is their backstory? Rock Lee archetype
+   — someone who also earned everything through work, not talent.
+
+8. The mercenary band name: What is the band called? What are they known for?
+   [ UNRESOLVED ]
+
+9. The first tragic romance (Arc 3): Who is she? How does it end — her death, or his
+   self-sabotage?
+
+10. The Tragic Champion's beloved: Who is she, and what is the exact nature of the
+    "preserved" consciousness that replaces her?
+
+11. Does Bon go through his own villain phase? See Issue #3 in Section 13. This is the
+    biggest structural decision still open in the story.
+
+================================================================================
+SECTION 13: CONTRADICTIONS & CONTINUITY AUDIT
+================================================================================
+
+Severity: [CRITICAL] [HIGH] [MEDIUM] [LOW]
+All issues below have been identified, and where possible, resolved in the body of
+this document.
+
+--- Resolved Issues ---
+
+✅ Aki's Age — RESOLVED
+Master Source said 8; Notes said 6–7. Canon: 6–7. Younger is more physically helpless,
+making the instinctive sacrifice feel more natural.
+
+✅ Aki's Trigger (Cat vs. Ball) — RESOLVED
+Master Source: Aki chasing a cat. Notes: chasing a neon pink ball. Canon: the neon pink
+ball. More specific, more visual, more connected to her established characterization.
+The ball keeps rolling after impact — that image is stronger.
+
+✅ Bon's Age at Death — RESOLVED
+Master Source: "early 20s." Notes: "mid-20s / 25–28." Canon: mid-20s. More emotional
+coherence — gives him enough time to have built, neglected, and destroyed his family
+relationships.
+
+✅ Drink of Choice — RESOLVED
+Master Source: "cheap sake." Notes: "Jinro soju." Canon: Jinro soju. More specific,
+more evocative, better writing.
+
+✅ Guild Rank System (Two Incompatible Systems) — RESOLVED
+One system used Bronze→Diamond; another used E→S. Canon: E → D → C → B → A → S.
+The Bronze–Diamond system is cut from all sections.
+
+✅ Elven Medicine vs. "Magic Cannot Cure Everything" — RESOLVED
+Canon clarification: Elves have two distinct healing disciplines — ancient
+herbal-alchemical medicine AND a unique Restorative Magic (biological school) unavailable
+to other races. Both have hard limits (cannot reverse death, cannot cure soul-rooted
+illness). Their dual mastery is why Brynth is the destination for Elena's cure.
+
+✅ Arc 2.5 Has No Chapter Range — RESOLVED
+Assigned: Chapters 36–50. Arc 3 now begins at Chapter 51. Arc 4 at Chapter 81.
+These are working estimates — adjust once arc beats are written out.
+
+✅ #1 — Parents Alive or Dead? — RESOLVED
+Leon is dead. Killed during the dungeon collapse — not from weakness, but because he ran
+toward the danger Bon's panic created. Elena is alive but displaced/enslaved. Finding and
+freeing her drives Arc 3. Elena never learns Bon ran — she believes the disaster separated
+them. That gap is permanent weight.
+
+✅ #2 — Why Does Bon Leave? ("The Turn") — RESOLVED
+Bon's fire magic misfires during the dungeon collapse, putting people in danger. Leon dies
+containing it. The spatial collapse physically separates Bon before he can reach Leon.
+Stranded, guilty, and paralyzed, the mercenary band finds him — he doesn't choose them
+over his family, but he also doesn't fight to get back immediately. That failure is The
+Turn. It mirrors Japan: self-loathing disguised as disappearing.
+
+✅ #6 — Leon's Traumatic Past as a Former Adventurer — RESOLVED
+Leon was a skilled, charismatic adventurer — a ladies' man in his youth — who retired
+after a mission where completing the objective required making a call that cost a party
+member their life. They succeeded. He never forgave himself. Both things are true
+simultaneously. He retired not because he broke, but because he recognized what he was
+becoming. Elena gave him something worth building. His death in Arc 2 — running toward
+the danger Bon caused — is the final repetition of the pattern that defined his life.
+He made the call again. This time the mission was his son.
+
+✅ Antagonist Name — RESOLVED
+The antagonist was previously called "The Incorporeal Entity" (a descriptor, not a name).
+Canon: Her true name is Vaela. The world calls her The Unnamed. Ancient texts call her
+She Who Remains.
+
+--- Remaining Issues — Require Decisions ---
+
+[HIGH] #3 — Does Bon Have His Own Villain Phase?
+Earlier notes describe a full Anakin trajectory for Bon personally (starts good → causes
+the thing he feared → turns evil → redeems before death). But the arc structure currently
+assigns the "fall" role entirely to the Tragic Champion. Both cannot be equally true
+without deliberate design. Options:
+- Bon falls too, separately, during Arc 5 — making it a double-tragedy arc
+- Bon is the stable one watching his friend fall — which is its own form of suffering
+- Bon comes close to falling but pulls back, while his friend doesn't — which may be
+  the most nuanced choice
+
+[HIGH] #4 — Vaela Discovers Bon's Past-Life Memories
+Canon: Vaela is not aware of Bon until he gets too close to one of her anchors — likely
+during the Academy arc. When she reads him, she encounters memories of Japan — a world
+entirely outside her network. The interference surprises her for the first time in
+centuries. What she does with that information is deliberately open — to be decided when
+the story reaches that point.
+
+[HIGH] #5 — The 10 Great Monarchs Have No Racial or Continental Assignment
+The moment any Monarch appears in the story without an established identity, a
+contradiction becomes possible. Assign each Monarch to a race/continent/kingdom before
+any of them appear in the narrative.
+
+[MEDIUM] #7 — The Demon Lord of the Labyrinth
+Original essay notes mention "a Demon lord who is/was in charge of a labyrinth/dungeon"
+as a villain concept. This figure never connects to any arc, character, or the
+antagonist's plan in the current structure. Either place this figure in Arc 3 as a
+dungeon boss (interesting — gives Arc 3 a concrete physical antagonist), or explicitly
+mark the idea as cut.
+
+[MEDIUM] #8 — Arc Chapter Counts Are Unevenly Paced
+Arc 1 covers ages 0–12 across 25 chapters; Arc 3 covers 2–3 years across 30 chapters.
+Later arcs are denser than earlier ones despite covering less time. Acceptable for
+narrative reasons (more plot happens later), but revisit allocation once arc beats are
+fully written.
+
+[MEDIUM] #9 — Who Trains Bon While Leon Is Away?
+Leon teaches combat/meditation from age 4. Elena's illness hits at ages 7–8 and Leon
+leaves for Brynth. Gap: who continues Bon's training? Options: a secondary teacher in
+the town; Bon trains alone (which says something about his character); Elena teaches
+in a limited way. Choose and incorporate into Arc 1.
+
+[LOW] #10 — The Seers: Mentioned Once, Never Explained
+The Church of the Divine Light is described as "often working with the Seers." The Seers
+are never defined. Prophets? A guild? A secret faction? Either define them in the
+world-building section or cut the reference from the religion entry.
+
+--- Priority Order for Fixes ---
+
+1. #3 — Does Bon have his own villain phase? (HIGH)
+2. #4 — Does Vaela discover Bon's past-life memories, and when? (HIGH)
+3. #5 — Assign Monarchs to continents/races (HIGH)
+4. #7 — Place or cut the Demon Lord concept (MEDIUM)
+5. #8 — Revisit chapter pacing once arc beats are written (MEDIUM)
+6. #9 — Decide who trains Bon while Leon is away (MEDIUM)
+7. #10 — Define or cut the Seers (LOW)
+
+================================================================================
+END OF FINAL MASTER DOCUMENT
+Life of Bon — Esteban Andres Garza
+Version: Final Merge — April 2026
+================================================================================

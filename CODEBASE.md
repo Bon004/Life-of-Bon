@@ -85,6 +85,7 @@ Search with **Ctrl+F** using the section name to jump directly.
 | `sf_batches` | `[{ id, createdAt, cardCount }]` — one entry per staged AI import batch |
 | `sf_dismissed_batches` | JSON array of batch IDs dismissed from the batch strip (B2) |
 | `sf_draft_history` | `[{ savedAt, content }]` — up to 10 working-copy snapshots (5c) |
+| `sf_word_goal` | Number — daily word goal for the Writing tab progress bar (E1) |
 
 ---
 

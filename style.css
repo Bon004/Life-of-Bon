@@ -3764,3 +3764,162 @@ textarea:focus-visible,
 /* -- Scrollbar: slightly more visible ----------------------- */
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.13); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
+/* ============================================================
+   Sprint E — New Features
+   ============================================================ */
+
+/* E1 — Word Goal Tracker */
+.word-goal-input {
+  width: 78px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 0;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.word-goal-input::-webkit-outer-spin-button,
+.word-goal-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.word-goal-input:focus { border-bottom-color: var(--accent); color: var(--text); }
+.word-goal-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+.word-goal-display {
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-light);
+  border-radius: 4px;
+  padding: 2px 7px;
+  border: 1px solid transparent;
+}
+.word-goal-bar-wrap {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--surface-2);
+}
+.word-goal-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.3s ease;
+  max-width: 100%;
+}
+.writing-toolbar { position: relative; }
+
+/* E2 — Export & Focus toolbar buttons */
+.btn-writing-tool {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 4px 9px;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+}
+.btn-writing-tool:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+/* E3 — Find & Replace panel */
+#find-replace-panel {
+  display: none;
+  position: fixed;
+  bottom: 48px;
+  right: 24px;
+  z-index: 500;
+  width: 300px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  padding: 12px 14px;
+}
+.fr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.fr-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.fr-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+.fr-close:hover { color: var(--text); }
+.fr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.fr-row input {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 8px;
+  outline: none;
+}
+.fr-row input:focus { border-color: var(--accent); }
+.fr-match-count { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.fr-actions { display: flex; gap: 8px; }
+.fr-btn {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+.fr-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+mark.fr-hl {
+  background: rgba(var(--accent-rgb), 0.35);
+  color: inherit;
+  border-radius: 2px;
+}
+
+/* E4 — Distraction-Free Mode */
+body.distraction-free .app-header { display: none; }
+body.distraction-free .tab-bar { display: none; }
+body.distraction-free #panel-writing {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+body.distraction-free .writing-panes { height: calc(100vh - 120px); }
+#df-exit-btn {
+  display: none;
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 600;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 5px 11px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+#df-exit-btn:hover { opacity: 1; }
+body.distraction-free #df-exit-btn { display: block; }

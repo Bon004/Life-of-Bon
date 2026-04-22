@@ -268,8 +268,16 @@
         <div class="writing-toolbar-left">
           <span class="writing-wc-label">Working Copy</span>
           <span class="pane-wc" id="copyWc">0 words</span>
+          <input class="word-goal-input" id="wordGoalInput" type="number" min="0" placeholder="set goal" title="Daily word goal" />
+          <span class="word-goal-display hidden" id="wordGoalDisplay"></span>
+        </div>
+        <div class="word-goal-bar-wrap hidden" id="wordGoalBarWrap">
+          <div class="word-goal-bar" id="wordGoalBar"></div>
         </div>
         <div class="writing-toolbar-right">
+          <button class="btn-writing-tool" onclick="exportWritingAs('txt')" title="Export as plain text">⬇ .txt</button>
+          <button class="btn-writing-tool" onclick="exportWritingAs('md')" title="Export as Markdown">⬇ .md</button>
+          <button class="btn-writing-tool" id="focusModeBtn" onclick="toggleDistractFree()" title="Distraction-free mode (F11)">⛶ Focus</button>
           <button class="btn-writing-draft-toggle" id="draftToggleBtn">Show Draft ▶</button>
           <div class="writing-ai-menu-wrap">
             <button class="btn-writing-ai" id="writingAiBtn">AI ▾</button>
@@ -356,7 +364,29 @@
         <div class="ai-result-body" id="writingAiResultBody"></div>
       </div>
 
+      <!-- Find & Replace panel (E3) -->
+      <div id="find-replace-panel">
+        <div class="fr-header">
+          <span class="fr-title">Find & Replace</span>
+          <button class="fr-close" onclick="toggleFindReplace()">×</button>
+        </div>
+        <div class="fr-row">
+          <input id="fr-find" type="text" placeholder="Find…" />
+          <span id="fr-match-count" class="fr-match-count"></span>
+        </div>
+        <div class="fr-row">
+          <input id="fr-replace" type="text" placeholder="Replace with…" />
+        </div>
+        <div class="fr-actions">
+          <button class="fr-btn" onclick="frReplaceNext()">Replace</button>
+          <button class="fr-btn" onclick="frReplaceAll()">Replace All</button>
+        </div>
+      </div>
+
     </section>
+
+    <!-- Distraction-free exit button (E4) -->
+    <button id="df-exit-btn" onclick="toggleDistractFree()" title="Exit focus mode (Esc)">✕ Exit Focus</button>
 
     <!-- TAB 3: CHARACTERS -->
     <section class="tab-panel" id="panel-characters">

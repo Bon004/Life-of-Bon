@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-22</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Sprint D: Design System Refresh &amp; Branding</h1>
+    <p class="subtitle">CSS-only visual polish sprint: verified Run 3 tag rendering, then shipped D1 (card hover, column headers, panel consistency), D2 (tab fade — confirmed already live), and D3 (logo glow, gradient wordmark, active tab glow indicator).</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-22</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>a2587fd</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session — entirely build/CSS focused. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+        <li>[x] Home page / landing screen — shipped earlier</li>
+        <li>[x] Writing tab rich text toolbar — expanded earlier</li>
+        <li>[x] Character grouping by name — shipped earlier</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+        <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import — complete</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries — complete</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing — 2026-04-20</li>
+        <li>[x] Tag chip + source_section rendering — verified working this session (no fix needed)</li>
+        <li>[x] <strong>UX Sprint D (D1–D3): design system refresh + branding polish — this session</strong></li>
+        <li>[ ] UX Sprint E (E1–E4): writing stats, export .txt/.md, find &amp; replace, distraction-free mode</li>
+        <li>[ ] UX Sprint F1: column spotlight mode on board</li>
+        <li>[ ] UX Sprint C (C1–C3): batch history, card sections, AI stale detection</li>
+        <li>[ ] First real notes import to validate 12-type extraction pipeline</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Tag chips and <code>source_section</code> labels are confirmed <em>rendered</em> in card HTML, but have never been tested with a real import — do a live paste/upload test before claiming them fully working end-to-end.</li>
+        <li>New card types (location, faction, lore, event, scene, relationship, theme) are in the prompt, but Claude's extraction bias toward <code>world</code>/<code>arc</code> defaults is still unverified. First import will reveal whether the taxonomy change actually works.</li>
+        <li>With unlimited extraction and 12 types, the board could flood on a real import. The Sprint B smarter AI prompt (3–7 rich cards) may need to be revisited after seeing real output volumes.</li>
+        <li>The existing D1 design block at <code>style.css:3560+</code> was previously undocumented — it now collides with any new top-level CSS edits. Future sessions should audit this block before adding CSS overrides.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Run the first real notes import to validate the 12-type schema — paste a short excerpt and verify that tag chips, source labels, and new types (location, faction, lore) appear correctly on cards.</li>
+        <li>Return to character arc gaps and world-building consistency review (deferred for multiple sessions).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Sprint E: E1 (writing stats + daily word goal), E2 (export .txt/.md), E3 (find &amp; replace), E4 (distraction-free mode) — all independent, can be built in any order.</li>
+        <li>F1: Column spotlight mode on the board — no dependencies, CSS + minimal JS.</li>
+        <li>Before any new CSS work: grep for existing rules in the D1 override block (<code>style.css:3560+</code>) to avoid creating duplicates.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>a2587fd — UX Sprint D: design system refresh + branding polish (D1–D3)</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>style.css</code> — D1/D2/D3 polish: column header uppercase labels, card hover upgraded to shadow-lg, archive panel header bg, modal border, logo glow, header depth shadow, active tab 3px + text-shadow; reconciled with existing D1 override block at line 3560+</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Reconciled new edits with existing D1 block (lines 3560+) rather than replacing it.</strong> Previous session had added a comprehensive design override section. New edits were stripped down to only what the block didn't already cover (column headers, archive panel header, modal border, card hover strength, logo glow, header shadow) — rejected: rewriting the bottom block entirely.</li>
+        <li><strong>Column labels changed to uppercase 11px/700.</strong> The bottom D1 block didn't touch column headers — this was genuinely new. Adds a cleaner visual separation between the header label and the card list — rejected: larger font with normal case.</li>
+        <li><strong>Card hover upgraded from shadow-md → shadow-lg across both general and 5 type-specific selectors.</strong> The type-specific selectors (higher CSS specificity) would have silently overridden the general shadow-lg if not updated — rejected: only updating the general rule.</li>
+        <li><strong>Removed duplicate <code>@keyframes tabFadeIn</code> and redundant <code>box-shadow</code> on .story-card base.</strong> The bottom D1 block had <code>panelIn</code> (0.24s, cubic-bezier) and <code>--shadow-card</code> already handling these — the duplicates were dead code.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Run a real notes import — paste a story excerpt and verify tag chips, source labels, and new card types appear correctly.</li>
+        <li>Sprint E: start with E1 (writing stats + word goal) or E2 (export .txt/.md) — both are independent and high value.</li>
+        <li>F1: Column spotlight mode — add a spotlight icon to each column header, collapse non-spotlighted columns to ~48px labeled strips.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>The D1 override block at <code>style.css:3560+</code> is a latent collision risk — always grep the selector before adding new CSS near the top of the file.</li>
+        <li>No live import test has been run since the 12-type taxonomy was added. This should happen before the next build sprint to confirm the extraction pipeline is working.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Review the two most recent session reports, identify where we left off, and create a structured plan for the session — including critique of prior work.</li>
+        <li>Implement the plan: verify Run 3 tag rendering, then ship Sprint D (D1 design polish, D2 tab transitions, D3 branding).</li>
+        <li>Generate this /insights report.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Planning mode first, then implementation.</strong> Reading the two session reports and the full roadmap before writing a plan surfaced the tag rendering verification gap and the D1/D2/D3 priority clearly. The plan was accurate and execution matched it closely.</li>
+        <li><strong>Spawning an Explore subagent to audit for CSS conflicts.</strong> After making the top-level CSS edits, using an agent to check for duplicate selectors caught three real conflicts (app-title, tab-panel.active, story-card shadow) — all of which would have produced silent overrides that looked visually wrong for no obvious reason.</li>
+        <li><strong>Reconciliation rather than replacement.</strong> Instead of rewriting the bottom D1 block, only non-redundant changes were preserved. This was cleaner and lower risk.</li>
+      </ul>
+
+      <p><strong>What needed correction:</strong></p>
+      <ul>
+        <li><strong>Initial CSS edits duplicated rules already in the D1 bottom block.</strong> The <code>.app-title</code> gradient, <code>@keyframes tabFadeIn</code>, and <code>.story-card</code> base shadow were all added near the top of the file without first checking the bottom override block (lines 3560+). The Explore agent caught all three. A pre-edit grep of the selector would have prevented this.</li>
+        <li><strong>The column-specific card hover rules also needed upgrading.</strong> After changing <code>.story-card:hover</code> to <code>shadow-lg</code>, the five type-specific rules (higher specificity) were still using <code>shadow-md</code> and would have silently won. Caught during code review, not during initial implementation.</li>
+      </ul>
+
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul>
+        <li>Before editing CSS: grep the selector in the full file to check for existing rules, especially near the bottom — previous sessions often add override blocks that silently conflict with top-level edits.</li>
+        <li>After CSS edits: spawn an Explore agent to verify no duplicate selectors exist. 3 minutes of agent work saved a debugging session.</li>
+        <li>When a CSS selector has higher-specificity siblings (e.g., <code>[data-type="X"] .story-card:hover</code>), always update them together with the general rule — specificity traps are silent.</li>
+      </ul>
+
+      <p><strong>Candidates to persist into memory or CLAUDE.md:</strong></p>
+      <div class="callout key">
+        <strong>Rule:</strong> Before adding any CSS rule, grep for the selector in <code>style.css</code> — a "D1 Design Polish" override block lives at line 3560+ and silently wins over any earlier definition of the same selector.<br>
+        <em>Why:</em> Three CSS conflicts were introduced and had to be reconciled this session because the override block wasn't checked first.
+      </div>
+      <div class="callout warn">
+        <strong>Rule:</strong> When updating a general CSS rule that has higher-specificity siblings, grep and update the siblings in the same edit pass.<br>
+        <em>Why:</em> The <code>[data-type="X"] .story-card:hover</code> rules silently overrode the upgraded <code>.story-card:hover</code> shadow — caught in review, but easily missed.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 1: Sprint D design system refresh</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ RUN 2 ═ -->
+<div class="container" style="margin-top: 80px; padding-top: 64px; border-top: 2px solid var(--border);">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report · Run 2</div>
+    <h1>Sprint E: Writing Tab Features</h1>
+    <p class="subtitle">Four writing features shipped in one session: word goal tracker (E1), .txt/.md export (E2), find &amp; replace panel with Ctrl+H (E3), and distraction-free focus mode with F11/Esc (E4). All four passed automated code review.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-22</strong></span>
+      <span class="chip">Run <strong>2</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>a2587fd</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card"><p class="na">Not reviewed this session — entirely build/feature focused. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p>Writing infrastructure significantly expanded this session. Word count display was already present; a <strong>word goal tracker</strong> was added alongside it — enter a target, see live <code>X / Y words</code> + a 2px progress bar. Draft history snapshots (every 3 min) and AI generation actions remain unchanged.</p>
+      <p>No actual story writing content was reviewed or modified.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+        <li>[x] Home page / landing screen — shipped earlier</li>
+        <li>[x] Writing tab rich text toolbar — expanded earlier</li>
+        <li>[x] Character grouping by name — shipped earlier</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+        <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import — complete</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries — complete</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing — 2026-04-20</li>
+        <li>[x] Tag chip + source_section rendering — verified working (no fix needed)</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish — Run 1 this date</li>
+        <li>[x] <strong>UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — this session</strong></li>
+        <li>[ ] UX Sprint F1: column spotlight mode on board</li>
+        <li>[ ] UX Sprint C (C1–C3): batch history, card sections, AI stale detection</li>
+        <li>[ ] First real notes import to validate 12-type extraction pipeline</li>
+        <li>[ ] Browser test Sprint E features (automated code review passed; manual UI test pending)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Sprint E features passed automated code review but have not been tested in a live browser — do a manual UI walkthrough before building further on top of them.</li>
+        <li>Tag chips and <code>source_section</code> labels are confirmed rendered in card HTML, but no real import test has been run. First paste/upload test will confirm end-to-end extraction works with all 12 types.</li>
+        <li>The word goal tracker is shared across both panes (Working Copy + Draft). If the user wants per-pane goals in a future session, this design choice would need revisiting.</li>
+        <li>Find &amp; Replace operates on <code>innerHTML</code> — searching for text that spans a formatting tag boundary (e.g., bold mid-word) will not match as a plain-text query. This is an accepted limitation for now.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Run the first real notes import to validate the 12-type schema — paste a short excerpt and verify that tag chips, source labels, and new types (location, faction, lore) appear correctly on cards.</li>
+        <li>Return to character arc gaps and world-building consistency review (deferred for multiple sessions).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Browser test Sprint E (E1–E4) before starting F1 — open the Writing tab and exercise word goal input, both export formats, find &amp; replace (Ctrl+H), and distraction-free mode (⛶ Focus / Esc).</li>
+        <li>F1: Column Spotlight Mode — focus 1–2 card types on the board, collapse others to 48px icon strips.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>a2587fd — UX Sprint D: design system refresh + branding polish (D1–D3)</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Uncommitted changes</div><div class="handoff-val"><code>app.js</code>, <code>index.html</code>, <code>style.css</code>, <code>CODEBASE.md</code>, <code>.claude/settings.local.json</code> — Sprint E not yet committed</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>index.html</code> — word goal input + progress bar, export buttons (.txt/.md), find &amp; replace panel, distraction-free exit button + focus button</li>
+        <li><code>app.js</code> — <code>updateWritingWordCounts()</code> extended for goal calc; <code>exportWritingAs()</code>; <code>toggleFindReplace()</code>, <code>frHighlightMatches()</code>, <code>frReplaceNext()</code>, <code>frReplaceAll()</code>; <code>toggleDistractFree()</code>; Ctrl+H and F11/Esc keybindings</li>
+        <li><code>style.css</code> — styles for word goal bar, export buttons, find &amp; replace floating panel, distraction-free mode overrides</li>
+        <li><code>CODEBASE.md</code> — <code>sf_word_goal</code> added to localStorage key table</li>
+        <li><code>.gitignore</code> — added <code>!Notes/**</code> and <code>!NEW NOTES/**</code> exceptions to un-block story note .txt files from the global <code>*.txt</code> ignore rule</li>
+        <li><code>NEW NOTES/Life-of-Bon-FINAL-MASTER.txt</code> — new story notes file added to git tracking</li>
+        <li><code>Notes/Life of Bon; Complete Story Bible.txt</code> — previously untracked due to <code>*.txt</code> rule; now tracked</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Word goal is shared across both panes.</strong> One target for the session is simpler and more useful than separate per-pane goals — rejected: per-pane word goals.</li>
+        <li><strong>Export defaults to Working Copy if Draft isn't focused.</strong> Working Copy is the canonical story text — rejected: always exporting both panes as separate files.</li>
+        <li><strong>Find &amp; Replace strips highlights before re-highlighting.</strong> Prevents double-wrap of <code>&lt;mark&gt;</code> spans when the user modifies the search term — rejected: accumulating highlight spans.</li>
+        <li><strong>F11 triggers distraction-free only when the Writing tab is active.</strong> Avoids conflicting with browser-native F11 on other tabs — rejected: global F11 listener.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Browser test Sprint E — word goal, export .txt/.md, find &amp; replace (Ctrl+H), distraction-free (⛶ Focus / Esc).</li>
+        <li>Commit Sprint E changes: <code>app.js</code>, <code>index.html</code>, <code>style.css</code>, <code>CODEBASE.md</code>.</li>
+        <li>Sprint F1: Column Spotlight Mode — add spotlight icon to each column header; collapse non-spotlighted columns to ~48px labeled icon strips.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>No browser test has been run on Sprint E. Automated code review passed, but DOM interactions need manual verification before the next sprint builds on top.</li>
+        <li>No live import test since the 12-type taxonomy was added. Should happen before any new extraction or card-schema work.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Review the two most recent session reports and roadmap; build a structured implementation plan before touching code.</li>
+        <li>Spawn parallel subagents to audit the current code state (12-type schema, tag chips, existing writing features) and identify exactly what was missing for Sprint E.</li>
+        <li>Implement E1–E4 in a single focused agent (sequential, same-file edits).</li>
+        <li>Spawn a verification subagent to code-review all four features for correctness, regex safety, and DOM integrity.</li>
+        <li>Generate this /insights report and append it to the existing same-day report.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Parallel subagents for planning, not implementation.</strong> Two agents ran simultaneously — one reading session reports, one reading the roadmap — giving a full picture in half the time before any code was touched.</li>
+        <li><strong>Code audit before proposing a plan.</strong> A third subagent inspected the actual current code state before the plan was written. This caught that word-count display was already live (partial E1) and that the 12-type schema was fully complete — avoiding redundant work.</li>
+        <li><strong>Single sequential agent for implementation.</strong> Because all four features touch the same three files, a single implementation agent doing E1→E2→E3→E4 in order was correct — parallel agents would have created merge conflicts.</li>
+        <li><strong>Verification subagent after implementation.</strong> A dedicated Explore agent reviewed the finished code for division-by-zero, regex escaping, double-wrap prevention, and blob download pattern. All passed — clean handoff.</li>
+      </ul>
+
+      <p><strong>What needed correction:</strong></p>
+      <ul>
+        <li>None this session. The plan → audit → implement → verify sequence produced a clean result with no redirections needed.</li>
+      </ul>
+
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul>
+        <li>Plan → Audit code state → Implement → Verify: this four-step sequence avoids implementing features that already exist and catches bugs before reporting success.</li>
+        <li>Use parallel subagents for read-only research (session reports + roadmap simultaneously); use a single sequential agent for writes to the same files.</li>
+        <li>Always spawn a separate verification agent after implementation — it has fresh context and catches issues the implementation agent glosses over.</li>
+      </ul>
+
+      <p><strong>Candidates to persist into memory or CLAUDE.md:</strong></p>
+      <div class="callout key">
+        <strong>Pattern:</strong> For multi-feature sprints, always audit the current code state before proposing a plan — several Sprint E features were partially or fully present and would have been duplicated without the audit.<br>
+        <em>Why:</em> The word count display was already live (E1 was partial); the 12-type schema was complete from a prior session that wasn't fully committed. The audit prevented two redundant implementations.
+      </div>
+      <div class="callout key">
+        <strong>Pattern:</strong> When multiple features all edit the same files, use one sequential implementation agent — not parallel agents.<br>
+        <em>Why:</em> Parallel agents writing to <code>app.js</code>/<code>index.html</code>/<code>style.css</code> simultaneously would produce conflicts. Sequential is faster to merge and easier to verify.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 2: Sprint E writing tab features</div>
+
+</div>
+</body>
+</html>

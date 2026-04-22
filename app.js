@@ -3332,9 +3332,24 @@ function updateWritingWordCounts() {
   var draftEl = document.getElementById('writingDraftEditor');
   var copyWcEl  = document.getElementById('copyWc');
   var draftWcEl = document.getElementById('draftWc');
-  // Both editors are now contenteditable divs — use textContent
   if (copyEl && copyWcEl)   copyWcEl.textContent  = countWords(copyEl.textContent)  + ' words';
   if (draftEl && draftWcEl) draftWcEl.textContent = countWords(draftEl.textContent) + ' words';
+
+  var goal = parseInt(localStorage.getItem('sf_word_goal') || '0', 10);
+  var goalDisplay = document.getElementById('wordGoalDisplay');
+  var barWrap = document.getElementById('wordGoalBarWrap');
+  var bar = document.getElementById('wordGoalBar');
+  if (goal > 0 && copyEl && goalDisplay && barWrap && bar) {
+    var count = countWords(copyEl.textContent);
+    var pct = Math.min(100, Math.round(count / goal * 100));
+    goalDisplay.textContent = count + ' / ' + goal + ' words';
+    goalDisplay.classList.remove('hidden');
+    barWrap.classList.remove('hidden');
+    bar.style.width = pct + '%';
+  } else if (goalDisplay && barWrap) {
+    goalDisplay.classList.add('hidden');
+    barWrap.classList.add('hidden');
+  }
 }
 
 function toggleWritingDraft() {
@@ -3375,6 +3390,24 @@ function applyWritingSplitRatio() {
   // Load saved content — both editors store HTML
   copyEditor.innerHTML  = localStorage.getItem('sf_writing_copy')  || '';
   draftEditor.innerHTML = localStorage.getItem('sf_writing_draft') || '';
+
+  // E1: Word goal — restore persisted goal value
+  var goalInput = document.getElementById('wordGoalInput');
+  if (goalInput) {
+    var savedGoal = localStorage.getItem('sf_word_goal');
+    if (savedGoal) goalInput.value = savedGoal;
+    goalInput.addEventListener('change', function() {
+      var v = parseInt(goalInput.value, 10);
+      if (v > 0) {
+        localStorage.setItem('sf_word_goal', String(v));
+      } else {
+        localStorage.removeItem('sf_word_goal');
+        goalInput.value = '';
+      }
+      updateWritingWordCounts();
+    });
+  }
+
   updateWritingWordCounts();
 
   // Draft history: push a snapshot after 3 minutes of inactivity in the copy editor
@@ -4820,6 +4853,170 @@ function applyMerge(backup) {
   setTimeout(function() { location.reload(); }, 1400);
 }
 
+
+// ============================================================
+// E2 — Export .txt / .md
+// ============================================================
+function getActiveWritingPane() {
+  var copy  = document.getElementById('writingCopyEditor');
+  var draft = document.getElementById('writingDraftEditor');
+  if (draft && document.activeElement === draft) return draft;
+  return copy;
+}
+
+function exportWritingAs(format) {
+  var el = getActiveWritingPane();
+  if (!el) return;
+  var html = el.innerHTML;
+  var text;
+  if (format === 'txt') {
+    text = html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<\/h[1-6]>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  } else {
+    text = html
+      .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '# $1\n')
+      .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '## $1\n')
+      .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '### $1\n')
+      .replace(/<(?:b|strong)[^>]*>([\s\S]*?)<\/(?:b|strong)>/gi, '**$1**')
+      .replace(/<(?:em|i)[^>]*>([\s\S]*?)<\/(?:em|i)>/gi, '*$1*')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+  var date = new Date().toISOString().slice(0, 10);
+  var filename = 'storyforge-' + format + '-' + date + '.' + format;
+  var blob = new Blob([text], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ============================================================
+// E3 — Find & Replace
+// ============================================================
+var frPanelVisible = false;
+
+function toggleFindReplace() {
+  var panel = document.getElementById('find-replace-panel');
+  if (!panel) return;
+  frPanelVisible = !frPanelVisible;
+  panel.style.display = frPanelVisible ? 'block' : 'none';
+  if (frPanelVisible) {
+    var fi = document.getElementById('fr-find');
+    if (fi) { fi.value = ''; fi.focus(); }
+    document.getElementById('fr-match-count').textContent = '';
+  }
+}
+
+function frEscapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function frGetPane() {
+  var copy  = document.getElementById('writingCopyEditor');
+  var draft = document.getElementById('writingDraftEditor');
+  if (draft && document.activeElement === draft) return draft;
+  return copy;
+}
+
+function frHighlightMatches() {
+  var term = (document.getElementById('fr-find') || {}).value || '';
+  var countEl = document.getElementById('fr-match-count');
+  if (!term) { if (countEl) countEl.textContent = ''; return 0; }
+  var pane = frGetPane();
+  if (!pane) return 0;
+  var plain = pane.innerHTML.replace(/<mark class="fr-hl"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+  var re = new RegExp(frEscapeRegex(term), 'gi');
+  var count = (plain.match(re) || []).length;
+  pane.innerHTML = plain.replace(re, function(m) { return '<mark class="fr-hl">' + m + '</mark>'; });
+  if (countEl) countEl.textContent = count ? count + ' match' + (count !== 1 ? 'es' : '') : 'no matches';
+  localStorage.setItem('sf_writing_copy', pane.id === 'writingCopyEditor' ? pane.innerHTML : (localStorage.getItem('sf_writing_copy') || ''));
+  return count;
+}
+
+function frClearHighlights(pane) {
+  pane.innerHTML = pane.innerHTML.replace(/<mark class="fr-hl"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+}
+
+function frReplaceNext() {
+  var term    = (document.getElementById('fr-find')    || {}).value || '';
+  var replace = (document.getElementById('fr-replace') || {}).value || '';
+  if (!term) return;
+  var pane = frGetPane();
+  if (!pane) return;
+  var html = pane.innerHTML;
+  html = html.replace(/<mark class="fr-hl"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+  var re = new RegExp(frEscapeRegex(term), 'i');
+  pane.innerHTML = html.replace(re, replace);
+  frHighlightMatches();
+  if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
+  else localStorage.setItem('sf_writing_draft', pane.innerHTML);
+}
+
+function frReplaceAll() {
+  var term    = (document.getElementById('fr-find')    || {}).value || '';
+  var replace = (document.getElementById('fr-replace') || {}).value || '';
+  if (!term) return;
+  var pane = frGetPane();
+  if (!pane) return;
+  var html = pane.innerHTML;
+  html = html.replace(/<mark class="fr-hl"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+  var re = new RegExp(frEscapeRegex(term), 'gi');
+  pane.innerHTML = html.replace(re, replace);
+  document.getElementById('fr-match-count').textContent = 'Replaced all';
+  if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
+  else localStorage.setItem('sf_writing_draft', pane.innerHTML);
+  updateWritingWordCounts();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'h') {
+    var panel = document.getElementById('find-replace-panel');
+    if (panel) { e.preventDefault(); toggleFindReplace(); }
+  }
+  if (e.key === 'Escape') {
+    if (frPanelVisible) toggleFindReplace();
+    if (document.body.classList.contains('distraction-free')) toggleDistractFree();
+  }
+});
+
+(function() {
+  var fi = document.getElementById('fr-find');
+  if (fi) fi.addEventListener('input', frHighlightMatches);
+})();
+
+// ============================================================
+// E4 — Distraction-Free Mode
+// ============================================================
+function toggleDistractFree() {
+  document.body.classList.toggle('distraction-free');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F11' && document.querySelector('.tab-btn[data-tab="writing"].active')) {
+    e.preventDefault();
+    toggleDistractFree();
+  }
+});
 
 // ============================================================
 // INITIALIZE — runs when the page first loads

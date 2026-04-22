@@ -211,7 +211,7 @@
     <div class="hero-eyebrow">StoryForge / Life of Bon · Living Document</div>
     <h1>Full Project Report — All Sessions</h1>
     <div class="hero-meta">
-      <div class="meta-item"><strong>Last updated:</strong> 2026-04-20</div>
+      <div class="meta-item"><strong>Last updated:</strong> 2026-04-22</div>
       <div class="meta-item"><strong>Purpose:</strong> Orient at the start of any session — current state, rules, open questions, next priorities</div>
       <div class="meta-item"><strong>Git remote:</strong> github.com/Bon004/Life-of-Bon</div>
     </div>
@@ -303,8 +303,11 @@
           <li>Formatting toolbar: B, I, U, H1, H2, bullet list, numbered list, HR divider, clear (added 2026-04-12)</li>
           <li>Content saved as <code>innerHTML</code>; AI receives <code>textContent</code> (plain text)</li>
           <li>Draft pane (right, 40%): AI-assisted scratchpad; "← Promote to Working Copy" button</li>
-          <li>Live word counts on both panes; auto-save to <code>localStorage</code></li>
+          <li>Live word counts on both panes + word goal tracker (<code>sf_word_goal</code>), 2px progress bar — added 2026-04-22</li>
           <li>AI actions: Generate Draft from Notes | Continue Writing | Improve This | Check Story Consistency</li>
+          <li>Export as .txt or .md (blob download, HTML-stripped / markdown-converted) — added 2026-04-22</li>
+          <li>Find &amp; Replace panel (Ctrl+H) with match count, Replace, Replace All — added 2026-04-22</li>
+          <li>Distraction-free mode (⛶ Focus button or F11) — hides topbar/tabs/AI panel, Esc to exit — added 2026-04-22</li>
         </ul>
       </div>
     </div>
@@ -386,6 +389,7 @@
       <tr><td><code>sf_arc_sequence_map</code></td><td><code>{ [sequenceNumber]: [arcCardId, ...] }</code></td></tr>
       <tr><td><code>sf_arc_order</code></td><td>Arc timeline sort order — <code>[arcCardId, ...]</code></td></tr>
       <tr><td><code>sf_situation_order</code></td><td>36 Dramatic Situations display order — <code>[1, 2, ... 36]</code></td></tr>
+      <tr><td><code>sf_word_goal</code></td><td>Writing tab daily word goal (integer) — shared across Working Copy and Draft panes</td></tr>
     </tbody>
   </table>
 
@@ -431,29 +435,29 @@
     <div class="next-item">
       <div class="next-num">1</div>
       <div>
-        <div class="next-title">Browser-test all changes from 2026-04-12 session</div>
-        <div class="next-desc">Verify 7 UI changes work before building further on top of them</div>
+        <div class="next-title">Browser-test Sprint E features</div>
+        <div class="next-desc">Word goal, .txt/.md export, find &amp; replace (Ctrl+H), distraction-free mode (⛶ Focus / Esc) — code review passed; manual UI test pending</div>
       </div>
     </div>
     <div class="next-item">
       <div class="next-num">2</div>
       <div>
-        <div class="next-title">Phase 4b — Export / Import Data</div>
-        <div class="next-desc">Download <code>sf_cards</code> as JSON; re-import with merge or replace; data safety before new features</div>
+        <div class="next-title">First real notes import — validate 12-type extraction</div>
+        <div class="next-desc">Paste a story excerpt and verify tag chips, <code>source_section</code> labels, and new types (location, faction, lore, event, scene) appear on cards</div>
       </div>
     </div>
     <div class="next-item">
       <div class="next-num">3</div>
       <div>
-        <div class="next-title">Phase 4c — iPad / Mobile Layout</div>
-        <div class="next-desc">Responsive breakpoints, touch targets, single-pane writing on narrow screens</div>
+        <div class="next-title">UX Sprint F1 — Column Spotlight Mode</div>
+        <div class="next-desc">Spotlight icon per column header; non-spotlighted columns collapse to ~48px labeled icon strips; CSS + minimal JS</div>
       </div>
     </div>
     <div class="next-item">
       <div class="next-num">4</div>
       <div>
-        <div class="next-title">Phase 5 or 6 — Writing depth or Characters depth</div>
-        <div class="next-desc">Choose based on current story priorities: character name highlights / scene links vs relationship web / emoji picker</div>
+        <div class="next-title">UX Sprint C — Batch history, card sections, AI stale detection</div>
+        <div class="next-desc">C1: import batch history panel; C2: structured card sections; C3: AI staleness flag on outdated cards</div>
       </div>
     </div>
   </div>
@@ -513,6 +517,14 @@
         <td><a href="session-report-2026-04-20-2.html" style="color:var(--blue)">2026-04-20 (Run 3)</a></td>
         <td>Card type taxonomy expanded from 5 → 12 types (<code>location</code>, <code>faction</code>, <code>lore</code>, <code>event</code>, <code>scene</code>, <code>relationship</code>, <code>theme</code> added; <code>world</code> kept for backwards-compat). Added <code>TYPE_TO_COLUMN</code> routing map so new types display in correct board columns. Extraction prompts overhauled: 6-card cap removed (unlimited), section-by-section scanning, new <code>source_section</code> + <code>tags</code> output fields. CSS updated for all new types. session-report-2026-04-20-2.html updated (dark palette) to cover Runs 2 + 3.</td>
       </tr>
+      <tr>
+        <td><a href="session-report-2026-04-22.html" style="color:var(--blue)">2026-04-22</a></td>
+        <td>UX Sprint D shipped: verified Run 3 tag/source_section rendering (already working — no fix needed); D1 design polish (column headers uppercase 11px/700 + subtle bg, card hover upgraded shadow-lg + stronger type glow, archive panel header bg, modal border brightness); D2 tab fade animation confirmed live via existing <code>panelIn</code> keyframe in D1 override block; D3 branding (logo drop-shadow glow, header depth shadow + <code>position:relative</code> enabling gradient <code>::after</code> border, active tab 3px + text-shadow glow). CSS conflicts with existing D1 override block (lines 3560+) caught via Explore agent and reconciled.</td>
+      </tr>
+      <tr>
+        <td><a href="session-report-2026-04-22.html" style="color:var(--blue)">2026-04-22 (Run 2)</a></td>
+        <td>UX Sprint E shipped: E1 word goal tracker (<code>#wordGoalInput</code> + <code>#wordGoalBar</code> progress bar, persisted to <code>sf_word_goal</code>); E2 export .txt/.md (<code>exportWritingAs()</code> — strips HTML for txt, converts bold/italic/headings for md, downloads via blob URL); E3 find &amp; replace (floating panel, Ctrl+H toggle, regex-escaped search, <code>&lt;mark&gt;</code> highlight, Replace / Replace All, Esc to close); E4 distraction-free mode (<code>toggleDistractFree()</code> — hides topbar + tab bar + AI panel, expands writing workspace, F11/Esc toggle). All four passed automated code review. Also: fixed <code>.gitignore</code> to un-block story note .txt files; added <code>NEW NOTES/</code> and <code>Notes/Life of Bon; Complete Story Bible.txt</code> to git tracking.</td>
+      </tr>
     </tbody>
   </table>
 
@@ -541,7 +553,7 @@
     </div>
   </div>
 
-  <div class="doc-footer">StoryForge · Life of Bon · Full Project Report · Last updated 2026-04-20</div>
+  <div class="doc-footer">StoryForge · Life of Bon · Full Project Report · Last updated 2026-04-22</div>
 
 </div>
 </body>

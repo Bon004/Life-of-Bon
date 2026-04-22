@@ -10,7 +10,8 @@
       "Bash(echo '{\"model\":{\"display_name\":\"Opus 4.7\"},\"cost\":{\"total_cost_usd\":1.23},\"transcript_path\":\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\esteb\\\\\\\\\\\\\\\\.claude\\\\\\\\\\\\\\\\projects\\\\\\\\\\\\\\\\c--Users-esteb-Documents-Story-website\\\\\\\\\\\\\\\\a0093379-b268-4915-8ba4-ee6d13cda06f.jsonl\"}')",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(node -c app.js)"
     ]
   },
   "hooks": {
