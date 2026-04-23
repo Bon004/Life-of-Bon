@@ -363,6 +363,37 @@ SECTION 4: CHARACTER — BON (POST-REINCARNATION / CORE ARC)
 - His moments of raw honesty are rare, and therefore devastating when they come
 - He doesn't give speeches about his pain. He deflects. He goes quiet.
 
+--- Bon's Cold Phase / Crash Out ---
+
+This is not a villain arc. Bon does not turn against people or become cruel in a
+petty or dramatic way. What happens is subtler and more true to who he is.
+
+Starting in the mercenary years and carrying into the Academy, Bon is simply not
+open. He functions perfectly — reliable, capable, reads every room, gets the job
+done. People mistake his competence for confidence. What is actually happening is
+that connection feels dangerous, and he has gotten very good at not starting it.
+
+The wall does not announce itself. It looks like aloofness, privacy, or arrogance.
+Only people who stick around long enough realize the wall is the whole personality.
+
+The crash out is not a single event — it is an accumulation of things held too
+long that finally reaches a breaking point. When exactly this happens and what
+specific weight tips it is left open to be discovered through the writing of the
+arcs. What is known: it is not self-pity ("they're better off without me"). It is
+not melodrama. It is a shutdown. He becomes purely functional — takes missions,
+gets results, stops letting anyone in. Not because he thinks people are better off
+without him, but because feeling things has become a liability he can no longer
+afford.
+
+His love interest is the most likely person to pull him back — not by fixing him,
+but by being the one person he cannot successfully freeze out. She sees what he
+is doing and refuses to treat it as rejection.
+
+  > Canon Note: Bon's crash out arc was previously framed as an "Anakin villain
+  > phase." That framing is cut. He does not become a villain. The fall-to-darkness
+  > trajectory has also been removed from the Tragic Champion / best friend
+  > (see Section 5). What replaces it is TBD.
+
 --- Bon's Magic — The Rock Lee Question ---
 
 Bon's mana reserve is large — but not because he's talented.
@@ -510,21 +541,41 @@ Family Timeline:
 | 9–10  | Leon returns with the cure from Brynth. Family recovers and grows closer.  |
 | 11–12 | "Normal" life resumes — but war is coming. The quiet before the storm.     |
 
-Gap (Issue #9): While Leon is away in Brynth (ages 7–8), who continues Bon's
-combat/magic training? Options: a secondary teacher in town, self-directed training
-(which says something about his character), or Elena picks it up in a limited way.
+Training Gap — Canon (Resolved):
+While Leon is away in Brynth (ages 7–8 through 9–10), Elena continues Bon's training.
+Not full combat — she is ill, limited on bad days, sometimes bedridden. But she shows
+up. The fundamentals Leon started: meditation, footwork, the basics. She does not let
+Bon fall behind. She does not let him feel alone.
+
+This is one of the most important things Bon carries. The image of his mother dragging
+herself out of bed to train with him while she was sick — while Leon was gone and she
+did not know when he was coming back — stays with him long after she is taken in Arc 2.
+Her enslavement hits harder because of it. Finding her is not just a goal. It is a debt.
 
 --- Best Friend (Name TBD) ---
 
-- Background: Street orphan → legitimate noble heir
-- Goal: Prove legitimacy, complete knight training, claim inheritance before 18th birthday
-- Arc: Driven by need for validation and belonging — mirrors Bon in some ways
-- Relationship with Bon: Refuses to be pushed away despite Bon's self-destructive patterns.
+- Role: The person who refuses to let Bon be alone. Not defined by Bon's arc —
+  he has his own wound, his own goal, his own thing he is chasing. He just happens
+  to be the one person in the new world who gets past Bon's walls.
+- Relationship with Bon: Sticks around when Bon clearly does not want him to.
   The person who stays when Bon tries to leave.
-- Dynamic: Loyal to a fault. Noble ideals that contrast with Bon's pragmatism.
-  During Bon's dark phase, acts as his moral anchor.
-- Long-term tragedy: The most naturally gifted of their generation. When his beloved
-  dies, the antagonist offers to "preserve" her consciousness. He accepts. He cannot let go.
+- Dynamic: Lifts Bon up. Zoro to Bon's Luffy — not a sidekick, but someone with
+  his own direction who walks alongside.
+- Background, wound, and specific goal: TBD. To be developed once his personality
+  is clearer.
+- When they meet: TBD. Possibly during the mercenary years, the solo adventurer
+  period, or the Academy arc. Given Bon's separation from his family at ages 11–13,
+  a childhood friendship before the disaster would require them to reunite later —
+  which could work but needs deliberate design. Left open.
+- Long-term fate: Open. He may die, he may not. Not decided.
+
+  > Canon Note (April 2026): The previous version of this character had a full
+  > fall-to-darkness trajectory — his beloved dies, Vaela offers to preserve her
+  > consciousness, he accepts, he becomes the Tragic Champion, and Bon must deliver
+  > the mercy kill. This entire arc has been removed. It did not feel right for the
+  > story. The "Tragic Champion" role and the Vyke / Obi-Wan / Bjorn-Askeladd
+  > farewell beat are suspended until a better structural home is found, if ever.
+  > The best friend's long-term arc is currently open.
 
 --- Love Interest (Name TBD) ---
 
@@ -592,6 +643,89 @@ lost count of the centuries.
 She is not a god. She was not always this. She was something before — but what exactly
 is buried under the weight of every memory she has ever absorbed. Even she cannot clearly
 find it anymore.
+
+--- Her Origin — The Catastrophe (Canon) ---
+
+Before the current world existed there was one civilization. More advanced, more unified,
+operating on a level of magical and physical power that the current races cannot fully
+comprehend. The dungeon ruins, the spatial folding, the anchors — all of it is leftover
+infrastructure from that era. The world did not always look like this. It was broken into
+what it is now.
+
+Within that civilization a conflict emerged — not a war between nations but something
+larger. Individuals of extraordinary power whose fighting was literally tearing reality
+apart. Not just destroying people — destroying space itself. The six continents splitting,
+the races diverging, the dungeons forming as ruins: these are the scars of that conflict.
+
+Vaela was there. She was not one of the fighters. She was someone who loved people who
+were. When it became clear that the fabric of reality would be destroyed completely, she
+made a choice — she sacrificed herself to contain the damage. To absorb it. To give
+everyone else a chance to survive.
+
+It worked. The world survived. Reformed into what it is now. And the people she did it
+for let her.
+
+The betrayal: the people she sacrificed herself for — the ones she loved, the ones she
+was trying to save — either knew it would cost her everything and said nothing, or
+engineered the situation so her sacrifice was the solution they needed all along. They
+used her love for them as the mechanism. She gave everything willingly, which made it
+the perfect weapon.
+
+The result: everyone else lived. The world rebuilt itself on top of her sacrifice. And
+Vaela was left as what she is — incorporeal, dissolving slowly, alone in a world that
+forgot she existed.
+
+--- What She Remembers ---
+
+Almost nothing clearly. Centuries of absorbing other people's memories have buried her
+own origin under layers of lives she never lived. She gets fragments — a feeling, a face
+she cannot place, a sense of warmth she cannot source. Sometimes she absorbs someone
+else's memory of grief or betrayal and cannot tell if it is theirs or hers.
+
+She does not know if the people she saved betrayed her deliberately. She does not know
+if she chose this or if it was chosen for her. She operates on conviction — restructuring
+reality, preserving consciousness — but cannot fully remember why she started or whether
+the original reason still applies.
+
+Somewhere under centuries of other people's lives there is a person who loved someone
+enough to destroy herself for them. She cannot find that person anymore. She does not
+know if she wants to.
+
+--- Her True Motivation (Canon) ---
+
+Her stated goal — restructuring reality so consciousness persists without physical form —
+is real. She genuinely believes it. But it is a philosophy that grew on top of something
+much simpler and much more human.
+
+She just wants to live again. She wants a body. She wants to exist in the physical world
+the way she used to — to touch something, to taste something, to be seen. Centuries of
+absorption and observation are, at their root, a research project: find a way back into
+physical existence.
+
+She cannot fully access that original feeling anymore. The philosophy has become so
+layered over it that she cannot always tell what she actually wants from what she has
+told herself she wants. She is a Type 5 who has rationalized her deepest wound into
+a cosmic mission — and she has been doing it for so long she cannot find the wound
+anymore.
+
+This is Option B beneath Option D: desperate and lost, wearing the mask of an architect.
+
+--- The Bloodlines ---
+
+The people who betrayed Vaela survived. Their descendants are still active in the
+current world — as royalty, noble houses, famous warrior lineages, figures of
+historical significance. They do not know what their ancestors did. That knowledge
+was buried deliberately or lost over enough generations to become myth, then nothing.
+
+But the bloodlines are there. Walking around in positions of power in a world that
+exists because of what was taken from her.
+
+When this connection surfaces in the story — slowly, in pieces — it recontextualizes
+the political structures Bon navigates in Arc 4. The noble houses, the kingdoms, the
+great warrior lineages: they are the living legacy of Vaela's betrayal.
+
+  > Deep lore flag: Specific bloodline-to-character assignments are not yet made.
+  > Plant this connection deliberately before it pays off. Do not reveal it all at once.
 
 --- Enneagram Core — Type 5 ---
 
@@ -685,11 +819,59 @@ interference. A frequency she has never encountered before.
 
 That moment does two things at once:
 1. Bon goes on her radar for the first time
-2. She realizes consciousness can move between worlds in a way she never accounted for
-   — her plan to restructure reality has a variable she missed
+2. She realizes other worlds exist — that consciousness can move between realities
+   and survive in a physical body on the other side. Her entire model of reality,
+   scoped to this one world for centuries, was incomplete. The variable she missed
+   is not just Bon — it is the existence of everywhere else.
 
-What she does with that information is deliberately open — to be decided when the story
-reaches that point.
+--- Vaela and Bon — What He Does To Her ---
+
+She cannot fully read his Japan memories the way she reads everyone else. There is
+interference — his consciousness exists outside her network's frequency. She cannot
+extract what she wants in one reading. She has to keep coming back.
+
+This means she has a reason to keep him alive and observable rather than eliminate
+him. He is not a threat to be neutralized. He is the most important thing she has
+encountered in centuries: proof that consciousness can transfer between worlds and
+take root in a physical body on the other side.
+
+But something else happens that she does not account for. His memories — because
+they exist outside her network — do not blend into the noise the way every other
+life she has absorbed does. They stay distinct. And in staying distinct, they remind
+her what it felt like to have a memory that was only hers.
+
+She keeps returning to him not just to study the transfer mechanism. Being near his
+memories is the closest she has felt to herself in centuries. She cannot fully
+recognize this. She would not have the vocabulary for it even if she could. But it
+is happening — and for a being who has not felt anything genuinely her own in
+countless years, it is destabilizing in ways she cannot predict or control.
+
+He is, without knowing it, the first person in centuries to reach her.
+
+--- The Confrontation — Shape and Nature ---
+
+Vaela cannot be fought in a conventional sense. She is incorporeal. She cannot be
+punched, cut, or defeated the way a physical antagonist can. Whatever physical battle
+exists in the final arc is against her infrastructure — her anchors, her proxies,
+whatever she has constructed over centuries. Bon fights through all of that.
+
+But that is not the real confrontation.
+
+The real confrontation is the moment they actually reach each other. Bon — of all
+people — understands what it looks like when someone builds an entire existence
+around a wound they can no longer find. He lived that in Japan. He has been living
+it in this world. He knows what it is to be so buried under your own damage that
+you cannot tell what is yours and what is not.
+
+He may be the only person in the world positioned to see her — not The Unnamed,
+not She Who Remains, not the cosmic threat — but Vaela. Whoever she was before
+all of this. And what she does with being seen, after so long, is the question the
+whole story builds toward.
+
+The confrontation is not a fight. It is a reckoning.
+
+Whether she chooses to let go, cannot let go, or gets what she wanted and finds it
+is not what she thought it would be — all remain open until the story earns the answer.
 
 --- Her Early Presence in the Story ---
 
@@ -772,18 +954,55 @@ Humans (Dorwin)
 
 --- The 10 Great Monarchs ---
 
-Ranked by strength — racial/continental assignments TBD (see Section 13, Issue #5):
+Ranked by historical reputation — not necessarily current power. Title does not
+translate directly to strength. Some of these figures are dead. Some are still
+alive and active. Some once ruled territories and lost them. Some are wandering.
+The list is part of the world's history and lore — not all of them will appear
+in the story, but all of them exist as part of the world's fabric.
 
-1. Morgath, the Deathlord
-2. Zane, the Blade King
-3. Talia, the Aura Mistress
-4. Rhys, the Mountain Lord
-5. Aria, the Elemental Queen
-6. Elysia, the Mystic Seer
-7. Kael, the War Master
-8. Lirien, the Guardian Knight
-9. Soren, the Nature Sage
-10. Niamh, the Shadow Warden
+| # | Name    | Title               | Race                        | Continent     | Status |
+|---|---------|---------------------|-----------------------------|---------------|--------|
+| 1 | Morgath  | The Deathlord       | Demon                       | Eldan         | TBD    |
+| 2 | Zane     | The Blade King      | Human                       | Dorwin        | TBD    |
+| 3 | Talia    | The Aura Mistress   | Sky People                  | Aldor         | TBD    |
+| 4 | Rhys     | The Mountain Lord   | Dwarf                       | Caelum        | TBD    |
+| 5 | Aria     | The Elemental Queen | Elf                         | Brynth        | TBD    |
+| 6 | Elysia   | The Mystic Seer     | TBD (Elf/Demi-Human/Human)  | TBD           | TBD    |
+| 7 | Kael     | The War Master      | Human                       | Dorwin        | TBD    |
+| 8 | Lirien   | The Guardian Knight | Sky People                  | Aldor         | TBD    |
+| 9 | Soren    | The Nature Sage     | TBD (Elf or Demi-Human)     | Brynth        | TBD    |
+|10 | Niamh    | The Shadow Warden   | TBD (Demon or Demi-Human)   | Eldan         | TBD    |
+
+  > Note: Elysia, Soren, and Niamh have loose race assignments. Lock these before
+  > any of the three appear in the narrative to avoid contradictions.
+  > Status (alive/dead/wandering) for all ten is TBD — assign when relevant to the story.
+
+--- The Demon Lords ---
+
+Demon Lord is an ancient title that predates the current guild system and most
+existing political institutions. It exists outside of and above the guild rank
+structure entirely. It is not a racial designation — any race can hold the title.
+It is earned, though the means of earning it vary: some through conquest, some
+through surviving something that should have killed them, some through lineage
+and recognition by existing Demon Lords, some through feats that became legend.
+Raw power alone is not sufficient. The title carries history.
+
+The number of living Demon Lords at any given time is fluid, but always few.
+The world's history is full of Demon Lords who died in wars, sealed themselves
+away, or simply faded. Some are functionally immortal and are still active.
+Some once ruled kingdoms or territories — some still do; others lost everything
+and wander with the title and nothing else. A homeless Demon Lord is still a
+Demon Lord. The title does not expire with circumstance.
+
+Importantly: Demon Lord does not mean villain. The title describes magnitude,
+not alignment. A Demon Lord may be an enemy, an ally, a chaotic neutral force,
+or simply someone living their own life at a scale most people cannot comprehend.
+When one appears in the story it should feel like an event — not a boss fight.
+
+  > Story note: At least one Demon Lord appears in Bon's story directly — in the
+  > spirit of how Badigadi appeared at Ranoa Academy in Mushoku Tensei. Disruptive,
+  > powerful, not necessarily hostile. Their specific identity, title, and the arc
+  > in which they appear are TBD.
 
 --- Regional Monsters ---
 
@@ -827,11 +1046,48 @@ Ranks: E → D → C → B → A → S
 - Similar in structure to Christianity, but unique to this world
 - Worship: The Divine Light — a benevolent force that guides and protects the faithful
 - Values: Compassion, charity, pursuit of knowledge
-- Hierarchy: High Priest/Priestess → Council of Bishops → Priests
-- Influence: Significant. Often works with the Seers and other powerful groups.
+- Primary continent: Dorwin (the largest human continent). Dominant religion among
+  humans; small number of followers from other human-adjacent races. Deeply and
+  doctrinally prejudiced against non-human races — this is theology, not just
+  personal bias. The Divine Light is understood to have chosen humanity above others.
+- Hierarchy: High Priest/Priestess → The Seers (top brass) → Council of Bishops → Priests
+- Political reach: Significant. The Church is effectively a kingmaker on Dorwin.
+  Its influence runs through every major human court. This is not just spiritual
+  authority — it is real geopolitical power.
 
-  > Note: "The Seers" are mentioned here but never defined anywhere else in the notes
-  > (see Section 13, Issue #10). Either define them or cut the reference.
+--- The Seers ---
+
+The Seers are the inner circle and top brass of the Church of the Divine Light —
+not a side faction but the institutional backbone that gives the Church its power.
+Publicly they are the Church's holy interpreters: they read the signs of the Divine
+Light, advise rulers, and validate religious doctrine. Politically they are the ones
+who actually make decisions and hold the Church's power in place.
+
+Their prejudice against non-human races is not personal — it is baked into the
+theology they maintain and enforce. Non-humans are considered spiritually lesser
+or outside the Divine Light's grace entirely. This makes them a direct institutional
+obstacle for Bon once he is associated with other races through his mercenary years
+and adventuring career.
+
+The Seers and Vaela's Anchors:
+The Seers are almost certainly wrong about what they are observing. Many of the
+Church's holiest sites — places of pilgrimage, divine monuments, locations where
+"the Light speaks most clearly" — are almost certainly Vaela's memory anchors.
+The memory distortions, the dreamlike resonance, the sense of being seen and
+understood near these sites: the Seers interpret all of it as divine presence.
+They are not lying. They genuinely believe. They have built centuries of doctrine
+around what is actually Vaela's passive infrastructure.
+
+Vaela did not plan this. She is not aware the Church exists as it does. Humans
+created this institutional protection around her anchors without her involvement.
+The result: the most well-meaning, most politically powerful faction in the human
+world is functionally guarding her network. By the time anyone understands what
+the anchors actually are, they must fight both Vaela's influence and the Church's
+institutional weight to do anything about it.
+
+  > Status: The Seers' awareness of Vaela is not fully locked. Current lean:
+  > they are completely wrong about what they are seeing and do not know Vaela
+  > exists. Final decision deferred until the story reaches that point.
 
 ================================================================================
 SECTION 8: MAGIC & COMBAT SYSTEMS
@@ -1288,6 +1544,9 @@ These are intentional forks — not mistakes — to be decided when the story de
 
 2. Parents' exact fate in the war: RESOLVED in canon above. Leon dies; Elena is enslaved.
    Still open: Who is Elena enslaved by, where, and under what conditions?
+   Leading options: a human warlord/noble on Dorwin (political captive); a criminal
+   underground network (taken in the chaos, sold); a foreign kingdom that absorbed
+   refugees (trapped, not free to leave). Not yet decided.
 
 3. Cosmic antagonist model: Vaela / The Unnamed is the established main villain.
    Still open: Does the Eternal Sentinel counterforce (see Section 6) develop into its
@@ -1298,10 +1557,14 @@ These are intentional forks — not mistakes — to be decided when the story de
    Leave open until the trajectory of his growth is fully felt.
 
 5. Names (partially resolved): Antagonist is Vaela (The Unnamed / She Who Remains).
-   Still TBD: best friend, love interest, Tragic Champion, mercenary band.
+   Still TBD: best friend, love interest, mercenary band.
+   Note: The Tragic Champion as a named role has been suspended (see Section 5).
 
 6. Bon's unique magical signature: Something that makes him distinctly Bon — not just
    "hard worker with big mana." What does his magic look like that no one else's does?
+   Leading idea: his magic is visually impure — unstable edges, color that shifts with
+   emotional state, slightly wrong by academic standards. Works. Is powerful. Looks wrong.
+   Not yet locked.
 
 7. The mentor figure (Arc 3): Who are they? What is their backstory? Rock Lee archetype
    — someone who also earned everything through work, not talent.
@@ -1312,11 +1575,15 @@ These are intentional forks — not mistakes — to be decided when the story de
 9. The first tragic romance (Arc 3): Who is she? How does it end — her death, or his
    self-sabotage?
 
-10. The Tragic Champion's beloved: Who is she, and what is the exact nature of the
-    "preserved" consciousness that replaces her?
+10. When and how does Bon meet his best friend? Possibly mercenary years, solo adventurer
+    period, or Academy arc. A childhood friendship pre-disaster would require a later
+    reunion — possible but needs deliberate design. Left open.
 
-11. Does Bon go through his own villain phase? See Issue #3 in Section 13. This is the
-    biggest structural decision still open in the story.
+11. The Demon Lords: Who specifically appears in Bon's story, in which arc, and under
+    what circumstances? At least one Demon Lord will appear directly. TBD.
+
+12. Bon's crash out: The accumulation that finally breaks through. When does it happen
+    exactly, and what specific weight tips it? Left open to be discovered through writing.
 
 ================================================================================
 SECTION 13: CONTRADICTIONS & CONTINUITY AUDIT
@@ -1387,63 +1654,63 @@ The antagonist was previously called "The Incorporeal Entity" (a descriptor, not
 Canon: Her true name is Vaela. The world calls her The Unnamed. Ancient texts call her
 She Who Remains.
 
+✅ #3 — Bon's Villain Phase — RESOLVED
+Bon does not have a villain phase. The "Anakin turns evil" framing is cut entirely.
+What replaces it is a crash out — a slow accumulation of pressure that results in
+a cold, functional shutdown rather than a turn toward darkness. He does not become
+cruel or predatory. He becomes unreachable. See Section 4 (Bon's Cold Phase / Crash
+Out) for full canon. The Tragic Champion fall-to-darkness arc has also been removed
+from the best friend (see Section 5).
+
+✅ #7 — Demon Lord of the Labyrinth — RESOLVED
+The Demon Lord concept is not cut — it is expanded into full world lore. Demon Lord
+is now an ancient title that exists outside the guild system, held by very few living
+figures, tied to the history of the world. Not villain-coded by default. At least one
+Demon Lord will appear in Bon's story directly. See Section 7 (The Demon Lords) for
+full canon. Who appears and when is TBD.
+
+✅ #10 — The Seers: Undefined — RESOLVED
+The Seers are now fully defined. They are the inner circle and institutional top brass
+of the Church of the Divine Light — not a side faction but the backbone of the Church's
+political power on Dorwin. Their doctrine is prejudiced against non-human races. They
+almost certainly mistake Vaela's anchors for divine phenomena. See Section 7 (The
+Seers) for full canon.
+
 --- Remaining Issues — Require Decisions ---
 
-[HIGH] #3 — Does Bon Have His Own Villain Phase?
-Earlier notes describe a full Anakin trajectory for Bon personally (starts good → causes
-the thing he feared → turns evil → redeems before death). But the arc structure currently
-assigns the "fall" role entirely to the Tragic Champion. Both cannot be equally true
-without deliberate design. Options:
-- Bon falls too, separately, during Arc 5 — making it a double-tragedy arc
-- Bon is the stable one watching his friend fall — which is its own form of suffering
-- Bon comes close to falling but pulls back, while his friend doesn't — which may be
-  the most nuanced choice
+✅ #4 — Vaela Discovers Bon's Past-Life Memories — RESOLVED
+When Vaela reads Bon near an anchor she encounters memories of Japan — a world entirely
+outside her network. She realizes for the first time that other worlds exist and that
+consciousness can transfer between them and survive in a physical body. Her model of
+reality, scoped to this one world for centuries, was incomplete.
 
-[HIGH] #4 — Vaela Discovers Bon's Past-Life Memories
-Canon: Vaela is not aware of Bon until he gets too close to one of her anchors — likely
-during the Academy arc. When she reads him, she encounters memories of Japan — a world
-entirely outside her network. The interference surprises her for the first time in
-centuries. What she does with that information is deliberately open — to be decided when
-the story reaches that point.
+She cannot fully read his memories due to interference. She must keep returning to him,
+which means she has reason to keep him alive rather than eliminate him. She is drawn
+back not only to study the transfer mechanism but because his distinct, unabsorbed
+memories are the first thing in centuries that remind her what it felt like to have
+a memory that was only hers. See Section 6 (Vaela and Bon) for full canon.
 
-[HIGH] #5 — The 10 Great Monarchs Have No Racial or Continental Assignment
-The moment any Monarch appears in the story without an established identity, a
-contradiction becomes possible. Assign each Monarch to a race/continent/kingdom before
-any of them appear in the narrative.
+✅ #5 — The 10 Great Monarchs — RESOLVED (Partial)
+Race and continent assignments have been made for 7 of the 10. Elysia, Soren, and
+Niamh have narrowed options but are not fully locked. See Section 7 (The 10 Great
+Monarchs) for the full table. Lock the remaining three before any of them appear
+in the narrative.
 
-[MEDIUM] #7 — The Demon Lord of the Labyrinth
-Original essay notes mention "a Demon lord who is/was in charge of a labyrinth/dungeon"
-as a villain concept. This figure never connects to any arc, character, or the
-antagonist's plan in the current structure. Either place this figure in Arc 3 as a
-dungeon boss (interesting — gives Arc 3 a concrete physical antagonist), or explicitly
-mark the idea as cut.
+✅ #9 — Who Trains Bon While Leon Is Away — RESOLVED
+Elena trains Bon while Leon is in Brynth. Limited by her illness but consistent —
+she shows up even on bad days. See Section 5 (Elena) for full canon.
 
-[MEDIUM] #8 — Arc Chapter Counts Are Unevenly Paced
-Arc 1 covers ages 0–12 across 25 chapters; Arc 3 covers 2–3 years across 30 chapters.
+--- Deferred (Not Unresolved) ---
+
+[DEFERRED] #8 — Arc Chapter Counts Are Unevenly Paced
 Later arcs are denser than earlier ones despite covering less time. Acceptable for
-narrative reasons (more plot happens later), but revisit allocation once arc beats are
-fully written.
+narrative reasons. Revisit once arc beats are fully written. No action needed now.
 
-[MEDIUM] #9 — Who Trains Bon While Leon Is Away?
-Leon teaches combat/meditation from age 4. Elena's illness hits at ages 7–8 and Leon
-leaves for Brynth. Gap: who continues Bon's training? Options: a secondary teacher in
-the town; Bon trains alone (which says something about his character); Elena teaches
-in a limited way. Choose and incorporate into Arc 1.
+--- No Remaining Critical Issues ---
 
-[LOW] #10 — The Seers: Mentioned Once, Never Explained
-The Church of the Divine Light is described as "often working with the Seers." The Seers
-are never defined. Prophets? A guild? A secret faction? Either define them in the
-world-building section or cut the reference from the religion entry.
-
---- Priority Order for Fixes ---
-
-1. #3 — Does Bon have his own villain phase? (HIGH)
-2. #4 — Does Vaela discover Bon's past-life memories, and when? (HIGH)
-3. #5 — Assign Monarchs to continents/races (HIGH)
-4. #7 — Place or cut the Demon Lord concept (MEDIUM)
-5. #8 — Revisit chapter pacing once arc beats are written (MEDIUM)
-6. #9 — Decide who trains Bon while Leon is away (MEDIUM)
-7. #10 — Define or cut the Seers (LOW)
+All contradictions and continuity gaps have been resolved. What remains in Section 12
+are intentional open decisions — creative forks to be decided when the story demands
+them, not problems requiring fixes.
 
 ================================================================================
 END OF FINAL MASTER DOCUMENT

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-23</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Import Pipeline Debug: Only 2 Cards</h1>
+    <p class="subtitle">First real import of the Life-of-Bon master document (13 sections, ~100K chars) produced only 2 cards. Root cause traced to a CHUNK_SIZE / max_tokens mismatch causing silent JSON parse failures. Fixed with 4 targeted changes to <code>app.js</code>.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-23</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>3a9840b (pre-session)</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session — entirely a build/pipeline debug session. The master document was uploaded to test the import pipeline, not to review story content. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+        <li>[x] Home page / landing screen — shipped earlier</li>
+        <li>[x] Writing tab rich text toolbar — expanded earlier</li>
+        <li>[x] Character grouping by name — shipped earlier</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+        <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import — complete</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries — complete</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing — 2026-04-20</li>
+        <li>[x] Tag chip + source_section rendering — verified working</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode</li>
+        <li>[x] UX Sprint F1: column spotlight mode (⊙ per header, 44px collapsed strips, Esc to exit)</li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code></li>
+        <li>[x] Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button</li>
+        <li>[x] Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge</li>
+        <li>[x] Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields, backward-compatible</li>
+        <li>[x] <strong>Import pipeline bug fixed: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery, sections brevity hint — this session</strong></li>
+        <li>[ ] Verify import fix with live re-test of <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> — expect 50–100+ cards</li>
+        <li>[ ] Browser test Sprint E + F1 (code-audited clean; DOM test 5 sessions deferred)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>The import fix is in code but not yet re-tested. Upload the master document again and confirm the preview shows 50–100+ cards with no "Failed to parse Claude JSON" errors in DevTools console.</li>
+        <li>If any <code>[StoryForge] Claude response was truncated</code> warnings appear in console after the re-test, <code>CHUNK_SIZE</code> may need to drop further (from 10,000 to 8,000). This would depend on whether any remaining chunks are still content-dense enough to overflow 8,192 tokens.</li>
+        <li>C3 stale detection false-positive rate is still unknown — real import data will reveal whether common tags (e.g., "arc-1") fire the badge too broadly.</li>
+        <li>Sprint E, F1, and C are all code-complete but untested in a live browser. Every new session adds more unverified surface.</li>
+        <li>The D1 override block at <code>style.css:3560+</code> remains a latent CSS collision risk — grep before adding new selectors.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Re-upload <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> with the fix in place. Verify that all 13 sections produce cards — expect characters (Bon, Elena, Leon, Vaela, love interest, best friend), locations (6 continents), factions (Church, Guild, Seers), arcs, events, themes, and quotes.</li>
+        <li>After a clean import, review the board for missing story elements and begin character arc / world-building consistency review (deferred many sessions).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Push all commits to origin: <code>git push origin main</code>.</li>
+        <li>Open the app in a browser and manually test Sprint E (word goal, export, Ctrl+H, distraction-free) and Sprint C (undo import, stale badge, section-based cards).</li>
+        <li>After browser test + import re-test: consider the next sprint (D2 export improvements, or a map/relationship view).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>3a9840b — Append Run 6 session report: Sprint C — batch undo, stale detection, card sections</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Uncommitted</div><div class="handoff-val"><code>app.js</code> (import pipeline fixes), <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> (file touched by import test), this session report — committing now</div></div>
+      <div class="handoff-row"><div class="handoff-key">Unpushed</div><div class="handoff-val">3 commits ahead of origin/main before this commit — push after committing</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>app.js</code> — 4 targeted changes to the import pipeline:
+          <ul>
+            <li><code>CHUNK_SIZE</code> reduced from 30,000 → 10,000 (line 1467): prevents response overflow; ~100K doc now splits into ~10 chunks instead of 4, each safely within the 8,192 token output budget</li>
+            <li><code>callClaudeForCards</code>: added <code>data.stop_reason === 'max_tokens'</code> check with <code>console.warn</code> — makes truncation visible in DevTools instead of silent</li>
+            <li><code>callClaudeForCards</code>: added partial JSON recovery — if <code>JSON.parse</code> fails, finds the last <code>},</code> in the broken array, closes it, and re-parses to salvage complete cards before the truncation point</li>
+            <li><code>buildPrompt</code>: added "Keep each sub-field value to 1–2 sentences" to the <code>sections</code> instruction — prevents verbose section objects from inflating response size</li>
+          </ul>
+        </li>
+        <li><code>docs/session-reports/session-report-2026-04-23.html</code> — this report (Run 1)</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Root cause: CHUNK_SIZE / max_tokens mismatch, not deduplication or prompt logic.</strong> A 30,000-char chunk of the story bible required 40–55 cards in response. At ~350 tokens/card average, that's 14,000–19,000 tokens — far above the 8,192 cap. Truncated JSON fails <code>JSON.parse</code>, catches silently, returns <code>[]</code>. Chunks 1–3 returned nothing; only the lighter section 11–13 chunk (quotes + open decisions) fit within the limit and returned 2 cards.</li>
+        <li><strong>CHUNK_SIZE set to 10,000 (not 8,000 or 5,000).</strong> At 10K chars, a chunk produces ~8–15 cards × ~300 tokens = 2,400–4,500 tokens — comfortably under 8,192. Smaller values would create more API calls with no added benefit. Rejected: 5,000 (too many calls), 15,000 (still risky for dense sections).</li>
+        <li><strong>Partial recovery added as a fallback, not a primary fix.</strong> The chunk size reduction is the real fix — partial recovery is insurance for edge cases where a single chunk is unusually dense. It salvages complete card objects before any truncation point by slicing at the last <code>},</code>. Rejected: more aggressive JSON repair (too complex, not needed if chunk size is correct).</li>
+        <li><strong>Sections brevity hint added to prompt rather than removing the field.</strong> The <code>sections</code> field is valuable for structured character/world cards. Constraining sub-field values to 1–2 sentences is lighter-weight than removing the field entirely and preserves the C2 feature. Rejected: dropping sections from the extraction pass.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Push this commit to origin: <code>git push origin main</code>.</li>
+        <li>Open the app, upload <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code>, click Organize with AI. Watch DevTools console for any truncation warnings. Confirm the preview shows 50–100+ cards.</li>
+        <li>If warnings appear: note which chunk number and reduce <code>CHUNK_SIZE</code> from 10,000 to 8,000 in <code>app.js:1467</code>.</li>
+        <li>After a successful import: browser-test Sprint E + C (both long overdue).</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>Import fix is unverified — the re-test is the next mandatory step before anything else.</li>
+        <li>Sprint E, F1, and C have never been browser-tested. This debt is now 5+ sessions old.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Debug the import pipeline: user uploaded a ~100K character story document and received only 2 cards. Identify exactly where content was being lost.</li>
+        <li>Propose a plan (plan mode) before touching code — trace through all possible failure points: chunking, prompt, extraction loop, deduplication, JSON parsing, save.</li>
+        <li>Implement the fix, run <code>/insights</code>, and commit everything to GitHub.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Plan mode with a single focused Explore agent.</strong> The agent mapped the entire pipeline in one pass — 10+ functions, all line numbers, all constants — in a single tool call. No follow-up reads needed. The plan was written directly from that output with high confidence.</li>
+        <li><strong>Reading the actual code before proposing the fix.</strong> After the Explore agent returned, the critical sections (<code>callClaudeForCards</code> lines 1389–1407, <code>organizeWithAI</code> lines 1449–1474, <code>splitIntoSections</code> lines 1339–1363) were read directly to verify the hypothesis before the plan was written. The math confirmed it: 40 cards × 350 tokens = 14,000 tokens &gt; 8,192.</li>
+        <li><strong>Surgical edits — 4 changes, all in one file.</strong> The fix didn't require restructuring the pipeline or adding new abstractions. Each change addressed one specific failure mode: chunk size (primary), truncation visibility (debug), partial recovery (fallback), section brevity (secondary token reduction). All four changes are independent and any could be reverted without affecting the others.</li>
+        <li><strong>Deduplication was correctly ruled out early.</strong> The <code>seenTitles</code> Set logic was inspected and confirmed correct — it accumulates across chunks, not overwrites. This ruled out false-positive deduplication as a cause. Without this verification, the investigation might have chased the wrong bug.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>The fix has not been re-tested in a live browser.</strong> The analysis and code changes are sound, but the proof is in the actual import output. The next session must open the browser and run the import before anything else.</li>
+        <li><strong>A <code>console.log</code> of chunk count and char length at the start of the loop would have surfaced the problem immediately.</strong> If the loop had logged "Chunk 1 of 4: 28,432 chars", the overflow would have been obvious before any API call. Adding debug logging to the import pipeline at the start of each iteration would make future issues like this self-diagnosing.</li>
+      </ul>
+
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul>
+        <li>When a pipeline returns unexpectedly few results with no error shown, look for silent failures in catch blocks — <code>return []</code> on parse error is the pattern that hid this bug for the entire session.</li>
+        <li>Always check <code>stop_reason</code> from any API that supports it — truncation is a common silent failure mode for AI APIs, and none of the existing code was checking for it.</li>
+        <li>For token budget analysis: count expected output cards × average tokens/card and compare to <code>max_tokens</code>. This math catches the CHUNK_SIZE / max_tokens mismatch before any API call is made.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Rule: always check stop_reason on Claude API responses.</strong> The API signals truncation via <code>data.stop_reason === 'max_tokens'</code>. Without this check, truncated responses silently fail JSON parsing and return empty arrays — zero cards, zero error messages, no indication anything went wrong. Now logged as a console warning.<br>
+        <em>Why:</em> This is exactly what happened — 3 of 4 chunks returned nothing, silently, for an entire session.
+      </div>
+      <div class="callout warn">
+        <strong>Rule: size CHUNK_SIZE relative to max_tokens, not to "seems reasonable".</strong> 30,000 chars for a dense story bible = 40–55 cards = 14,000–19,000 tokens. The 8,192 cap was never going to hold. The correct sizing formula: (max_tokens − prompt_tokens) ÷ avg_tokens_per_card × avg_chars_per_card. For this pipeline: (8192 − 700) ÷ 350 × 70 ≈ 1,500 chars/card × 10 cards target = 15,000 chars max. 10,000 is the conservative, safe choice.<br>
+        <em>Why:</em> The original 30,000 was chosen without considering output token budget — a reasonable-seeming number that happened to be 3× too large.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-23 · Run 1: Import pipeline debug — CHUNK_SIZE fix</div>
+
+</div>
+</body>
+</html>

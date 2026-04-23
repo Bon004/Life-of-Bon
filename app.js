@@ -291,10 +291,9 @@ function buildPrompt(existingTitles, existingCards) {
     '  "content"        — 1–2 sentence summary of the card (always required)',
     '  "source_section" — the heading or subsection name in the notes where this card\'s information mainly came from; use "General" if unclear',
     '  "tags"           — array of 2–5 short lowercase labels (e.g. ["protagonist","arc-1","reincarnated"])',
-    '  "sections"       — (optional) for character, location, faction, lore, and world cards only: an object with labeled sub-fields',
-    '                     Use short descriptive keys that fit the content, e.g. { "Background": "...", "Role": "...", "Traits": "..." }.',
-    '                     Put the detailed reference material here; keep "content" as the brief summary.',
-    '                     Omit "sections" entirely for arc, event, scene, theme, quote, idea, relationship cards.',
+    '  "sections"       — (optional) for character, location, faction, lore, and world cards only: an object with labeled sub-fields.',
+    '                     Use short descriptive keys, e.g. { "Background": "...", "Role": "...", "Traits": "..." }.',
+    '                     Keep each sub-field value to 1–2 sentences. Omit "sections" entirely for arc, event, scene, theme, quote, idea, relationship cards.',
     '',
     existingContext,
     existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
@@ -1391,6 +1390,10 @@ async function callClaudeForCards(key, messageContent) {
     raw = data.content[0].text.trim();
   }
 
+  if (data.stop_reason === 'max_tokens') {
+    console.warn('[StoryForge] Claude response was truncated (hit max_tokens). JSON may be incomplete for this chunk.');
+  }
+
   if (!raw) {
     console.error('Unexpected Claude response format', data);
     throw new Error('AI returned unexpected response format. Check the browser console for details.');
@@ -1402,7 +1405,19 @@ async function callClaudeForCards(key, messageContent) {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
-    console.error('Failed to parse Claude JSON', raw);
+    // Attempt partial recovery: find the last complete card object before truncation
+    const lastClose = raw.lastIndexOf('},');
+    if (lastClose !== -1) {
+      const recovered = raw.slice(0, lastClose + 1) + ']';
+      try {
+        const partial = JSON.parse('[' + recovered.replace(/^\s*\[/, ''));
+        if (Array.isArray(partial) && partial.length > 0) {
+          console.warn('[StoryForge] Recovered ' + partial.length + ' cards from truncated response.');
+          return partial;
+        }
+      } catch (_) {}
+    }
+    console.error('[StoryForge] Failed to parse Claude JSON', raw);
     return [];
   }
 }
@@ -1449,7 +1464,7 @@ async function organizeWithAI() {
     if (activeMode !== 'upload' || fileContent.type === 'text') {
       // --- Text path: section-aware chunking ---
       const rawText = activeMode === 'paste' ? pasteText : fileContent.text;
-      const CHUNK_SIZE = 30000;
+      const CHUNK_SIZE = 10000;
       const sections = splitIntoSections(rawText, CHUNK_SIZE);
 
       for (var si = 0; si < sections.length; si++) {
