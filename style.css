@@ -358,6 +358,12 @@ body {
   transition: all var(--transition);
 }
 .batch-toggle-btn:hover, .batch-dismiss-btn:hover { border-color: var(--accent); color: var(--accent); }
+.batch-undo-btn {
+  background: transparent; border: 1px solid var(--warn); color: var(--warn);
+  font-size: 11px; padding: 1px 7px; border-radius: 4px; cursor: pointer;
+  transition: all var(--transition);
+}
+.batch-undo-btn:hover { background: rgba(251,191,36,0.12); }
 .batch-mini-cards { display: flex; flex-wrap: wrap; gap: 5px; }
 .batch-mini-card {
   font-size: 11px; padding: 2px 8px; border-radius: 4px;
@@ -619,6 +625,14 @@ body {
 .card-type-relationship { color: var(--color-idea);      background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.25); }
 .card-type-theme        { color: var(--color-idea);      background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.25); }
 
+/* Stale detection badge */
+.card-stale-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 20px; line-height: 1.5;
+  color: var(--warn); background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.3);
+  cursor: help;
+}
+
 /* Tag chips */
 .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 5px; }
 .card-tag  {
@@ -626,6 +640,21 @@ body {
   border: 1px solid var(--border); border-radius: 20px; padding: 1px 7px;
   letter-spacing: 0.03em; line-height: 1.6;
 }
+
+/* Card structured sections (C2) */
+.card-section { margin-bottom: 8px; }
+.card-section:last-of-type { margin-bottom: 0; }
+.card-section-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 3px; opacity: 0.7;
+}
+.card-section-body {
+  font-size: 13px; color: var(--text); line-height: 1.55;
+  min-height: 1.6em; outline: none;
+  border-radius: 4px; padding: 2px 4px; margin: 0 -4px;
+  transition: background var(--transition);
+}
+.card-section-body:focus { background: rgba(255,255,255,0.04); }
 
 /* Source section label */
 .card-source-section {

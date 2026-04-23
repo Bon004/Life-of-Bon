@@ -285,12 +285,16 @@ function buildPrompt(existingTitles, existingCards) {
     '  idea         — open questions, unresolved canon, future ideas (prefix title with "[Idea]")',
     '  world        — general worldbuilding that does not fit a more specific type',
     '',
-    'Return a JSON array. Each object must have exactly these fields:',
+    'Return a JSON array. Each object must have these fields:',
     '  "type"           — one of the types listed above',
     '  "title"          — short, specific, unique name or label',
-    '  "content"        — 3–6 sentences of clear reference material: summary + important details as a coherent paragraph',
+    '  "content"        — 1–2 sentence summary of the card (always required)',
     '  "source_section" — the heading or subsection name in the notes where this card\'s information mainly came from; use "General" if unclear',
     '  "tags"           — array of 2–5 short lowercase labels (e.g. ["protagonist","arc-1","reincarnated"])',
+    '  "sections"       — (optional) for character, location, faction, lore, and world cards only: an object with labeled sub-fields',
+    '                     Use short descriptive keys that fit the content, e.g. { "Background": "...", "Role": "...", "Traits": "..." }.',
+    '                     Put the detailed reference material here; keep "content" as the brief summary.',
+    '                     Omit "sections" entirely for arc, event, scene, theme, quote, idea, relationship cards.',
     '',
     existingContext,
     existingContext ? 'If a new card clearly conflicts with or supersedes an existing card, append "[Note: may supersede: <title>]" at the end of its content field.' : '',
@@ -348,13 +352,15 @@ function buildSyncPrompt(existingTitles, existingCards) {
 // addCard: creates a new card object and adds it to the cards array.
 // Optional `extra` object is merged in (batchId, source_section, tags, etc.).
 function addCard(type, title, content, extra) {
+  const now = new Date().toISOString();
   const card = Object.assign({
-    id:        generateId(),
-    type:      type,
-    title:     title || 'Untitled',
-    content:   content || '',
-    status:    'active',
-    createdAt: new Date().toISOString()
+    id:          generateId(),
+    type:        type,
+    title:       title || 'Untitled',
+    content:     content || '',
+    status:      'active',
+    createdAt:   now,
+    lastModified: now
   }, extra || {});
   cards.push(card);
   saveCards();
@@ -370,6 +376,33 @@ function deleteCard(id) {
   saveCards();
   renderCards();
   renderHomePage();
+}
+
+// renderCardContent: returns HTML for the editable content area of a card.
+// If the card has a `sections` object, renders labeled sub-fields; otherwise falls back to flat content.
+function renderCardContent(card) {
+  if (card.sections && typeof card.sections === 'object' && Object.keys(card.sections).length > 0) {
+    return Object.keys(card.sections).map(function(key) {
+      return '<div class="card-section">' +
+        '<div class="card-section-label">' + escapeHtml(key) + '</div>' +
+        '<div class="card-section-body" contenteditable="true" data-id="' + card.id + '" data-section-key="' + escapeHtml(key) + '">' + escapeHtml(card.sections[key]) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  return '<div class="card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>';
+}
+
+// isCardStale: true if a related card (overlapping tags) was modified after this card was created
+function isCardStale(card, allCards) {
+  if (!card.tags || card.tags.length === 0) return false;
+  var cardTime = new Date(card.lastModified || card.createdAt).getTime();
+  return allCards.some(function(other) {
+    if (other.id === card.id || other.status === 'archived') return false;
+    if (!other.tags || other.tags.length === 0) return false;
+    var otherTime = new Date(other.lastModified || other.createdAt).getTime();
+    if (otherTime <= cardTime) return false;
+    return other.tags.some(function(t) { return card.tags.indexOf(t) !== -1; });
+  });
 }
 
 // renderCards: redraws all cards — both board view and map view (if active)
@@ -421,24 +454,33 @@ function renderCards() {
         ? '<div class="card-source-section">↳ ' + escapeHtml(card.source_section) + '</div>'
         : '';
 
+      var staleBadge = isCardStale(card, cards)
+        ? '<span class="card-stale-badge" title="A related card was updated after this one was created">⚠ stale</span>'
+        : '';
+
       el.innerHTML =
         '<input type="checkbox" class="card-checkbox" data-id="' + card.id + '" title="Select card">' +
         '<button class="card-delete" data-id="' + card.id + '" title="Delete">✕</button>' +
         '<div class="card-header-row">' +
           '<span class="card-type-badge card-type-' + card.type + '">' + card.type + '</span>' +
           roleChip +
+          staleBadge +
           '<span class="card-timestamp">' + relativeTime(card.createdAt) + '</span>' +
         '</div>' +
         '<div class="card-title" contenteditable="true" data-id="' + card.id + '" data-field="title">' + escapeHtml(card.title) + '</div>' +
         tagsHtml +
-        '<div class="card-content" contenteditable="true" data-id="' + card.id + '" data-field="content">' + escapeHtml(card.content) + '</div>' +
+        renderCardContent(card) +
         sourceHtml +
         '<button class="card-collapse-btn" title="Collapse card">▲ Collapse</button>';
 
-      // Collapse long content by default
+      // Collapse long content by default (skipped for section-based cards)
       var contentEl = el.querySelector('.card-content');
-      if (card.content && card.content.length > 100) {
-        contentEl.classList.add('card-collapsed');
+      if (contentEl) {
+        if (card.content && card.content.length > 100) {
+          contentEl.classList.add('card-collapsed');
+        } else {
+          el.classList.add('card-expanded');
+        }
       } else {
         el.classList.add('card-expanded');
       }
@@ -503,17 +545,27 @@ function renderCards() {
   // Inline edit listeners: when you click away from an editable field, save the change
   document.querySelectorAll('[contenteditable="true"]').forEach(function(el) {
     el.addEventListener('blur', function() {
-      const id    = el.getAttribute('data-id');
-      const field = el.getAttribute('data-field');
-      const card  = cards.find(function(c) { return c.id === id; });
-      if (card) {
-        var newVal = el.textContent.trim();
-        if (card[field] !== newVal) {
-          card[field] = newVal;
+      const id         = el.getAttribute('data-id');
+      const field      = el.getAttribute('data-field');
+      const sectionKey = el.getAttribute('data-section-key');
+      const card       = cards.find(function(c) { return c.id === id; });
+      if (!card) return;
+      var newVal = el.textContent.trim();
+      if (sectionKey) {
+        if (!card.sections) card.sections = {};
+        if (card.sections[sectionKey] !== newVal) {
+          card.sections[sectionKey] = newVal;
+          card.lastModified = new Date().toISOString();
           saveCards();
           unsyncedIds.add(id);
           saveUnsyncedIds();
         }
+      } else if (field && card[field] !== newVal) {
+        card[field] = newVal;
+        card.lastModified = new Date().toISOString();
+        saveCards();
+        unsyncedIds.add(id);
+        saveUnsyncedIds();
       }
     });
   });
@@ -563,6 +615,7 @@ function renderBatchStrip() {
       '<span class="batch-strip-title">✦ Latest import · ' + batchCards.length + ' card' + (batchCards.length !== 1 ? 's' : '') + ' · ' + when + '</span>' +
       '<div class="batch-strip-actions">' +
         '<button class="batch-toggle-btn">' + (collapsed ? '▾ Show' : '▴ Hide') + '</button>' +
+        '<button class="batch-undo-btn" data-id="' + recent.id + '">↩ Undo import</button>' +
         '<button class="batch-dismiss-btn" data-id="' + recent.id + '">✕</button>' +
       '</div>' +
     '</div>' +
@@ -574,12 +627,33 @@ function renderBatchStrip() {
     stripEl.classList.toggle('batch-collapsed');
     renderBatchStrip();
   });
+  stripEl.querySelector('.batch-undo-btn').addEventListener('click', function() {
+    var id = this.getAttribute('data-id');
+    if (!confirm('Remove all ' + batchCards.length + ' card(s) from this import?')) return;
+    undoLastBatch(id);
+  });
   stripEl.querySelector('.batch-dismiss-btn').addEventListener('click', function() {
     var id = this.getAttribute('data-id');
     dismissed.push(id);
     localStorage.setItem('sf_dismissed_batches', JSON.stringify(dismissed));
     stripEl.classList.add('hidden');
   });
+}
+
+// undoLastBatch: deletes all active cards from a batch and removes the batch record
+function undoLastBatch(batchId) {
+  cards = cards.filter(function(c) { return c.batchId !== batchId; });
+  saveCards();
+  var batches = [];
+  try { batches = JSON.parse(localStorage.getItem('sf_batches') || '[]'); } catch(e) {}
+  batches = batches.filter(function(b) { return b.id !== batchId; });
+  localStorage.setItem('sf_batches', JSON.stringify(batches));
+  var dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem('sf_dismissed_batches') || '[]'); } catch(e) {}
+  dismissed = dismissed.filter(function(id) { return id !== batchId; });
+  localStorage.setItem('sf_dismissed_batches', JSON.stringify(dismissed));
+  renderCards();
+  renderHomePage();
 }
 
 

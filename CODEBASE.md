@@ -157,7 +157,10 @@ Search with **Ctrl+F** using the section name to jump directly.
   status:         "active",     // "active" | "archived"
   tags:           [],           // [{ label: string, color: string }]
   source_section: "Chapter 1",  // section header from source document
-  createdAt:      "2026-04-07T12:00:00Z"
+  createdAt:      "2026-04-07T12:00:00Z",
+  lastModified:   "2026-04-07T12:00:00Z", // updated on every content/title save (C3)
+  batchId:        "b1c2d3",    // optional — set on AI-imported cards; links to sf_batches entry
+  sections:       {}            // optional — structured sub-fields for character/location/faction/lore/world (C2)
 }
 ```
 
