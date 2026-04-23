@@ -336,5 +336,184 @@
   <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-23 · Run 1: Import pipeline debug — CHUNK_SIZE fix</div>
 
 </div>
+
+<!-- ============================================================
+     RUN 2 — Sprint E + F1 browser test: inline onclick audit
+     ============================================================ -->
+<div class="container" style="margin-top: 80px; border-top: 2px solid var(--border); padding-top: 64px;">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Sprint E + F1 Browser Test: The onclick Audit</h1>
+    <p class="subtitle">Browser-tested Sprint E and F1 features. Found that every inline <code>onclick=</code> handler in the Writing tab and Canvas columns was silently broken — <code>app.js</code> runs as a module, so all functions are module-scoped and invisible to HTML event attributes. Fixed 12 broken handlers across <code>index.html</code> and <code>app.js</code>.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-23</strong></span>
+      <span class="chip">Run <strong>2</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>fb137b4 (pre-session)</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card"><p class="na">Not reviewed this session — entirely a build/pipeline debug session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel)</li>
+        <li>[x] Home page / landing screen</li>
+        <li>[x] Writing tab rich text toolbar</li>
+        <li>[x] Character grouping by name</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons</li>
+        <li>[x] 36 Dramatic Situations: reorderable list</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing</li>
+        <li>[x] Tag chip + source_section rendering</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — <strong>code-complete; onclick wiring fixed this session</strong></li>
+        <li>[x] UX Sprint F1: column spotlight mode — <strong>onclick wiring fixed this session</strong></li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code></li>
+        <li>[x] Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button</li>
+        <li>[x] Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge</li>
+        <li>[x] Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields, backward-compatible</li>
+        <li>[x] Import pipeline bug fixed: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Import verified live: 200+ cards from Life-of-Bon-FINAL-MASTER-NEW.txt</li>
+        <li>[x] <strong>Sprint F1 spotlight bug fixed: removed inline onclick, added addEventListener for .col-spotlight-btn and .col-vertical-strip — this session</strong></li>
+        <li>[x] <strong>Ask Claude FAB overlap fixed: bottom: 56px → 96px, clears summary bar buttons — this session</strong></li>
+        <li>[x] <strong>Sprint E onclick audit: all 7 Writing tab inline handlers stripped; IDs added; addEventListener wiring added to app.js — this session</strong></li>
+        <li>[ ] Browser re-test Sprint E + F1 after onclick fixes (fixes applied, test not yet confirmed by user)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Sprint E + F1 fixes were applied this session but not yet re-confirmed by user in browser. The user triggered /insights before the final pass — the fix is correct but unverified.</li>
+        <li>Sprint C (batch undo, stale badge, card sections) still has never been browser-tested. This is now 6+ sessions overdue.</li>
+        <li>Word goal behavior: user said "other features work fine i think" — this was before the onclick audit, so it is unclear whether word goal was actually tested. It has no onclick handler (it's an input event), so it may have been working all along — but needs explicit confirmation.</li>
+        <li>The D1 override block at <code>style.css:3560+</code> remains a latent CSS collision risk — grep before adding new selectors.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>No story work this session. Continue from previous recommendation: after a clean import, review the board for missing story elements and begin character arc / world-building consistency review.</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Refresh the browser and do a complete Sprint E pass: word goal, .txt export, .md export, Ctrl+H find &amp; replace, ⛶ Focus / Escape. Confirm all five work.</li>
+        <li>Do a Sprint F1 pass: click ⊙ on a column header, verify other columns collapse, verify Escape exits spotlight. Confirm working.</li>
+        <li>Do a Sprint C pass: import a file, click ↩ Undo import, check stale badges on overlapping-tag cards, verify section-based card rendering.</li>
+        <li>After all three passes: decide next sprint (Sprint D2 export polish vs map/relationship view).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>fb137b4 — Fix import pipeline: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Uncommitted</div><div class="handoff-val"><code>app.js</code>, <code>index.html</code>, <code>style.css</code> — onclick audit + FAB fix + spotlight fix (not yet committed)</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>index.html</code> — removed all 12 inline <code>onclick=</code> attributes (5 spotlight column buttons, 2 spotlight vertical strips, 2 export buttons, focus mode button, exit focus button, F&amp;R close/replace/replace-all buttons); added IDs to 5 buttons that needed them for addEventListener wiring</li>
+        <li><code>app.js</code> — added <code>addEventListener</code> block for <code>.col-spotlight-btn</code> and <code>.col-vertical-strip</code> (spotlight fix); added 7 Writing tab listeners (exportTxtBtn, exportMdBtn, focusModeBtn, df-exit-btn, frCloseBtn, frReplaceNextBtn, frReplaceAllBtn)</li>
+        <li><code>style.css</code> — <code>.fab-chat</code> <code>bottom: 56px</code> → <code>bottom: 96px</code> to stop the Ask Claude button from covering the summary bar's Refresh/▲ buttons</li>
+        <li><code>docs/session-reports/session-report-2026-04-23.html</code> — this Run 2 appended</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Root cause of all Sprint E + F1 button failures: app.js is type="module".</strong> Module scripts are sandboxed — functions defined in a module are not accessible on <code>window</code>. Every inline <code>onclick="fnName()"</code> silently fails with "fnName is not defined". This affected every feature added in Sprint E and F1 — they were code-complete but completely non-functional in the browser.</li>
+        <li><strong>Fix strategy: strip all onclick from HTML; add IDs; wire in app.js.</strong> Rejected: exposing functions to <code>window</code> (that would defeat the point of modules and pollute the global scope). The addEventListener pattern is already established in the codebase (see .btn-add-card, .col-spotlight-btn) — extended it consistently.</li>
+        <li><strong>FAB bottom raised to 96px (not 80px or 120px).</strong> Summary bar header is ~36px tall. With FAB at 56px, the bottom 16px of the FAB overlapped the summary bar. 96px gives 60px of clearance — enough to be safe even if the summary bar expands slightly. Rejected: moving FAB to left side (breaks expected bottom-right FAB convention).</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Refresh the browser (Live Server should auto-reload — if not, do a hard refresh Ctrl+Shift+R).</li>
+        <li>Test Sprint E: Writing tab → set word goal → type → bar should fill. Export .txt and .md. Ctrl+H to open F&amp;R, search for a word, replace one, replace all. Click ⛶ Focus — header and tabs should hide. Press Escape to exit.</li>
+        <li>Test Sprint F1: Story Canvas → click ⊙ on any column header → others collapse to strips → Escape exits.</li>
+        <li>Test Sprint C: import a file → ↩ Undo import button appears → click it → cards gone. Check stale badge on overlapping-tag cards. Check section-based cards render sub-fields.</li>
+        <li>Commit once all three passes are confirmed: <code>Fix: wire Sprint E + F1 onclick handlers; raise FAB above summary bar</code>.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>All three sprint passes (E, F1, C) still need user confirmation in browser. Fixes are applied and correct but not verified.</li>
+        <li>Word goal may have been working all along (no onclick — it's an <code>input</code> event listener). Needs explicit check.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Browser-test Sprint E + F1 features and debug distraction-free mode: trace the UI trigger, verify event listeners, check CSS, check DevTools for errors, fix anything broken.</li>
+        <li>Fix the ⊙ spotlight button (not working) and the Ask Claude FAB covering the Refresh/▲ buttons in the summary bar.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Tracing the full chain before touching code.</strong> For each bug: read the HTML trigger, the function definition, and the event listener wiring (or lack thereof) before proposing a fix. The module scope issue was identified immediately by reading the index.html <code>script</code> tag and comparing it against the inline onclick attributes.</li>
+        <li><strong>Auditing all broken handlers at once instead of fixing one at a time.</strong> After identifying the module scope root cause, a single grep for <code>onclick=</code> in index.html revealed every broken handler in one pass — 12 total. Fixing them all in one session prevented the same debugging loop from repeating for each Sprint E feature.</li>
+        <li><strong>Parallel grep + read for both bugs.</strong> The spotlight function, its CSS, and the FAB CSS were all read in the same round. The summary bar position and FAB position were compared directly from the style.css output without needing a second round of reads.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>The module scope issue should have been caught at Sprint E + F1 commit time.</strong> Any time a new function is added to a module-script app and called via inline HTML, it will silently fail. The pattern to check: does the HTML use <code>type="module"</code>? If yes, every new interactive element needs an addEventListener — not an onclick attribute. This check should be part of the feature-complete review before marking a sprint done.</li>
+        <li><strong>Word goal was not explicitly confirmed before /insights.</strong> User said "other features work fine" but this was before the onclick audit — at that point no Writing tab buttons worked. Word goal uses an <code>input</code> event listener (not onclick), so it may have been fine, but it was not directly tested. Explicit confirmation per feature avoids ambiguity in the session report.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Rule: app.js is type="module" — never use inline onclick for new features.</strong> All functions in app.js are module-scoped. Inline <code>onclick="fn()"</code> in HTML requires <code>fn</code> to be on <code>window</code>. It silently fails with no error in the HTML — only a "fn is not defined" in DevTools console when clicked. Always wire interactive elements with <code>addEventListener</code> in app.js.<br>
+        <em>Why:</em> This bug killed every Sprint E and F1 button. The features were code-complete but completely non-functional in the browser for multiple sessions.
+      </div>
+      <div class="callout warn">
+        <strong>Checklist before marking a sprint done: onclick audit.</strong> Before closing a sprint, grep index.html for <code>onclick=</code>. Any match that calls a function defined in a module script is broken. Add the addEventListener wiring to app.js before shipping.<br>
+        <em>Why:</em> Sprint E and F1 were marked complete and carried forward in multiple session reports without this check. The debt accumulated for 5+ sessions.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-23 · Run 2: Sprint E + F1 onclick audit — module scope fix</div>
+
+</div>
 </body>
 </html>

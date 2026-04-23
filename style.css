@@ -1415,7 +1415,7 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
 /* Floating chat button */
 .fab-chat {
   position: fixed;
-  bottom: 56px;
+  bottom: 96px;
   right: 24px;
   background: var(--surface);
   color: var(--text);

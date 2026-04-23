@@ -714,6 +714,13 @@ document.querySelectorAll('.btn-add-card').forEach(function(btn) {
   });
 });
 
+document.querySelectorAll('.col-spotlight-btn, .col-vertical-strip').forEach(function(el) {
+  el.addEventListener('click', function() {
+    const type = el.closest('.canvas-col').getAttribute('data-type');
+    spotlightColumn(type);
+  });
+});
+
 
 // ============================================================
 // SECTION 4: TAB SWITCHING
@@ -5166,6 +5173,15 @@ document.addEventListener('keydown', function(e) {
     toggleDistractFree();
   }
 });
+
+// Writing tab button wiring (inline onclick removed — app.js is a module)
+document.getElementById('exportTxtBtn').addEventListener('click', function() { exportWritingAs('txt'); });
+document.getElementById('exportMdBtn').addEventListener('click', function() { exportWritingAs('md'); });
+document.getElementById('focusModeBtn').addEventListener('click', toggleDistractFree);
+document.getElementById('df-exit-btn').addEventListener('click', toggleDistractFree);
+document.getElementById('frCloseBtn').addEventListener('click', toggleFindReplace);
+document.getElementById('frReplaceNextBtn').addEventListener('click', frReplaceNext);
+document.getElementById('frReplaceAllBtn').addEventListener('click', frReplaceAll);
 
 // ============================================================
 // H1 — Global Card Search

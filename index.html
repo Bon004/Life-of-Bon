@@ -184,11 +184,11 @@
               </div>
               <div class="col-header-right">
                 <button class="btn-add-card" title="Add card">+</button>
-                <button class="col-spotlight-btn" onclick="spotlightColumn('character')" title="Spotlight column">⊙</button>
+                <button class="col-spotlight-btn" title="Spotlight column">⊙</button>
               </div>
             </div>
             <div class="col-cards" id="cards-character"></div>
-            <div class="col-vertical-strip" onclick="spotlightColumn('character')">
+            <div class="col-vertical-strip">
               <span class="col-vs-dot" style="background:var(--color-character)"></span>
               <span class="col-vs-label">Characters</span>
             </div>
@@ -203,11 +203,11 @@
               </div>
               <div class="col-header-right">
                 <button class="btn-add-card" title="Add card">+</button>
-                <button class="col-spotlight-btn" onclick="spotlightColumn('world')" title="Spotlight column">⊙</button>
+                <button class="col-spotlight-btn" title="Spotlight column">⊙</button>
               </div>
             </div>
             <div class="col-cards" id="cards-world"></div>
-            <div class="col-vertical-strip" onclick="spotlightColumn('world')">
+            <div class="col-vertical-strip">
               <span class="col-vs-dot" style="background:var(--color-world)"></span>
               <span class="col-vs-label">World</span>
             </div>
@@ -222,11 +222,11 @@
               </div>
               <div class="col-header-right">
                 <button class="btn-add-card" title="Add card">+</button>
-                <button class="col-spotlight-btn" onclick="spotlightColumn('arc')" title="Spotlight column">⊙</button>
+                <button class="col-spotlight-btn" title="Spotlight column">⊙</button>
               </div>
             </div>
             <div class="col-cards" id="cards-arc"></div>
-            <div class="col-vertical-strip" onclick="spotlightColumn('arc')">
+            <div class="col-vertical-strip">
               <span class="col-vs-dot" style="background:var(--color-arc)"></span>
               <span class="col-vs-label">Plot & Arcs</span>
             </div>
@@ -241,11 +241,11 @@
               </div>
               <div class="col-header-right">
                 <button class="btn-add-card" title="Add card">+</button>
-                <button class="col-spotlight-btn" onclick="spotlightColumn('quote')" title="Spotlight column">⊙</button>
+                <button class="col-spotlight-btn" title="Spotlight column">⊙</button>
               </div>
             </div>
             <div class="col-cards" id="cards-quote"></div>
-            <div class="col-vertical-strip" onclick="spotlightColumn('quote')">
+            <div class="col-vertical-strip">
               <span class="col-vs-dot" style="background:var(--color-quote)"></span>
               <span class="col-vs-label">Key Quotes</span>
             </div>
@@ -260,11 +260,11 @@
               </div>
               <div class="col-header-right">
                 <button class="btn-add-card" title="Add card">+</button>
-                <button class="col-spotlight-btn" onclick="spotlightColumn('idea')" title="Spotlight column">⊙</button>
+                <button class="col-spotlight-btn" title="Spotlight column">⊙</button>
               </div>
             </div>
             <div class="col-cards" id="cards-idea"></div>
-            <div class="col-vertical-strip" onclick="spotlightColumn('idea')">
+            <div class="col-vertical-strip">
               <span class="col-vs-dot" style="background:var(--color-idea)"></span>
               <span class="col-vs-label">Ideas</span>
             </div>
@@ -314,9 +314,9 @@
           <div class="word-goal-bar" id="wordGoalBar"></div>
         </div>
         <div class="writing-toolbar-right">
-          <button class="btn-writing-tool" onclick="exportWritingAs('txt')" title="Export as plain text">⬇ .txt</button>
-          <button class="btn-writing-tool" onclick="exportWritingAs('md')" title="Export as Markdown">⬇ .md</button>
-          <button class="btn-writing-tool" id="focusModeBtn" onclick="toggleDistractFree()" title="Distraction-free mode (F11)">⛶ Focus</button>
+          <button class="btn-writing-tool" id="exportTxtBtn" title="Export as plain text">⬇ .txt</button>
+          <button class="btn-writing-tool" id="exportMdBtn" title="Export as Markdown">⬇ .md</button>
+          <button class="btn-writing-tool" id="focusModeBtn" title="Distraction-free mode (F11)">⛶ Focus</button>
           <button class="btn-writing-draft-toggle" id="draftToggleBtn">Show Draft ▶</button>
           <div class="writing-ai-menu-wrap">
             <button class="btn-writing-ai" id="writingAiBtn">AI ▾</button>
@@ -407,7 +407,7 @@
       <div id="find-replace-panel">
         <div class="fr-header">
           <span class="fr-title">Find & Replace</span>
-          <button class="fr-close" onclick="toggleFindReplace()">×</button>
+          <button class="fr-close" id="frCloseBtn">×</button>
         </div>
         <div class="fr-row">
           <input id="fr-find" type="text" placeholder="Find…" />
@@ -417,15 +417,15 @@
           <input id="fr-replace" type="text" placeholder="Replace with…" />
         </div>
         <div class="fr-actions">
-          <button class="fr-btn" onclick="frReplaceNext()">Replace</button>
-          <button class="fr-btn" onclick="frReplaceAll()">Replace All</button>
+          <button class="fr-btn" id="frReplaceNextBtn">Replace</button>
+          <button class="fr-btn" id="frReplaceAllBtn">Replace All</button>
         </div>
       </div>
 
     </section>
 
     <!-- Distraction-free exit button (E4) -->
-    <button id="df-exit-btn" onclick="toggleDistractFree()" title="Exit focus mode (Esc)">✕ Exit Focus</button>
+    <button id="df-exit-btn" title="Exit focus mode (Esc)">✕ Exit Focus</button>
 
     <!-- TAB 3: CHARACTERS -->
     <section class="tab-panel" id="panel-characters">

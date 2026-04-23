@@ -15,10 +15,11 @@ Run at the end of a coding session to capture what was built, story state, decis
 
 ### Step 2 — Determine file name and run number
 - Format: `session-report-YYYY-MM-DD.html`
-- If a file with that date already exists, **append the new run as a new section inside that same file** — do NOT create a `-2` file.
-- Count existing Run N sections inside the file to determine the next run number.
 - Save to: `docs/session-reports/`
-- **Before writing:** ask the user "Append Run N to today's existing report, or start a new file?" — only if ambiguous. Default is always append.
+- **If a file with today's date already exists:** count the existing Run N sections to determine the next run number, then **always ask the user before writing**:
+  > "A report for today already exists (Run N so far). Do you want to append Run N+1 to that file, or start a new file?"
+  Wait for their answer before proceeding. Do not default silently.
+- If no file exists for today, create a new one — no need to ask.
 
 ### Step 4 — Generate the HTML report
 
