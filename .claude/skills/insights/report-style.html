@@ -1,0 +1,274 @@
+<!--
+StoryForge /insights — dark presentation-grade report style.
+This file is the STYLE REFERENCE for the skill. When generating a session report,
+copy the <style> block and the overall DOM structure below, then fill sections 1–10
+with real content from report-template.md.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report [DATE]</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    /* Cover */
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    /* Section headings */
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+
+    /* Text */
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+
+    /* Inline code */
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+
+    /* Handoff key/value rows */
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+
+    /* Utility */
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Cover -->
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>[Report Title]</h1>
+    <p class="subtitle">[One-line session focus — e.g., UI polish sprint, character arc audit, infra cleanup]</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>[YYYY-MM-DD]</strong></span>
+      <span class="chip">Run <strong>[N]</strong></span>
+      <span class="chip">Branch <strong>[branch]</strong></span>
+      <span class="chip">Commit <strong>[sha7]</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card"><p class="na">[content or "Not reviewed this session"]</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">[content]</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">[content]</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">[content]</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">[content]</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[ ] [feature line]</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card"><ul><li>[question]</li></ul></div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul><li>[action]</li></ul>
+      <p><strong>Build-side:</strong></p>
+      <ul><li>[action]</li></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>[branch]</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>[sha] — [message]</code></div></div>
+      <p style="margin-top: 14px;"><strong>Files changed:</strong></p>
+      <ul><li><code>[path]</code> — [reason]</li></ul>
+      <p><strong>Decisions:</strong></p>
+      <ul><li>[decision — why]</li></ul>
+      <p><strong>Resume here:</strong></p>
+      <ul><li>[next action]</li></ul>
+      <p><strong>Blockers / open questions:</strong></p>
+      <ul><li>[blocker or "None"]</li></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul><li>[1-line summary]</li></ul>
+      <p><strong>What worked well:</strong></p>
+      <ul><li>[pattern]</li></ul>
+      <p><strong>What needed correction:</strong></p>
+      <ul><li>[correction or "None"]</li></ul>
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul><li>[pattern]</li></ul>
+      <p><strong>Candidates to persist:</strong></p>
+      <div class="callout key"><strong>Rule:</strong> [rule text]<br><em>Why:</em> [reason]</div>
+      <div class="callout warn">Consider saving the above as a feedback memory.</div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report [DATE]</div>
+
+</div>
+</body>
+</html>
