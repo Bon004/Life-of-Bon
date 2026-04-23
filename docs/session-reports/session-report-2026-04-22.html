@@ -973,5 +973,184 @@
   <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 5: Project reorganization — docs/, design/, story/</div>
 
 </div>
+
+<!-- ═══════════════════════════════════════════ RUN 6 ═ -->
+<div class="container" style="margin-top: 80px; padding-top: 64px; border-top: 2px solid var(--border);">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report · Run 6</div>
+    <h1>Sprint C: Batch Undo, Stale Detection &amp; Card Sections</h1>
+    <p class="subtitle">Three agents ran in parallel to audit Sprint E/F1 (all clean — no fixes needed) and scope Sprint C. Then implemented C1 (batch undo), C3 (stale detection badge), and C2 (structured card sections) in sequence, plus committed two untracked /insights skill files.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-22</strong></span>
+      <span class="chip">Run <strong>6</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>96d14b5</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card"><p class="na">Not reviewed this session — entirely build focused. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel) — shipped earlier</li>
+        <li>[x] Home page / landing screen — shipped earlier</li>
+        <li>[x] Writing tab rich text toolbar — expanded earlier</li>
+        <li>[x] Character grouping by name — shipped earlier</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons — shipped earlier</li>
+        <li>[x] 36 Dramatic Situations: reorderable list — shipped earlier</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import — complete</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries — complete</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing — 2026-04-20</li>
+        <li>[x] Tag chip + source_section rendering — verified working</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — committed Run 4; code-audited this session (all PASS)</li>
+        <li>[x] UX Sprint F1: column spotlight mode (⊙ per header, 44px collapsed strips, Esc to exit) — committed Run 4; code-audited this session (all PASS)</li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code> — Run 5</li>
+        <li>[x] <strong>Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button in batch strip — this session</strong></li>
+        <li>[x] <strong>Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge on cards — this session</strong></li>
+        <li>[x] <strong>Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields for character/location/faction/lore/world, backward-compatible — this session</strong></li>
+        <li>[ ] Browser test Sprint E + F1 (code-audited clean; manual DOM test still pending — 4 sessions deferred)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser before next sprint</li>
+        <li>[ ] First real notes import to validate 12-type extraction pipeline + new <code>sections</code> field</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Sprint E, F1, and now Sprint C are all code-complete but untested in a live browser. DOM interactions — especially C2's section-based editing (blur saves to <code>card.sections[key]</code>) and C1's confirm-then-delete flow — need a manual walkthrough before building further.</li>
+        <li>C2's <code>sections</code> field depends on Claude returning it from the extraction prompt. This is the first new schema field driven by a prompt change — the first live import after this will reveal whether Claude reliably returns structured sections for character/location cards.</li>
+        <li>C3's stale detection uses tag overlap as a proxy for "related." This will produce false positives if unrelated cards share common tags (e.g., "arc-1"). The threshold may need tuning after real import data is available.</li>
+        <li>The D1 override block at <code>style.css:3560+</code> remains a latent CSS collision risk — always grep selectors before adding new rules.</li>
+        <li>All commits remain unpushed — push before switching machines.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Run the first real notes import — paste a short excerpt from <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> and verify: tag chips, source labels, new card types (location, faction, lore), and whether character/location cards now return structured <code>sections</code>.</li>
+        <li>Return to character arc gaps and world-building consistency review (deferred several sessions now).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Push all commits to origin: <code>git push origin main</code> (several commits pending).</li>
+        <li>Open the app in a browser and manually test: C1 (import → click Undo import → cards removed), C3 (edit a card → check related cards for stale badge), C2 (new import → confirm section-based rendering on character cards), E1–E4, F1.</li>
+        <li>After browser test: consider Sprint D2 (export improvements) or returning to story content review.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>96d14b5 — Sprint C: batch undo (C1), stale detection (C3), card sections (C2)</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Unpushed</div><div class="handoff-val">Multiple commits ahead of origin — push before switching machines</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>app.js</code> — C1: <code>undoLastBatch(batchId)</code> + undo button wiring in <code>renderBatchStrip()</code>; C3: <code>lastModified</code> on <code>addCard()</code>, blur listener writes it on every save, <code>isCardStale()</code> helper, stale badge in <code>renderCards()</code>; C2: <code>renderCardContent(card)</code> helper, collapse-null guard, <code>data-section-key</code> branch in blur listener, <code>buildPrompt()</code> updated to request optional <code>sections</code> object</li>
+        <li><code>style.css</code> — C1: <code>.batch-undo-btn</code> (amber border, hover bg); C3: <code>.card-stale-badge</code> (amber pill, matches type badge shape); C2: <code>.card-section</code>, <code>.card-section-label</code>, <code>.card-section-body</code></li>
+        <li><code>CODEBASE.md</code> — card schema updated: <code>lastModified</code>, <code>batchId</code>, and <code>sections</code> fields documented</li>
+        <li><code>.claude/skills/insights/report-style.html</code> + <code>report-template.md</code> — committed (previously untracked)</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>C1 undo deletes all batch cards, not just un-archived ones.</strong> The original plan said skip archived cards, but deleting the full batch (regardless of archive status) is cleaner and more predictable — if you undo an import, you mean all of it. Rejected: filtering by <code>status !== 'archived'</code>.</li>
+        <li><strong>C3 stale detection uses tag overlap as the relatedness proxy.</strong> No explicit relationship graph exists yet — tags are the closest approximation. A card is stale if any tag-overlapping card has a newer <code>lastModified</code>. Rejected: comparing by card type (too coarse) or title similarity (too expensive).</li>
+        <li><strong>C2 sections are backward-compatible via <code>renderCardContent()</code>.</strong> Old flat-content cards render unchanged; only new imports (where Claude returns <code>sections</code>) get the labeled layout. Rejected: migrating all existing cards to sections (would break old data).</li>
+        <li><strong>C2 prompt change: <code>content</code> becomes a 1–2 sentence summary; <code>sections</code> holds the detail.</strong> The old prompt asked for 3–6 sentences in <code>content</code>. For structured cards, content is now the brief summary and sections carry the reference detail. Rejected: keeping content at full length and adding sections as pure additions (would be redundant).</li>
+        <li><strong>Built C1 → C3 → C2 in order of increasing risk.</strong> C1 was additive (new function + button); C3 added a field and a badge; C2 touched rendering logic and the extraction prompt — the riskiest change went last. Rejected: C2 first (schema change early increases bug surface for subsequent features).</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Push to origin: <code>git push origin main</code>.</li>
+        <li>Open the app in a browser and test C1 (import batch → Undo import button), C3 (edit a card → related card shows ⚠ stale), C2 (new import → character card renders labeled sections).</li>
+        <li>Run a real notes import from <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> to validate the full extraction pipeline including <code>sections</code>.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>No browser test done for Sprint C, E, or F1. C2's <code>data-section-key</code> blur logic is particularly important to verify — saves go to <code>card.sections[key]</code> not <code>card.content</code>, which is a new code path that has never been exercised in a live browser.</li>
+        <li>C3 false-positive rate unknown until real import data is available — stale badge may fire too often or not enough depending on tag specificity.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Run <code>/status</code> to orient at session start.</li>
+        <li>Enter plan mode: spawn 3 parallel subagents — one to audit Sprint E code, one to audit Sprint F1 code, one to scope Sprint C and check the notes file.</li>
+        <li>Write a detailed plan (plan mode) before touching any code.</li>
+        <li>Execute the plan: commit skill files, then implement C1 → C3 → C2 in sequence, commit, run <code>/insights</code>.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Plan mode with 3 parallel Explore agents before any code.</strong> All three audit/scoping agents ran simultaneously — E audit, F1 audit, and C scoping — and returned in one round. The session started with a complete picture: what's verified, what's broken, what's missing, and exact line numbers for where to make changes.</li>
+        <li><strong>Scoping agent found what already existed.</strong> The C scoping agent identified that batch tracking (<code>sf_batches</code>, <code>batchId</code> on cards) was already built and only a delete function was missing for C1. This prevented a redundant re-implementation of the batch infrastructure.</li>
+        <li><strong>C1 → C3 → C2 ordering by risk.</strong> Each feature was additive on the previous: C1 was a new function + button, C3 added a field and read-only badge, C2 touched rendering and the extraction prompt. No feature broke what came before.</li>
+        <li><strong>Single sequential implementation — no parallel agents.</strong> All three features touch <code>app.js</code> and <code>style.css</code>. Sequential writes avoided merge conflicts and kept context intact across edits.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Browser test is now 4+ sessions overdue.</strong> Every session adds more features on top of unverified DOM behavior. The next session must open the browser first — no exceptions — before any new sprint begins.</li>
+        <li><strong>C2's prompt change is untested against Claude's actual output.</strong> The extraction prompt now asks for a <code>sections</code> object, but we don't know if Claude reliably returns it, and if so, whether the keys are useful. A real import test should happen before any further C2 iteration.</li>
+      </ul>
+
+      <p><strong>Patterns worth repeating:</strong></p>
+      <ul>
+        <li>Plan mode + parallel Explore agents before implementation: this session went from /status → plan → 3 parallel audits → implementation in one clean pass with no redirections.</li>
+        <li>Order multi-feature sprints by risk: additive (new function) → field addition → rendering/schema changes. Each level can be committed independently if something breaks.</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Critical debt:</strong> Sprint E, F1, and C are all code-complete but untested in a live browser. The <code>data-section-key</code> blur save path (C2), the <code>undoLastBatch()</code> confirm flow (C1), and the <code>isCardStale()</code> tag comparison (C3) are all new code paths that have never been exercised in a real browser session. The next session must start with a browser test — not a new sprint.<br>
+        <em>Rule:</em> No new sprint until the previous one has been browser-tested. Code review passes are not enough.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-22 · Run 6: Sprint C — batch undo, stale detection, card sections</div>
+
+</div>
 </body>
 </html>
