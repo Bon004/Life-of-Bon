@@ -515,5 +515,177 @@
   <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-23 · Run 2: Sprint E + F1 onclick audit — module scope fix</div>
 
 </div>
+
+<!-- ============================================================
+     RUN 3 — Rules system setup: CLAUDE.md slim + .claude/rules/
+     ============================================================ -->
+<div class="container" style="margin-top: 80px; border-top: 2px solid var(--border); padding-top: 64px;">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Rules System: CLAUDE.md Slim + .claude/rules/</h1>
+    <p class="subtitle">Set up a lightweight persistent rules system. CLAUDE.md cut from ~125 lines to ~55 lines. Five topic-specific rule files created in <code>.claude/rules/</code>, capturing recurring lessons from session reports. Skills folder untouched.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-23</strong></span>
+      <span class="chip">Run <strong>3</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>9cf6a1d (pre-session)</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card"><p class="na">Not reviewed this session — entirely a project tooling session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel)</li>
+        <li>[x] Home page / landing screen</li>
+        <li>[x] Writing tab rich text toolbar</li>
+        <li>[x] Character grouping by name</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons</li>
+        <li>[x] 36 Dramatic Situations: reorderable list</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing</li>
+        <li>[x] Tag chip + source_section rendering</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — onclick wiring fixed Run 2</li>
+        <li>[x] UX Sprint F1: column spotlight mode — onclick wiring fixed Run 2</li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code></li>
+        <li>[x] Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button</li>
+        <li>[x] Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge</li>
+        <li>[x] Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields, backward-compatible</li>
+        <li>[x] Import pipeline bug fixed: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Import verified live: 200+ cards from Life-of-Bon-FINAL-MASTER-NEW.txt</li>
+        <li>[x] Sprint F1 spotlight + FAB overlap fixes</li>
+        <li>[x] <strong>Rules system: CLAUDE.md slimmed; <code>.claude/rules/</code> created with 5 topic files — this session</strong></li>
+        <li>[ ] Browser re-test Sprint E + F1 (onclick fixes applied Run 2 — not yet user-confirmed)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Sprint E + F1 onclick fixes (Run 2) still need user confirmation in browser — fixes are correct but unverified.</li>
+        <li>Sprint C (batch undo, stale badge, card sections) has never been browser-tested. Now 7+ sessions overdue.</li>
+        <li>Word goal behavior: unconfirmed whether it was working before or after the onclick audit (uses <code>input</code> event, not onclick — likely fine, but never explicitly tested).</li>
+        <li>The D1 override block at <code>style.css:3560+</code> remains a latent CSS collision risk — captured in <code>.claude/rules/css.md</code> now.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>No story work this session. Continue from previous recommendation: after all sprints are browser-confirmed, do a board review for missing story elements.</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Open the app in a browser and complete the three pending sprint passes: Sprint E (word goal, exports, F&amp;R, focus mode), Sprint F1 (column spotlight), Sprint C (batch undo, stale badge, card sections).</li>
+        <li>After all three passes: decide next sprint (D2 export polish, map/relationship view, or another roadmap item).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>9cf6a1d — Fix Sprint E + F1 onclick wiring; raise FAB; update /insights skill</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Uncommitted</div><div class="handoff-val"><code>CLAUDE.md</code> (slimmed), <code>.claude/rules/*.md</code> (5 new files), this session report — committing now</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>CLAUDE.md</code> — rewritten: ~125 lines → ~55 lines. Removed card schema, localStorage key list (already in CODEBASE.md), and inline workflow detail (moved to rules files). Added pointer to <code>.claude/rules/</code>.</li>
+        <li><code>.claude/rules/editing.md</code> — new: file editing constraints, scope limits, TDD pattern, 2-attempt rule</li>
+        <li><code>.claude/rules/api.md</code> — new: model name, CHUNK_SIZE target, stop_reason check, browser header</li>
+        <li><code>.claude/rules/css.md</code> — new: CSS variable system, D1 override block location, selector grep rule</li>
+        <li><code>.claude/rules/browser-testing.md</code> — new: sprint test gate, module onclick audit, addEventListener pattern</li>
+        <li><code>.claude/rules/design.md</code> — new: redesign scope definition, confirmation workflow</li>
+        <li><code>docs/session-reports/session-report-2026-04-23.html</code> — Run 3 appended</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Rules system uses .claude/rules/ (not CLAUDE.md inline).</strong> CLAUDE.md stays as a short orientation anchor (~55 lines). Topic detail lives in separate rule files so future sessions load focused context without bloating the main file. Rejected: embedding all rules back in CLAUDE.md (defeats the purpose — it would grow again).</li>
+        <li><strong>Five rule files grouped by topic, not chronology.</strong> Topics: editing, api, css, browser-testing, design. Each file is &lt;15 lines and captures rules that have caused repeated problems across sessions — not one-off fixes or already-documented reference content. Rejected: promoting one-time bug notes to rules (e.g., specific CHUNK_SIZE incident history stays in session reports).</li>
+        <li><strong>CODEBASE.md and skills untouched.</strong> Card schema, localStorage keys, file map → already in CODEBASE.md. Skills specs → already in .claude/skills/. No duplication introduced.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit this session's changes and push to origin.</li>
+        <li>Open the app in a browser — do the full Sprint E + F1 + C browser test pass that has been deferred since Run 2.</li>
+        <li>After confirming all three sprints work: pick next feature sprint from roadmap.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>Browser test of Sprint E, F1, and C is still outstanding — this is the top priority before any new sprint.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Audit the full repo (session reports, roadmap, CLAUDE.md, CODEBASE.md, .claude/ folder) and propose a compact rules structure before writing any files.</li>
+        <li>Separate rules into: always-on core rules (CLAUDE.md), topic-specific detail (.claude/rules/), and documentation-only (stays in existing docs).</li>
+        <li>Get approval on the proposed structure before writing — do not turn temporary bug notes or completed one-off fixes into permanent rules.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Single Explore agent reading everything in one pass.</strong> The agent read all 3 recent session reports, CLAUDE.md, CODEBASE.md, both SKILL.md files, and the roadmap in parallel. Returned a complete audit in one round with all recurring themes identified.</li>
+        <li><strong>Plan mode before writing.</strong> The proposed structure was presented first, approved, then executed. No files were written speculatively — user confirmed the five topics and the CLAUDE.md slim target before any edits.</li>
+        <li><strong>Clear separation: rules vs. reference vs. documentation.</strong> The plan explicitly categorized each piece of content into one of three buckets, preventing reference content from becoming rules and preventing one-off fixes from polluting persistent instructions.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li>Nothing notable — this was a clean, well-scoped tooling session with no surprises.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Rules are now persistent in .claude/rules/.</strong> The five most repeated lessons from session reports (stop_reason check, CHUNK_SIZE sizing, D1 CSS override block, module onclick audit, redesign scope confirmation) are now captured as permanent rules — not just session report callouts. Future sessions will start with these loaded.<br>
+        <em>Why:</em> The same lessons appeared in 3–6 consecutive session reports without being formalized. They kept needing to be re-discovered each session.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-23 · Run 3: Rules system setup — CLAUDE.md slim + .claude/rules/</div>
+
+</div>
 </body>
 </html>

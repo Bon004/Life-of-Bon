@@ -29,3 +29,5 @@ node_modules/
 .claude/*
 !.claude/skills
 !.claude/skills/**
+!.claude/rules
+!.claude/rules/**
