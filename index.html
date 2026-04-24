@@ -660,9 +660,13 @@
         <span class="chat-subtitle">Writing Assistant</span>
         <span class="chat-memory-badge" id="chatMemoryBadge" style="display:none" title="Story memory active from earlier in this session">● Memory</span>
       </div>
-      <button class="chat-voice-toggle" id="chatVoiceToggle" title="Toggle voice output">🔇</button>
-      <button class="chat-orb-btn" id="chatOrbBtn" title="Open Jarvis voice mode">🔮</button>
       <button class="chat-close" id="chatClose">✕</button>
+    </div>
+
+    <!-- Embedded Jarvis orb — always visible inside the chat panel -->
+    <div class="chat-orb-embedded" id="chatOrbEmbedded">
+      <canvas class="jarvis-orb-canvas" id="jarvisOrbCanvas"></canvas>
+      <div class="jarvis-orb-status" id="jarvisOrbStatus"></div>
     </div>
 
     <!-- Sub-tab bar: Chat | Suggestions + Canon Review shortcut -->
@@ -695,19 +699,6 @@
         <p>Click <strong>🔍 Review Notes</strong> to ask Claude to analyze your story notes, then save the results here.</p>
       </div>
       <div class="suggestions-list" id="suggestionsList"></div>
-    </div>
-  </div>
-
-  <!-- JARVIS ORB OVERLAY — Phase 7 voice interface -->
-  <div class="jarvis-orb-overlay hidden" id="jarvisOrbOverlay">
-    <canvas class="jarvis-orb-canvas" id="jarvisOrbCanvas"></canvas>
-    <div class="jarvis-orb-ui">
-      <div class="jarvis-orb-status" id="jarvisOrbStatus"></div>
-      <div class="jarvis-orb-transcript" id="jarvisOrbTranscript"></div>
-      <div class="jarvis-orb-controls">
-        <button class="jarvis-orb-btn" id="jarvisOrbMicBtn" title="Click to speak">🎤 Speak</button>
-        <button class="jarvis-orb-btn secondary" id="jarvisOrbTextModeBtn" title="Switch to text mode">⌨ Text Mode</button>
-      </div>
     </div>
   </div>
 

@@ -2714,11 +2714,13 @@ function openChat() {
   if (memBadge) {
     memBadge.style.display = localStorage.getItem('sf_chat_memory') ? '' : 'none';
   }
+  openJarvisOrb();
 }
 
 function closeChat() {
   chatIsOpen = false;
   document.getElementById('chatPanel').classList.remove('open');
+  closeJarvisOrb();
 }
 
 // ── CHAT SUB-TABS (Chat | Suggestions) ───────────────────────
@@ -3117,14 +3119,23 @@ async function sendChatMessage() {
     showJarvisStatus('Jarvis is thinking...');
     if (orbIsOpen) setOrbState('thinking');
 
-    // Agentic loop: keep calling the API until end_turn or tool limit reached
+    // Agentic loop: streaming fetch until end_turn or tool limit reached
     var MAX_TOOL_ITERATIONS = 8;
-    var iteration  = 0;
-    var finalReply = null;
-    var toolsRun   = [];
+    var iteration   = 0;
+    var finalReply  = null;
+    var toolsRun    = [];
+    var streamingDiv = null; // tracks DOM element when end_turn text was streamed
 
     while (iteration < MAX_TOOL_ITERATIONS) {
       iteration++;
+
+      // Each iteration gets its own streaming state
+      streamingDiv = null;
+      var streamingP   = null;
+      var streamedText = '';
+      var allBlocks    = [];
+      var curBlock     = null;
+      var stopReason   = null;
 
       var res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -3139,27 +3150,92 @@ async function sendChatMessage() {
           max_tokens: 4096,
           system:     systemPrompt,
           tools:      JARVIS_TOOLS,
-          messages:   messages
+          messages:   messages,
+          stream:     true
         })
       });
 
-      var data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || 'API error');
-      console.log('[Jarvis] iteration', iteration, 'stop_reason:', data.stop_reason, 'response:', data);
+      if (!res.ok) {
+        var errJson = await res.json();
+        throw new Error((errJson && errJson.error && errJson.error.message) || 'API error');
+      }
 
-      var stopReason = data.stop_reason;
+      // Process SSE stream
+      var reader  = res.body.getReader();
+      var decoder = new TextDecoder();
+      var sseBuf  = '';
+      var chatMsgsEl = document.getElementById('chatMessages');
+
+      streamLoop: while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        sseBuf += decoder.decode(chunk.value, { stream: true });
+        var lines = sseBuf.split('\n');
+        sseBuf = lines.pop(); // hold incomplete line
+        for (var li = 0; li < lines.length; li++) {
+          var line = lines[li];
+          if (!line.startsWith('data: ')) continue;
+          var payload = line.slice(6).trim();
+          if (!payload || payload === '[DONE]') continue;
+          var ev;
+          try { ev = JSON.parse(payload); } catch(_) { continue; }
+
+          if (ev.type === 'content_block_start') {
+            curBlock = { type: ev.content_block.type, id: ev.content_block.id, name: ev.content_block.name, _text: '', _json: '' };
+          } else if (ev.type === 'content_block_delta') {
+            if (!curBlock) continue;
+            if (ev.delta.type === 'text_delta') {
+              curBlock._text += ev.delta.text;
+              streamedText   += ev.delta.text;
+              // Lazy-create streaming bubble; insert before the status indicator
+              if (!streamingDiv) {
+                streamingDiv = document.createElement('div');
+                streamingDiv.className = 'chat-msg assistant';
+                streamingP = document.createElement('p');
+                streamingDiv.appendChild(streamingP);
+                var statusEl = document.getElementById('jarvisStatus');
+                if (statusEl) chatMsgsEl.insertBefore(streamingDiv, statusEl);
+                else chatMsgsEl.appendChild(streamingDiv);
+              }
+              streamingP.textContent = streamedText;
+              chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
+            } else if (ev.delta.type === 'input_json_delta') {
+              curBlock._json += ev.delta.partial_json;
+            }
+          } else if (ev.type === 'content_block_stop') {
+            if (curBlock) {
+              if (curBlock.type === 'text') {
+                allBlocks.push({ type: 'text', text: curBlock._text });
+              } else if (curBlock.type === 'tool_use') {
+                var inp = {};
+                try { inp = JSON.parse(curBlock._json || '{}'); } catch(_) {}
+                allBlocks.push({ type: 'tool_use', id: curBlock.id, name: curBlock.name, input: inp });
+              }
+              curBlock = null;
+            }
+          } else if (ev.type === 'message_delta') {
+            if (ev.delta && ev.delta.stop_reason) stopReason = ev.delta.stop_reason;
+          } else if (ev.type === 'error') {
+            throw new Error((ev.error && ev.error.message) || 'Stream error');
+          }
+        }
+      }
+
+      console.log('[Jarvis] iteration', iteration, 'stop_reason:', stopReason);
 
       if (stopReason === 'end_turn') {
-        var textBlock = data.content && data.content.find(function(b) { return b.type === 'text'; });
-        finalReply = (textBlock && textBlock.text) ? textBlock.text.trim() : 'Done.';
+        finalReply = streamedText.trim() || 'Done.';
+        // streamingDiv stays in DOM — text already rendered
         break;
       }
 
       if (stopReason === 'tool_use') {
-        // Push entire assistant response (may include text + tool_use blocks)
-        messages.push({ role: 'assistant', content: data.content });
+        // Remove any partial streamed text (tool-call thinking; not shown to user)
+        if (streamingDiv) { streamingDiv.remove(); streamingDiv = null; }
 
-        var toolUseBlocks = data.content.filter(function(b) { return b.type === 'tool_use'; });
+        messages.push({ role: 'assistant', content: allBlocks });
+
+        var toolUseBlocks = allBlocks.filter(function(b) { return b.type === 'tool_use'; });
         var toolResultContents = [];
 
         for (var ti = 0; ti < toolUseBlocks.length; ti++) {
@@ -3192,9 +3268,9 @@ async function sendChatMessage() {
 
     var reply = finalReply || '';
     if (reply) {
-      appendChatMsg('assistant', reply);
+      // Text already in DOM if streamed (end_turn); only append if not (action limit case)
+      if (!streamingDiv) appendChatMsg('assistant', reply);
       chatHistory.push({ role: 'assistant', content: reply });
-      // TTS: speak reply if voice is enabled in chat panel or orb is open
       if (voiceEnabled || orbIsOpen) speakJarvisReply(reply);
     }
 
@@ -3281,8 +3357,9 @@ function removeJarvisStatus() {
 // SECTION 13B: JARVIS VOICE — Phase 6 (chat TTS + mic) & Phase 7 (orb)
 // ============================================================
 
-// ── Voice toggle state (chat panel TTS) ──────────────────────
-var voiceEnabled = localStorage.getItem('sf_voice_enabled') === 'true';
+// ── Voice always on (no toggle) ──────────────────────────────
+var voiceEnabled = true;
+var jarvisVoice  = null; // selected TTS voice; set by loadJarvisVoice()
 
 // ── Orb state ─────────────────────────────────────────────────
 var orbIsOpen     = false;
@@ -3320,21 +3397,17 @@ var orbParticles  = [];
   }
 })();
 
-// openJarvisOrb: show the full-screen orb overlay
+// openJarvisOrb: start the embedded orb animation when chat opens
 function openJarvisOrb() {
   orbIsOpen = true;
-  var overlay = document.getElementById('jarvisOrbOverlay');
-  if (overlay) overlay.classList.remove('hidden');
   resizeOrbCanvas();
   setOrbState('idle');
   startOrbAnimation();
 }
 
-// closeJarvisOrb: hide the overlay, stop everything
+// closeJarvisOrb: stop animation when chat closes
 function closeJarvisOrb() {
   orbIsOpen = false;
-  var overlay = document.getElementById('jarvisOrbOverlay');
-  if (overlay) overlay.classList.add('hidden');
   if (orbAnimFrame) { cancelAnimationFrame(orbAnimFrame); orbAnimFrame = null; }
   stopOrbListening();
   stopOrbMic();
@@ -3590,23 +3663,20 @@ function speakJarvisReply(text) {
     .replace(/[*_`#\[\]]/g, '')
     .replace(/[^\w\s.,!?'"();:\-–]/g, ' ')
     .trim()
-    .slice(0, 600);
+    .slice(0, 900);
   if (!clean) return;
 
-  var utt    = new SpeechSynthesisUtterance(clean);
-  utt.rate   = 0.95;
-  utt.pitch  = 0.88; // slightly lower pitch for Jarvis vibe
+  var utt = new SpeechSynthesisUtterance(clean);
+  if (jarvisVoice) utt.voice = jarvisVoice;
+  // Natural online voices are pre-tuned — don't adjust pitch/rate or quality degrades
+  var isNatural = jarvisVoice && jarvisVoice.name.includes('Natural');
+  utt.rate   = isNatural ? 1.0 : 1.05;
+  utt.pitch  = isNatural ? 1.0 : 1.15;
   utt.volume = 1;
 
-  utt.onstart = function()  { if (orbIsOpen) setOrbState('speaking'); };
-  utt.onend   = function()  {
-    if (orbIsOpen) {
-      setOrbState('idle');
-      // Auto-resume listening after a short pause
-      setTimeout(function() { if (orbIsOpen) startOrbListening(); }, 900);
-    }
-  };
-  utt.onerror = function()  { if (orbIsOpen) setOrbState('idle'); };
+  utt.onstart = function() { if (orbIsOpen) setOrbState('speaking'); };
+  utt.onend   = function() { if (orbIsOpen) setOrbState('idle'); };
+  utt.onerror = function() { if (orbIsOpen) setOrbState('idle'); };
 
   window.speechSynthesis.speak(utt);
 }
@@ -3621,6 +3691,7 @@ function startChatMicInput() {
     // Already listening — cancel
     if (orbRecognition) { try { orbRecognition.abort(); } catch(_) {} orbRecognition = null; }
     if (micBtn) micBtn.classList.remove('listening');
+    setOrbState('idle');
     return;
   }
 
@@ -3630,6 +3701,7 @@ function startChatMicInput() {
   rec.interimResults = true;
   rec.lang           = 'en-US';
   if (micBtn) micBtn.classList.add('listening');
+  setOrbState('listening');
 
   rec.onresult = function(e) {
     var transcript = '';
@@ -3641,16 +3713,19 @@ function startChatMicInput() {
     if (e.results[e.results.length - 1].isFinal) {
       rec.stop();
       if (micBtn) micBtn.classList.remove('listening');
+      setOrbState('thinking');
       sendChatMessage();
     }
   };
 
   rec.onerror = function() {
     if (micBtn) micBtn.classList.remove('listening');
+    setOrbState('idle');
   };
 
   rec.onend = function() {
     if (micBtn) micBtn.classList.remove('listening');
+    if (orbState === 'listening') setOrbState('idle');
   };
 
   rec.start();
@@ -3658,54 +3733,44 @@ function startChatMicInput() {
 
 // ── Wire up voice/orb event listeners (called from the main init block) ──
 function initVoiceAndOrb() {
-  // Chat panel voice toggle (TTS on/off)
-  var voiceToggle = document.getElementById('chatVoiceToggle');
-  if (voiceToggle) {
-    voiceToggle.textContent = voiceEnabled ? '🔊' : '🔇';
-    voiceToggle.classList.toggle('active', voiceEnabled);
-    voiceToggle.addEventListener('click', function() {
-      voiceEnabled = !voiceEnabled;
-      localStorage.setItem('sf_voice_enabled', voiceEnabled);
-      voiceToggle.textContent = voiceEnabled ? '🔊' : '🔇';
-      voiceToggle.classList.toggle('active', voiceEnabled);
-      showToast(voiceEnabled ? 'Voice output on' : 'Voice output off');
-    });
-  }
-
   // Chat panel mic button
   var chatMic = document.getElementById('chatMic');
   if (chatMic) {
     chatMic.addEventListener('click', startChatMicInput);
   }
 
-  // Chat panel orb button → open orb
-  var orbBtn = document.getElementById('chatOrbBtn');
-  if (orbBtn) {
-    orbBtn.addEventListener('click', openJarvisOrb);
-  }
-
-  // Orb mic button → toggle listening
-  var orbMicBtn = document.getElementById('jarvisOrbMicBtn');
-  if (orbMicBtn) {
-    orbMicBtn.addEventListener('click', function() {
-      if (orbState === 'listening') stopOrbListening();
-      else startOrbListening();
-    });
-  }
-
-  // Orb text mode button → close orb, open chat panel
-  var textModeBtn = document.getElementById('jarvisOrbTextModeBtn');
-  if (textModeBtn) {
-    textModeBtn.addEventListener('click', function() {
-      closeJarvisOrb();
-      openChat();
-    });
-  }
-
   // Resize canvas when window resizes while orb is open
   window.addEventListener('resize', function() {
     if (orbIsOpen) resizeOrbCanvas();
   });
+
+  // Load best available TTS voice asynchronously
+  loadJarvisVoice();
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = loadJarvisVoice;
+  }
+}
+
+function loadJarvisVoice() {
+  if (!window.speechSynthesis) return;
+  var voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return; // not ready yet; onvoiceschanged will re-fire
+  var preferred = [
+    'Microsoft Aria Online (Natural) - English (United States)',
+    'Microsoft Jenny Online (Natural) - English (United States)',
+    'Microsoft Zira - English (United States)',
+    'Google US English Female'
+  ];
+  for (var i = 0; i < preferred.length; i++) {
+    var v = voices.find(function(x) { return x.name === preferred[i]; });
+    if (v) { jarvisVoice = v; break; }
+  }
+  if (!jarvisVoice) {
+    jarvisVoice = voices.find(function(v) {
+      return v.lang.startsWith('en') && v.name.toLowerCase().includes('female');
+    }) || voices.find(function(v) { return v.lang.startsWith('en'); }) || null;
+  }
+  console.log('[Jarvis voice]', jarvisVoice ? jarvisVoice.name : 'browser default');
 }
 
 // ============================================================

@@ -1149,21 +1149,6 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
 }
 .chat-close:hover { color: var(--text); }
 
-.chat-voice-toggle,
-.chat-orb-btn {
-  background: none;
-  border: none;
-  font-size: 15px;
-  cursor: pointer;
-  color: var(--text-light);
-  padding: 4px;
-  line-height: 1;
-  opacity: 0.6;
-  transition: opacity var(--transition), color var(--transition);
-}
-.chat-voice-toggle:hover,
-.chat-orb-btn:hover { opacity: 1; }
-.chat-voice-toggle.active { opacity: 1; color: var(--accent); }
 
 /* Chat sub-tab bar (Chat | Suggestions) + Canon Review button */
 .chat-subtabs {
@@ -1478,18 +1463,13 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   50%       { box-shadow: 0 0 0 6px rgba(255, 80, 80, 0); }
 }
 
-/* ── Jarvis Orb Overlay ────────────────────────────────────── */
-.jarvis-orb-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* ── Jarvis Orb — embedded inside the chat panel ───────────── */
+.chat-orb-embedded {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
-.jarvis-orb-overlay.hidden { display: none; }
 
 .jarvis-orb-canvas {
   position: absolute;
@@ -1498,61 +1478,18 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   height: 100%;
 }
 
-.jarvis-orb-ui {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  margin-top: 55vh;
-  width: 100%;
-  max-width: 480px;
-  padding: 0 24px;
-}
-
 .jarvis-orb-status {
-  font-size: 13px;
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  font-size: 11px;
   color: var(--text-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  min-height: 18px;
   text-align: center;
+  pointer-events: none;
 }
-
-.jarvis-orb-transcript {
-  font-size: 15px;
-  color: var(--text-light);
-  text-align: center;
-  min-height: 22px;
-  line-height: 1.5;
-  max-width: 360px;
-}
-
-.jarvis-orb-controls {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.jarvis-orb-btn {
-  background: rgba(147, 112, 219, 0.15);
-  border: 1px solid rgba(147, 112, 219, 0.4);
-  border-radius: 24px;
-  color: rgba(200, 180, 255, 0.9);
-  font-size: 14px;
-  padding: 10px 22px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.jarvis-orb-btn:hover { background: rgba(147, 112, 219, 0.3); border-color: rgba(147, 112, 219, 0.7); }
-.jarvis-orb-btn.secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: rgba(200, 200, 220, 0.7);
-}
-.jarvis-orb-btn.secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); }
-.jarvis-orb-btn.listening { background: rgba(255, 80, 80, 0.2); border-color: rgba(255, 80, 80, 0.6); color: #ff9090; }
 
 /* Ask Claude header button */
 .fab-chat {
