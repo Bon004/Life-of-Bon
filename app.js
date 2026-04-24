@@ -4262,6 +4262,35 @@ function initBrainstormControls() {
   var collapseBtn = document.getElementById('brainstormCollapseBtn');
   var resizeHandle = document.getElementById('brainstormResizeHandle');
 
+  // Timeline resize handle
+  var timelineSection = document.getElementById('arcsTimelineSection');
+  var timelineResizeHandle = document.getElementById('arcsTimelineResizeHandle');
+  var savedTimelineH = localStorage.getItem('sf_arcs_timeline_h');
+  if (savedTimelineH && timelineSection) {
+    timelineSection.style.height = savedTimelineH + 'px';
+  }
+  if (timelineResizeHandle && timelineSection) {
+    var tlStartY, tlStartH;
+    timelineResizeHandle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      tlStartY = e.clientY;
+      tlStartH = timelineSection.offsetHeight;
+      timelineResizeHandle.classList.add('resizing');
+      function onMove(e) {
+        var newH = Math.max(80, Math.min(600, tlStartH + (e.clientY - tlStartY)));
+        timelineSection.style.height = newH + 'px';
+      }
+      function onUp() {
+        timelineResizeHandle.classList.remove('resizing');
+        localStorage.setItem('sf_arcs_timeline_h', timelineSection.offsetHeight);
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
   // Restore collapsed state from localStorage
   if (localStorage.getItem('sf_brainstorm_collapsed') === '1' && section) {
     section.classList.add('collapsed');
@@ -5110,13 +5139,16 @@ function frReplaceNext() {
   if (!term) return;
   var pane = frGetPane();
   if (!pane) return;
-  var html = pane.innerHTML;
-  html = html.replace(/<mark class="fr-hl"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
-  var re = new RegExp(frEscapeRegex(term), 'i');
-  pane.innerHTML = html.replace(re, replace);
-  frHighlightMatches();
+  var html = pane.innerHTML.replace(/<mark class="fr-hl[^"]*"[^>]*>([\s\S]*?)<\/mark>/gi, '$1');
+  var re = new RegExp(frEscapeRegex(term), 'gi');
+  var target = Math.max(0, frCurrentMatch);
+  var idx = 0;
+  pane.innerHTML = html.replace(re, function(m) { return (idx++ === target) ? replace : m; });
   if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
   else localStorage.setItem('sf_writing_draft', pane.innerHTML);
+  frCurrentMatch = target - 1;
+  frHighlightMatches();
+  frNavigateMatch(1);
 }
 
 function frReplaceAll() {

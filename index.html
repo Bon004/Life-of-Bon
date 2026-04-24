@@ -27,6 +27,7 @@
       <span class="app-subtitle">Life of Bon</span>
     </div>
     <div class="header-right">
+      <button class="fab-chat" id="openChat">✦ Ask Claude<span class="fab-dot hidden" id="chatNotifDot"></span></button>
       <button class="btn-archive-toggle" id="archiveBtn" title="Browse archived cards">📦 Archive</button>
       <button class="btn-archive-toggle" id="openBackupModal" title="Export or import story data">💾 Backup</button>
       <button class="btn-sync-notes" id="syncNotesBtn">↻ Sync Notes</button>
@@ -456,12 +457,13 @@
     <section class="tab-panel" id="panel-arcs">
       <div class="arcs-layout">
 
-        <div class="arcs-timeline-section">
+        <div class="arcs-timeline-section" id="arcsTimelineSection">
           <div class="arcs-section-label">Arc Timeline <span class="arc-count-badge" id="arcCount">0 arcs</span></div>
           <div class="arcs-timeline-strip" id="arcsTimeline">
             <div class="arc-timeline-empty" id="arcTimelineEmpty">No arc cards yet — add some in Story Canvas.</div>
           </div>
         </div>
+        <div class="arcs-timeline-resize-handle" id="arcsTimelineResizeHandle"></div>
 
         <div class="arcs-brainstorm-section" id="brainstormSection">
           <div class="brainstorm-subtabs">
@@ -692,9 +694,6 @@
       <div class="suggestions-list" id="suggestionsList"></div>
     </div>
   </div>
-
-  <!-- Floating chat button -->
-  <button class="fab-chat" id="openChat">✦ Ask Claude<span class="fab-dot hidden" id="chatNotifDot"></span></button>
 
   <script type="module" src="app.js"></script>
 

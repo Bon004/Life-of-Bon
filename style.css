@@ -1412,26 +1412,23 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
 .chat-send:hover    { background: var(--accent-hover); transform: scale(1.06); }
 .chat-send:disabled { background: var(--border); cursor: not-allowed; transform: none; }
 
-/* Floating chat button */
+/* Ask Claude header button */
 .fab-chat {
-  position: fixed;
-  bottom: 96px;
-  right: 24px;
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 11px 20px;
-  font-size: 13px;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 12px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.55);
   transition: all var(--transition);
-  z-index: 150;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.fab-chat:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.65); border-color: var(--accent); color: var(--accent); }
+.fab-chat:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ============================================================
    MODAL
@@ -2678,9 +2675,38 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
 /* Timeline strip */
 .arcs-timeline-section {
   flex-shrink: 0;
+  height: 170px;
+  overflow: hidden;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  display: flex;
+  flex-direction: column;
 }
+
+/* Resize handle between timeline and brainstorm sections */
+.arcs-timeline-resize-handle {
+  height: 8px;
+  background: transparent;
+  cursor: row-resize;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.arcs-timeline-resize-handle::after {
+  content: '⠿';
+  font-size: 9px;
+  color: var(--border);
+  line-height: 1;
+  pointer-events: none;
+}
+.arcs-timeline-resize-handle:hover,
+.arcs-timeline-resize-handle.resizing { background: rgba(var(--accent-rgb), 0.25); }
+.arcs-timeline-resize-handle:hover::after,
+.arcs-timeline-resize-handle.resizing::after { color: var(--accent); }
 .arcs-section-label {
   padding: 8px 16px 6px;
   font-size: 11px;
@@ -2708,6 +2734,7 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   align-items: stretch;
   gap: 0;
   overflow-x: auto;
+  flex: 1;
   padding: 0 16px 12px;
   min-height: 90px;
   scrollbar-width: thin;
@@ -2875,7 +2902,6 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 5px;
-  max-height: 380px;
   overflow-y: auto;
   padding-right: 4px;
   margin-bottom: 8px;
@@ -3808,19 +3834,17 @@ body.connecting-mode .map-card.connecting-target { cursor: pointer; }
   pointer-events: none;
 }
 
-/* -- FAB chat button: gradient, more vivid ------------------ */
+/* -- Ask Claude button: gradient, more vivid ---------------- */
 .fab-chat {
   background: var(--gradient-accent);
   color: #fff;
   border: none;
-  box-shadow: 0 4px 22px rgba(var(--accent-rgb), 0.45);
 }
 .fab-chat:hover {
   background: var(--gradient-accent-h);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.55);
-  transform: translateY(-2px);
+  opacity: 0.92;
 }
 
 /* -- Chat send button: shape refinement --------------------- */
@@ -3953,23 +3977,24 @@ textarea:focus-visible,
 #find-replace-panel {
   display: none;
   position: fixed;
-  bottom: 48px;
+  bottom: 80px;
   right: 24px;
   z-index: 500;
-  width: 300px;
+  width: 360px;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
   border-radius: var(--radius);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
-  padding: 12px 14px;
+  box-shadow: 0 8px 36px rgba(0,0,0,0.65);
+  padding: 16px 18px;
 }
 .fr-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
-.fr-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.fr-title { font-size: 13px; font-weight: 600; color: var(--text); }
 .fr-close {
   background: none;
   border: none;
@@ -3984,7 +4009,7 @@ textarea:focus-visible,
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .fr-row input {
   flex: 1;
@@ -3992,12 +4017,13 @@ textarea:focus-visible,
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--text);
-  font-size: 12px;
-  padding: 5px 8px;
+  font-size: 13.5px;
+  padding: 7px 10px;
   outline: none;
+  font-family: inherit;
 }
 .fr-row input:focus { border-color: var(--accent); }
-.fr-match-count { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.fr-match-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 .fr-actions { display: flex; gap: 8px; }
 .fr-btn {
   flex: 1;
@@ -4005,9 +4031,10 @@ textarea:focus-visible,
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--text);
-  font-size: 12px;
-  padding: 5px 0;
+  font-size: 13px;
+  padding: 7px 0;
   cursor: pointer;
+  font-family: inherit;
   transition: background var(--transition), border-color var(--transition);
 }
 .fr-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }

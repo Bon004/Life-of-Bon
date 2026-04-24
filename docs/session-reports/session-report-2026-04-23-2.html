@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-23-2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>UI Polish: Header FAB, Resizable Timeline, F&amp;R Fix</h1>
+    <p class="subtitle">Three targeted UI improvements: the Ask Claude floating button moved into the header bar, the Arcs tab timeline section made drag-resizable with persistence, and Find &amp; Replace "Replace Next" fixed to target the correct highlighted match instead of always the first occurrence.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-23</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>8feb94f (pre-session)</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session — entirely a UI/UX polish session. Refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a> for the last story-data snapshot.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel)</li>
+        <li>[x] Home page / landing screen</li>
+        <li>[x] Writing tab rich text toolbar</li>
+        <li>[x] Character grouping by name</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons</li>
+        <li>[x] 36 Dramatic Situations: reorderable list</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing</li>
+        <li>[x] Tag chip + source_section rendering</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode — onclick wiring fixed 2026-04-23 Run 2</li>
+        <li>[x] UX Sprint F1: column spotlight mode — onclick wiring fixed 2026-04-23 Run 2</li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code></li>
+        <li>[x] Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button</li>
+        <li>[x] Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge</li>
+        <li>[x] Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields, backward-compatible</li>
+        <li>[x] Import pipeline bug fixed: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Import verified live: 200+ cards from Life-of-Bon-FINAL-MASTER-NEW.txt</li>
+        <li>[x] Sprint F1 spotlight + FAB overlap fixes</li>
+        <li>[x] Rules system: CLAUDE.md slimmed; <code>.claude/rules/</code> created with 5 topic files</li>
+        <li>[x] <strong>Ask Claude button moved from floating FAB to header bar — this session</strong></li>
+        <li>[x] <strong>Arcs tab: resizable timeline section — drag handle, persists height to <code>sf_arcs_timeline_h</code> — this session</strong></li>
+        <li>[x] <strong>Find &amp; Replace "Replace Next": fixed to replace current match index, not always first occurrence — this session</strong></li>
+        <li>[ ] Browser re-test Sprint E + F1 (onclick fixes applied 2026-04-23 Run 2 — not yet user-confirmed)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser</li>
+        <li>[ ] Browser test this session's changes: header FAB, timeline resize, F&amp;R replace-next accuracy</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>This session's changes are uncommitted and untested in a live browser. The three features (header FAB, timeline resize, F&amp;R fix) need a browser pass before being committed.</li>
+        <li>Sprint E + F1 onclick fixes (2026-04-23 Run 2) still need user confirmation in browser — never verified.</li>
+        <li>Sprint C (batch undo, stale badge, card sections) has never been browser-tested. Now 8+ sessions overdue.</li>
+        <li>A new localStorage key <code>sf_arcs_timeline_h</code> was added this session — it is not yet listed in CODEBASE.md. Must be added before committing per project rules.</li>
+        <li>The <code>.arcs-timeline-section</code> selector was edited in <code>style.css</code>. The D1 override block at ~line 3560 should be checked for any conflicting rules on this selector before shipping.</li>
+        <li><code>frReplaceNext</code> regex changed from case-insensitive single-replace to <code>'gi'</code> (global). Verify this doesn't cause regressions in edge cases (e.g., overlapping matches, special characters).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>No story work this session. After the pending browser test backlog is cleared, do a board review for missing story elements and begin character arc consistency review (deferred many sessions).</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li>Add <code>sf_arcs_timeline_h</code> to CODEBASE.md localStorage key table before committing.</li>
+        <li>Open the app in a browser and verify: Ask Claude button appears in header (not floating), Arcs tab timeline is draggable and height persists on reload, F&amp;R Replace Next advances through matches correctly.</li>
+        <li>While in the browser, complete the long-deferred Sprint E + F1 + C pass.</li>
+        <li>Commit everything once verified: header FAB, timeline resize, F&amp;R fix, CODEBASE.md update.</li>
+        <li>After that: decide next sprint from roadmap (D2 export polish, map/relationship view, or Sprint G ideas).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>8feb94f — Add .claude/rules/ system; slim CLAUDE.md; append Run 3 session report</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Uncommitted</div><div class="handoff-val"><code>app.js</code>, <code>index.html</code>, <code>style.css</code> — all three changes below; not yet committed</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>index.html</code> — moved <code>.fab-chat</code> button from bottom of <code>&lt;body&gt;</code> into <code>.header-right</code> (before the Archive button); added <code>id="arcsTimelineSection"</code> to the timeline div; added <code>&lt;div class="arcs-timeline-resize-handle" id="arcsTimelineResizeHandle"&gt;&lt;/div&gt;</code> after the timeline section</li>
+        <li><code>app.js</code> — added timeline resize handle logic inside <code>initBrainstormControls()</code>: restores saved height from <code>sf_arcs_timeline_h</code> on load, wires mousedown/mousemove/mouseup drag on <code>#arcsTimelineResizeHandle</code>, clamps height 80–600px, saves to localStorage on mouseup; fixed <code>frReplaceNext()</code> to replace only the match at <code>frCurrentMatch</code> index (not the first occurrence), then advances to next match via <code>frNavigateMatch(1)</code></li>
+        <li><code>style.css</code> — converted <code>.fab-chat</code> from <code>position: fixed</code> floating button to an inline header button (removed fixed positioning, box-shadow, z-index; smaller padding/font; added <code>flex-shrink: 0</code>); added <code>.arcs-timeline-section</code> height (170px default), overflow hidden, flex layout; added <code>.arcs-timeline-resize-handle</code> styles (8px handle, braille dot indicator, hover/resizing accent color); added <code>flex: 1</code> to <code>.arcs-timeline-strip</code> to fill remaining timeline height; removed stale <code>max-height: 380px</code> from dramatic situations grid</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Ask Claude moved to header, not kept as FAB.</strong> The floating button was covering the summary bar's Refresh/▲ buttons even after being raised to 96px in Run 2. Moving it into the header gives it a permanent, predictable position that doesn't overlap anything. The button is sized to match the other header buttons. Rejected: keeping as FAB with higher z-index or different corner (left/top) — all FAB positions create overlap risk as the app grows.</li>
+        <li><strong>Timeline resize clamped to 80–600px.</strong> 80px is the minimum to show at least one row of arc chips without cutting them off. 600px is the maximum before the brainstorm section becomes too cramped on a standard laptop screen (1080p). Rejected: unclamped resize (allows the timeline to fill the entire panel, hiding brainstorm content).</li>
+        <li><strong>F&amp;R replace regex changed to <code>'gi'</code> (global, case-insensitive).</strong> The previous <code>'i'</code> flag only replaced the first occurrence regardless of which match was highlighted. Using global + tracking the target index via <code>frCurrentMatch</code> allows precise per-match replacement. After replacing, <code>frCurrentMatch</code> is decremented by 1 before calling <code>frNavigateMatch(1)</code> so the cursor naturally advances to the next match. Rejected: DOM range-based replacement (complex, fragile with <code>contenteditable</code>).</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Add <code>sf_arcs_timeline_h</code> (string, px value) to the localStorage key table in <code>CODEBASE.md</code>.</li>
+        <li>Open the app in a browser (Live Server). Verify: (1) Ask Claude button is in the header — click it to confirm the chat panel opens. (2) Go to Arcs tab — drag the resize handle between timeline and brainstorm, reload, confirm height persists. (3) Writing tab → Ctrl+H → search a word that appears multiple times → click Replace Next multiple times → confirm each individual occurrence is replaced in sequence.</li>
+        <li>While testing, also run the overdue Sprint E + F1 + C pass from 2026-04-23 Run 2 handoff.</li>
+        <li>Commit all changes once browser-verified.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li><code>sf_arcs_timeline_h</code> must be added to CODEBASE.md before committing — this is a hard project rule.</li>
+        <li>None of this session's changes have been browser-tested. Do not stack another sprint on top of these before testing.</li>
+        <li>Sprint E, F1, and C remain unverified in a live browser — this debt is now critical. Every session that skips the test pass makes regressions harder to attribute.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Move the Ask Claude floating button into the header bar alongside the other header controls.</li>
+        <li>Add a drag-to-resize handle between the Arcs tab timeline and brainstorm sections, with height persistence in localStorage.</li>
+        <li>Fix Find &amp; Replace "Replace Next" to replace the currently highlighted match, not always the first occurrence in the document.</li>
+        <li>Run <code>/insights</code> and generate a new session report file (not append to today's existing report).</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Reading the git diff before writing the report.</strong> Rather than guessing what changed, the diff was read directly — giving exact line counts, function names, and decision rationale from the actual code changes. The report accurately reflects what happened, not what was planned.</li>
+        <li><strong>Three independent changes handled in one session without entanglement.</strong> Each change touched a distinct area (header, arcs layout, find-replace logic) with no shared state. This made the diffs clean and the rollback surface minimal.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>CODEBASE.md was not updated for the new localStorage key <code>sf_arcs_timeline_h</code>.</strong> This is a project rule violation — the key must be listed before committing. Catch this in the same session, not after.</li>
+        <li><strong>Browser testing continues to be deferred.</strong> Three sprints (E, F1, C) plus this session's changes are unverified. Each deferred test pass makes the next harder — regressions become harder to attribute to a specific sprint. The browser test must happen before any new feature work begins next session.</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Rule: update CODEBASE.md for every new localStorage key before committing.</strong> A new key (<code>sf_arcs_timeline_h</code>) was added this session without updating the key table. The project rule is explicit: no new keys without listing them first.<br>
+        <em>Why:</em> localStorage key sprawl makes debugging and data migration difficult. The table in CODEBASE.md is the only authoritative list.
+      </div>
+      <div class="callout warn">
+        <strong>Browser test debt is now critical.</strong> Sprints E, F1, C, and this session are all code-complete but untested in a live browser. The risk of shipping a regression that spans multiple sprints grows with each skipped pass. Next session must start with a browser test, not a new feature.<br>
+        <em>Why:</em> This debt has accumulated across 8+ sessions. The longer it grows, the harder it is to isolate regressions.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-23-2 · Run 1: UI polish — header FAB, resizable timeline, F&amp;R fix</div>
+
+</div>
+</body>
+</html>

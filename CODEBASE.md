@@ -98,6 +98,7 @@ Search with **Ctrl+F** using the section name to jump directly.
 | `sf_dismissed_batches` | JSON array of batch IDs dismissed from the batch strip (B2) |
 | `sf_draft_history` | `[{ savedAt, content }]` — up to 10 working-copy snapshots (5c) |
 | `sf_word_goal` | Number — daily word goal for the Writing tab progress bar (E1) |
+| `sf_arcs_timeline_h` | Number (px) — saved height of the Arcs tab timeline section |
 
 ---
 
