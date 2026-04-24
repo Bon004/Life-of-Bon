@@ -82,6 +82,97 @@ const TYPE_COLORS = {
 // The Claude model used for all API calls. Update here to upgrade globally.
 const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929';
 
+// Jarvis tool definitions — passed to the Claude API to enable agentic actions.
+const JARVIS_TOOLS = [
+  {
+    name: 'navigate_tab',
+    description: 'Switch the visible tab in the StoryForge UI. Use this when the user asks to go to, open, or show a specific section of the app.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        tab_name: {
+          type: 'string',
+          enum: ['home', 'canvas', 'writing', 'characters', 'arcs'],
+          description: 'The tab to navigate to.'
+        }
+      },
+      required: ['tab_name']
+    }
+  },
+  {
+    name: 'create_card',
+    description: 'Create a new story card on the canvas. Use this when the user asks to add, create, or save a new character, location, arc, idea, or any story element.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          enum: ['character','world','location','faction','arc','event','scene','lore','relationship','theme','quote','idea'],
+          description: 'The card type. Pick the most specific type that fits.'
+        },
+        title: {
+          type: 'string',
+          description: 'Short, unique title for the card.'
+        },
+        content: {
+          type: 'string',
+          description: '2-5 sentences of clear reference material.'
+        }
+      },
+      required: ['type', 'title', 'content']
+    }
+  },
+  {
+    name: 'edit_card',
+    description: 'Edit an existing story card — update its title, content, or both. Identify the card by its exact id (preferred) or its exact title. You must provide at least one of card_id or card_title, and at least one of new_title or new_content.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        card_id: {
+          type: 'string',
+          description: 'The unique id of the card to edit (preferred over card_title).'
+        },
+        card_title: {
+          type: 'string',
+          description: 'The exact current title of the card (fallback if card_id is not known).'
+        },
+        new_title: {
+          type: 'string',
+          description: 'Replacement title. Omit to keep current title.'
+        },
+        new_content: {
+          type: 'string',
+          description: 'Replacement content. Omit to keep current content.'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'search_cards',
+    description: 'Search all story cards by title and content. Returns matching cards as structured data. Use this before edit_card when you do not know a card\'s id, or to answer questions about what story notes exist.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search term to match against card titles and content (case-insensitive substring match).'
+        }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'read_full_context',
+    description: 'Returns the complete story context including all card content and character profiles. Use this when you need detailed information about a specific character or arc that was not included in the initial summary.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  }
+];
+
 // Valid card types accepted by the app. Used for validating AI responses.
 // 'world' kept for backwards-compat with existing localStorage cards.
 const VALID_CARD_TYPES = [
@@ -2596,6 +2687,7 @@ var chatIsOpen  = false;
 document.getElementById('openChat').addEventListener('click', openChat);
 document.getElementById('chatClose').addEventListener('click', closeChat);
 document.getElementById('chatSend').addEventListener('click', sendChatMessage);
+initVoiceAndOrb();
 
 document.getElementById('chatInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -2827,6 +2919,110 @@ function buildStoryContext() {
   return ctx;
 }
 
+// executeJarvisTool: maps a Claude tool_use call to existing app functions.
+// Returns a result string (never throws — errors come back as strings so the loop can continue).
+async function executeJarvisTool(name, input) {
+  try {
+    switch (name) {
+
+      case 'navigate_tab': {
+        var validTabs = ['home', 'canvas', 'writing', 'characters', 'arcs'];
+        if (!validTabs.includes(input.tab_name)) {
+          return 'Error: "' + input.tab_name + '" is not a valid tab. Valid values: ' + validTabs.join(', ');
+        }
+        switchToTab(input.tab_name);
+        return 'Navigated to the "' + input.tab_name + '" tab.';
+      }
+
+      case 'create_card': {
+        if (!VALID_CARD_TYPES.includes(input.type)) {
+          return 'Error: "' + input.type + '" is not a valid card type. Valid types: ' + VALID_CARD_TYPES.join(', ');
+        }
+        if (!input.title || !input.title.trim()) {
+          return 'Error: title is required and cannot be empty.';
+        }
+        var dupTitle = input.title.trim().toLowerCase();
+        var duplicate = cards.find(function(c) { return c.title.toLowerCase() === dupTitle; });
+        if (duplicate) {
+          return 'Error: a card with title "' + input.title + '" already exists (id: ' + duplicate.id + '). Use edit_card to modify it, or choose a different title.';
+        }
+        addCard(input.type, input.title.trim(), input.content || '');
+        return 'Created ' + input.type + ' card: "' + input.title.trim() + '"';
+      }
+
+      case 'edit_card': {
+        var target = null;
+        if (input.card_id) {
+          target = cards.find(function(c) { return c.id === input.card_id; });
+        }
+        if (!target && input.card_title) {
+          var q = input.card_title.trim().toLowerCase();
+          target = cards.find(function(c) { return c.title.toLowerCase() === q; });
+        }
+        if (!target) {
+          return 'Error: card not found. Use search_cards to find the correct id or title first.';
+        }
+        if (!input.new_title && !input.new_content) {
+          return 'Error: at least one of new_title or new_content must be provided.';
+        }
+        var oldTitle = target.title;
+        if (input.new_title)   target.title   = input.new_title.trim();
+        if (input.new_content) target.content = input.new_content;
+        target.lastModified = new Date().toISOString();
+        saveCards();
+        renderCards();
+        renderHomePage();
+        return 'Updated card "' + oldTitle + '"' +
+               (input.new_title   ? ' → title is now "' + target.title + '"' : '') +
+               (input.new_content ? '; content updated.' : '.');
+      }
+
+      case 'search_cards': {
+        if (!input.query || !input.query.trim()) {
+          return 'Error: query cannot be empty.';
+        }
+        var sq = input.query.trim().toLowerCase();
+        var matches = cards.filter(function(c) {
+          return c.title.toLowerCase().includes(sq) || (c.content || '').toLowerCase().includes(sq);
+        }).slice(0, 20);
+        if (matches.length === 0) {
+          return 'No cards found matching "' + input.query + '".';
+        }
+        var results = matches.map(function(c) {
+          return { id: c.id, type: c.type, title: c.title, status: c.status, preview: (c.content || '').slice(0, 150) };
+        });
+        return JSON.stringify(results);
+      }
+
+      case 'read_full_context': {
+        var fullCards = cards.map(function(c) {
+          return '[' + c.type + '] ' + c.title + ' (id:' + c.id + ')\n' + (c.content || '(no content)');
+        }).join('\n\n');
+        var profileLines = [];
+        Object.keys(characterProfiles).forEach(function(cardId) {
+          var card = cards.find(function(c) { return c.id === cardId; });
+          var prof = characterProfiles[cardId];
+          profileLines.push(
+            (card ? card.title : cardId) + ': role=' + (prof.role || '?') +
+            ', enneagram=' + (prof.enneagram || '?') +
+            ', goal=' + (prof.goal || '?') +
+            ', fear=' + (prof.fear || '?') +
+            ', arc=' + (prof.arc || '?')
+          );
+        });
+        var out = 'FULL STORY CARDS:\n\n' + fullCards;
+        if (profileLines.length > 0) out += '\n\nCHARACTER PROFILES:\n' + profileLines.join('\n');
+        return out.slice(0, 15000);
+      }
+
+      default:
+        return 'Error: unknown tool "' + name + '".';
+    }
+  } catch (err) {
+    return 'Tool execution error: ' + err.message;
+  }
+}
+
 // sendChatMessage: two-call structure —
 //   Call A (conditional): if chatHistory > 20 turns, summarize oldest 10 into sf_chat_memory
 //   Call B (always): main response, injecting sf_chat_memory as system context + last 20 turns
@@ -2892,7 +3088,7 @@ async function sendChatMessage() {
     }
 
     // Build system prompt, injecting stored memory and saved suggestions if available
-    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.';
+    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.\n\nYou also have Jarvis tool capabilities — you can take direct actions in the StoryForge app: navigate tabs, create cards, edit cards, and search story notes. Use tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "update that card"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.';
     var storedMemory = localStorage.getItem('sf_chat_memory');
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
@@ -2915,34 +3111,95 @@ async function sendChatMessage() {
     var trimmedHistory = chatHistory.length > 20 ? chatHistory.slice(-20) : chatHistory;
     messages = messages.concat(trimmedHistory);
 
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':                              'application/json',
-        'x-api-key':                                 key,
-        'anthropic-version':                         '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model:      CLAUDE_MODEL,
-        max_tokens: 1024,
-        system:     systemPrompt,
-        messages:   messages
-      })
-    });
-
-    var data = await res.json();
-    if (!res.ok) throw new Error(data?.error?.message || 'API error');
-
-    var reply = (data.content?.[0]?.text || '').trim();
+    // Remove typing indicator and start Jarvis status
     var typingEl = document.getElementById(typingId);
     if (typingEl) typingEl.remove();
+    showJarvisStatus('Jarvis is thinking...');
+    if (orbIsOpen) setOrbState('thinking');
 
-    appendChatMsg('assistant', reply);
-    chatHistory.push({ role: 'assistant', content: reply });
+    // Agentic loop: keep calling the API until end_turn or tool limit reached
+    var MAX_TOOL_ITERATIONS = 8;
+    var iteration  = 0;
+    var finalReply = null;
+    var toolsRun   = [];
+
+    while (iteration < MAX_TOOL_ITERATIONS) {
+      iteration++;
+
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type':                              'application/json',
+          'x-api-key':                                 key,
+          'anthropic-version':                         '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model:      CLAUDE_MODEL,
+          max_tokens: 4096,
+          system:     systemPrompt,
+          tools:      JARVIS_TOOLS,
+          messages:   messages
+        })
+      });
+
+      var data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'API error');
+      console.log('[Jarvis] iteration', iteration, 'stop_reason:', data.stop_reason, 'response:', data);
+
+      var stopReason = data.stop_reason;
+
+      if (stopReason === 'end_turn') {
+        var textBlock = data.content && data.content.find(function(b) { return b.type === 'text'; });
+        finalReply = (textBlock && textBlock.text) ? textBlock.text.trim() : 'Done.';
+        break;
+      }
+
+      if (stopReason === 'tool_use') {
+        // Push entire assistant response (may include text + tool_use blocks)
+        messages.push({ role: 'assistant', content: data.content });
+
+        var toolUseBlocks = data.content.filter(function(b) { return b.type === 'tool_use'; });
+        var toolResultContents = [];
+
+        for (var ti = 0; ti < toolUseBlocks.length; ti++) {
+          var tb = toolUseBlocks[ti];
+          updateJarvisStatus('Running: ' + tb.name + '...');
+          toolsRun.push(tb.name);
+          var toolResult = await executeJarvisTool(tb.name, tb.input);
+          toolResultContents.push({
+            type:        'tool_result',
+            tool_use_id: tb.id,
+            content:     typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult)
+          });
+        }
+
+        messages.push({ role: 'user', content: toolResultContents });
+        updateJarvisStatus('Jarvis is thinking...');
+        continue;
+      }
+
+      // Unexpected stop reason — bail out
+      console.warn('[Jarvis] Unexpected stop_reason:', stopReason);
+      break;
+    }
+
+    removeJarvisStatus();
+
+    if (!finalReply && iteration >= MAX_TOOL_ITERATIONS) {
+      finalReply = 'Jarvis hit the action limit. Actions completed: ' + toolsRun.join(', ');
+    }
+
+    var reply = finalReply || '';
+    if (reply) {
+      appendChatMsg('assistant', reply);
+      chatHistory.push({ role: 'assistant', content: reply });
+      // TTS: speak reply if voice is enabled in chat panel or orb is open
+      if (voiceEnabled || orbIsOpen) speakJarvisReply(reply);
+    }
 
     // If this was a Canon Review, append a "Save Suggestions" button to the message
-    if (lastMessageWasCanonReview) {
+    if (lastMessageWasCanonReview && reply) {
       lastMessageWasCanonReview = false;
       var msgs = document.getElementById('chatMessages');
       var lastMsg = msgs.lastElementChild;
@@ -2963,11 +3220,12 @@ async function sendChatMessage() {
     }
 
   } catch (err) {
-    var typingEl = document.getElementById(typingId);
-    if (typingEl) typingEl.remove();
+    removeJarvisStatus();
+    if (orbIsOpen) setOrbState('idle');
     appendChatMsg('assistant', '❌ ' + err.message);
   } finally {
-    document.getElementById('chatSend').disabled = false;
+    document.getElementById('chatSend').disabled  = false;
+    document.getElementById('chatInput').disabled = false;
   }
 }
 
@@ -2983,6 +3241,472 @@ function appendChatMsg(role, text, id) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
+// Jarvis status indicator — shows an inline pulsing bar while tools are running.
+// At most one exists at a time; updateJarvisStatus mutates text in place.
+function showJarvisStatus(msg) {
+  removeJarvisStatus();
+  var msgs = document.getElementById('chatMessages');
+  var el = document.createElement('div');
+  el.className = 'jarvis-status';
+  el.id = 'jarvisStatus';
+  var dot = document.createElement('span');
+  dot.className = 'jarvis-status-dot';
+  var txt = document.createElement('span');
+  txt.id = 'jarvisStatusText';
+  txt.textContent = msg || 'Jarvis is working...';
+  el.appendChild(dot);
+  el.appendChild(txt);
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('chatSend').disabled  = true;
+}
+
+function updateJarvisStatus(msg) {
+  var textEl = document.getElementById('jarvisStatusText');
+  if (textEl) textEl.textContent = msg;
+  var msgs = document.getElementById('chatMessages');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeJarvisStatus() {
+  var el = document.getElementById('jarvisStatus');
+  if (el) el.remove();
+  document.getElementById('chatInput').disabled = false;
+  document.getElementById('chatSend').disabled  = false;
+}
+
+
+// ============================================================
+// SECTION 13B: JARVIS VOICE — Phase 6 (chat TTS + mic) & Phase 7 (orb)
+// ============================================================
+
+// ── Voice toggle state (chat panel TTS) ──────────────────────
+var voiceEnabled = localStorage.getItem('sf_voice_enabled') === 'true';
+
+// ── Orb state ─────────────────────────────────────────────────
+var orbIsOpen     = false;
+var orbState      = 'idle';   // 'idle' | 'listening' | 'thinking' | 'speaking'
+var orbAnimFrame  = null;
+var orbMicStream  = null;
+var orbAudioCtx   = null;
+var orbAnalyser   = null;
+var orbMicVolume  = 0;
+var orbRecognition = null;
+var orbRotY       = 0;
+var orbParticles  = [];
+
+// Build band-based particle array (latitude rings → banded wave visual like reference)
+(function initOrbParticles() {
+  var RINGS   = 24;
+  var BASE_PER_RING = 48;
+  for (var ring = 0; ring < RINGS; ring++) {
+    var phi       = Math.PI * (ring + 0.5) / RINGS;
+    var ringR     = Math.sin(phi);
+    var count     = Math.max(6, Math.round(BASE_PER_RING * ringR));
+    var thetaOff  = ring * 0.37; // stagger each ring slightly
+    for (var j = 0; j < count; j++) {
+      var theta = thetaOff + 2 * Math.PI * j / count;
+      orbParticles.push({
+        bx:       ringR * Math.cos(theta),
+        by:       Math.cos(phi),
+        bz:       ringR * Math.sin(theta),
+        ring:     ring,
+        ringFrac: ring / RINGS,
+        theta:    theta,
+        phase:    Math.random() * Math.PI * 2
+      });
+    }
+  }
+})();
+
+// openJarvisOrb: show the full-screen orb overlay
+function openJarvisOrb() {
+  orbIsOpen = true;
+  var overlay = document.getElementById('jarvisOrbOverlay');
+  if (overlay) overlay.classList.remove('hidden');
+  resizeOrbCanvas();
+  setOrbState('idle');
+  startOrbAnimation();
+}
+
+// closeJarvisOrb: hide the overlay, stop everything
+function closeJarvisOrb() {
+  orbIsOpen = false;
+  var overlay = document.getElementById('jarvisOrbOverlay');
+  if (overlay) overlay.classList.add('hidden');
+  if (orbAnimFrame) { cancelAnimationFrame(orbAnimFrame); orbAnimFrame = null; }
+  stopOrbListening();
+  stopOrbMic();
+  window.speechSynthesis.cancel();
+}
+
+function setOrbState(state) {
+  orbState = state;
+  var labels = { idle: '', listening: '🎤  Listening...', thinking: 'Thinking...', speaking: 'Speaking...' };
+  var el = document.getElementById('jarvisOrbStatus');
+  if (el) el.textContent = labels[state] || '';
+  // Mic button appearance in orb
+  var micBtn = document.getElementById('jarvisOrbMicBtn');
+  if (micBtn) {
+    if (state === 'listening') { micBtn.textContent = '⏹ Stop'; micBtn.classList.add('listening'); }
+    else                       { micBtn.textContent = '🎤 Speak'; micBtn.classList.remove('listening'); }
+  }
+}
+
+function resizeOrbCanvas() {
+  var canvas = document.getElementById('jarvisOrbCanvas');
+  if (!canvas) return;
+  canvas.width  = canvas.offsetWidth  || window.innerWidth;
+  canvas.height = canvas.offsetHeight || window.innerHeight;
+}
+
+function startOrbAnimation() {
+  if (orbAnimFrame) cancelAnimationFrame(orbAnimFrame);
+  function loop() {
+    if (!orbIsOpen) return;
+    orbAnimFrame = requestAnimationFrame(loop);
+    renderOrb();
+  }
+  loop();
+}
+
+// renderOrb: draw one frame of the particle sphere
+function renderOrb() {
+  var canvas = document.getElementById('jarvisOrbCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  if (!W || !H) return;
+  var cx = W / 2, cy = H / 2;
+  var R  = Math.min(W, H) * 0.27;
+  var time = Date.now() * 0.001;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Rotation speed by state
+  var speeds = { idle: 0.003, listening: 0.009, thinking: 0.055, speaking: 0.012 };
+  orbRotY += speeds[orbState] || 0.003;
+
+  // Sample mic volume in listening state
+  if (orbState === 'listening' && orbAnalyser) {
+    var arr = new Uint8Array(orbAnalyser.frequencyBinCount);
+    orbAnalyser.getByteFrequencyData(arr);
+    var sum = 0;
+    for (var di = 0; di < arr.length; di++) sum += arr[di];
+    var raw = (sum / arr.length) / 96;
+    orbMicVolume = orbMicVolume * 0.6 + raw * 0.4; // smooth
+  } else {
+    orbMicVolume = Math.max(0, orbMicVolume - 0.04);
+  }
+
+  var cosY = Math.cos(orbRotY), sinY = Math.sin(orbRotY);
+
+  // Project particles
+  var projected = orbParticles.map(function(p) {
+    // Y-axis rotation
+    var x1 = p.bx * cosY + p.bz * sinY;
+    var z1 = -p.bx * sinY + p.bz * cosY;
+    var y1 = p.by;
+
+    // State-based band wave displacement
+    var disp = 1.0;
+    if (orbState === 'idle') {
+      disp = 1 + 0.025 * Math.sin(time * 0.6 + p.ringFrac * Math.PI * 3 + p.phase * 0.3);
+    } else if (orbState === 'listening') {
+      var vol = orbMicVolume;
+      disp = 1 + vol * 0.5 * (0.5 + 0.5 * Math.sin(time * 5 + p.ringFrac * Math.PI * 6));
+      // Extra band spike near equator when loud
+      if (vol > 0.5) {
+        var eq = 1 - Math.abs(p.ringFrac - 0.5) * 2; // 1 at equator, 0 at poles
+        disp += vol * 0.3 * eq;
+      }
+    } else if (orbState === 'thinking') {
+      // Chaotic: each ring gets a different swirl offset
+      var chaos = Math.sin(time * 3.5 + p.ringFrac * Math.PI * 8 + p.phase * 3);
+      disp = 1 + 0.32 * chaos;
+      x1 += 0.18 * Math.cos(time * 2 + p.phase) * Math.abs(chaos);
+      y1 += 0.15 * Math.sin(time * 1.7 + p.phase) * Math.abs(chaos);
+    } else if (orbState === 'speaking') {
+      var wave = Math.sin(time * 6 - p.ringFrac * Math.PI * 7);
+      disp = 1 + 0.22 * wave;
+    }
+
+    var fx = x1 * disp, fy = y1 * disp, fz = z1 * disp;
+
+    // Perspective projection
+    var fov = 480;
+    var pz  = fz + 3;
+    var sx  = cx + fx * R * fov / (fov + pz * R);
+    var sy  = cy + fy * R * fov / (fov + pz * R);
+
+    // Depth: back particles are dimmer and smaller
+    var depth  = (fz + 1.5) / 3;         // 0..1
+    var alpha  = 0.15 + 0.85 * depth;
+    var radius = 0.6 + 2.0 * depth;
+
+    return { sx: sx, sy: sy, alpha: alpha, radius: radius, fz: fz };
+  });
+
+  // Sort back-to-front for correct depth ordering
+  projected.sort(function(a, b) { return a.fz - b.fz; });
+
+  // Background glow halo — color shifts by state
+  var haloColors = {
+    idle:      '0, 100, 220',
+    listening: '0, 180, 255',
+    thinking:  '80, 0, 220',
+    speaking:  '0, 160, 200'
+  };
+  var haloColor = haloColors[orbState] || haloColors.idle;
+  var grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.5);
+  grd.addColorStop(0,   'rgba(' + haloColor + ', 0.10)');
+  grd.addColorStop(0.5, 'rgba(' + haloColor + ', 0.04)');
+  grd.addColorStop(1,   'rgba(0, 0, 0, 0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, R * 1.5, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  // Particle colors by state
+  var coreColors = {
+    idle:      '60, 160, 255',
+    listening: '0, 220, 255',
+    thinking:  '140, 80, 255',
+    speaking:  '80, 200, 255'
+  };
+  var color = coreColors[orbState] || coreColors.idle;
+
+  // Draw each particle with a 3-layer glow (outer halo → mid glow → bright core)
+  projected.forEach(function(p) {
+    var a = p.alpha, r = p.radius;
+
+    // Outer halo
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, r * 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + color + ', ' + (a * 0.04).toFixed(3) + ')';
+    ctx.fill();
+
+    // Mid glow
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, r * 2.0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + color + ', ' + (a * 0.18).toFixed(3) + ')';
+    ctx.fill();
+
+    // Core dot
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + color + ', ' + Math.min(1, a).toFixed(3) + ')';
+    ctx.fill();
+  });
+}
+
+// ── Mic / Web Audio ──────────────────────────────────────────
+function startOrbMic(onReady) {
+  if (orbMicStream) { if (onReady) onReady(); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+    .then(function(stream) {
+      orbMicStream = stream;
+      orbAudioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+      var src      = orbAudioCtx.createMediaStreamSource(stream);
+      orbAnalyser  = orbAudioCtx.createAnalyser();
+      orbAnalyser.fftSize = 256;
+      src.connect(orbAnalyser);
+      if (onReady) onReady();
+    })
+    .catch(function(err) {
+      console.warn('[Jarvis] Mic access denied:', err);
+      updateOrbTranscript('Microphone access denied. Check browser permissions.');
+    });
+}
+
+function stopOrbMic() {
+  if (orbMicStream) { orbMicStream.getTracks().forEach(function(t) { t.stop(); }); orbMicStream = null; }
+  if (orbAudioCtx)  { orbAudioCtx.close(); orbAudioCtx = null; orbAnalyser = null; }
+}
+
+// ── Speech recognition (voice → text → Claude) ───────────────
+function startOrbListening() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    updateOrbTranscript('Speech recognition requires Chrome or Edge.');
+    return;
+  }
+  startOrbMic(function() {
+    if (orbRecognition) { try { orbRecognition.abort(); } catch(_) {} }
+    orbRecognition = new SR();
+    orbRecognition.continuous    = false;
+    orbRecognition.interimResults = true;
+    orbRecognition.lang           = 'en-US';
+
+    orbRecognition.onresult = function(e) {
+      var transcript = '';
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript;
+      }
+      updateOrbTranscript(transcript);
+      if (e.results[e.results.length - 1].isFinal) {
+        orbRecognition.stop();
+        var input = document.getElementById('chatInput');
+        if (input) input.value = transcript;
+        setOrbState('thinking');
+        updateOrbTranscript('');
+        sendChatMessage();
+      }
+    };
+
+    orbRecognition.onerror = function(e) {
+      console.warn('[Jarvis] Recognition error:', e.error);
+      setOrbState('idle');
+    };
+
+    orbRecognition.onend = function() {
+      if (orbState === 'listening') setOrbState('idle');
+    };
+
+    setOrbState('listening');
+    orbRecognition.start();
+  });
+}
+
+function stopOrbListening() {
+  if (orbRecognition) { try { orbRecognition.stop(); } catch(_) {} orbRecognition = null; }
+  if (orbState === 'listening') setOrbState('idle');
+}
+
+function updateOrbTranscript(text) {
+  var el = document.getElementById('jarvisOrbTranscript');
+  if (el) el.textContent = text;
+}
+
+// ── Text-to-speech output ────────────────────────────────────
+// Used by both the chat panel voice toggle and the orb overlay
+function speakJarvisReply(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  // Strip markdown/emoji for cleaner speech
+  var clean = text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/[*_`#\[\]]/g, '')
+    .replace(/[^\w\s.,!?'"();:\-–]/g, ' ')
+    .trim()
+    .slice(0, 600);
+  if (!clean) return;
+
+  var utt    = new SpeechSynthesisUtterance(clean);
+  utt.rate   = 0.95;
+  utt.pitch  = 0.88; // slightly lower pitch for Jarvis vibe
+  utt.volume = 1;
+
+  utt.onstart = function()  { if (orbIsOpen) setOrbState('speaking'); };
+  utt.onend   = function()  {
+    if (orbIsOpen) {
+      setOrbState('idle');
+      // Auto-resume listening after a short pause
+      setTimeout(function() { if (orbIsOpen) startOrbListening(); }, 900);
+    }
+  };
+  utt.onerror = function()  { if (orbIsOpen) setOrbState('idle'); };
+
+  window.speechSynthesis.speak(utt);
+}
+
+// ── Chat panel mic (Phase 6): one-shot speech → fill input → send ──
+function startChatMicInput() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Speech recognition requires Chrome or Edge.'); return; }
+
+  var micBtn = document.getElementById('chatMic');
+  if (micBtn && micBtn.classList.contains('listening')) {
+    // Already listening — cancel
+    if (orbRecognition) { try { orbRecognition.abort(); } catch(_) {} orbRecognition = null; }
+    if (micBtn) micBtn.classList.remove('listening');
+    return;
+  }
+
+  var rec = new SR();
+  orbRecognition = rec; // reuse slot for abort access
+  rec.continuous     = false;
+  rec.interimResults = true;
+  rec.lang           = 'en-US';
+  if (micBtn) micBtn.classList.add('listening');
+
+  rec.onresult = function(e) {
+    var transcript = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    var input = document.getElementById('chatInput');
+    if (input) input.value = transcript;
+    if (e.results[e.results.length - 1].isFinal) {
+      rec.stop();
+      if (micBtn) micBtn.classList.remove('listening');
+      sendChatMessage();
+    }
+  };
+
+  rec.onerror = function() {
+    if (micBtn) micBtn.classList.remove('listening');
+  };
+
+  rec.onend = function() {
+    if (micBtn) micBtn.classList.remove('listening');
+  };
+
+  rec.start();
+}
+
+// ── Wire up voice/orb event listeners (called from the main init block) ──
+function initVoiceAndOrb() {
+  // Chat panel voice toggle (TTS on/off)
+  var voiceToggle = document.getElementById('chatVoiceToggle');
+  if (voiceToggle) {
+    voiceToggle.textContent = voiceEnabled ? '🔊' : '🔇';
+    voiceToggle.classList.toggle('active', voiceEnabled);
+    voiceToggle.addEventListener('click', function() {
+      voiceEnabled = !voiceEnabled;
+      localStorage.setItem('sf_voice_enabled', voiceEnabled);
+      voiceToggle.textContent = voiceEnabled ? '🔊' : '🔇';
+      voiceToggle.classList.toggle('active', voiceEnabled);
+      showToast(voiceEnabled ? 'Voice output on' : 'Voice output off');
+    });
+  }
+
+  // Chat panel mic button
+  var chatMic = document.getElementById('chatMic');
+  if (chatMic) {
+    chatMic.addEventListener('click', startChatMicInput);
+  }
+
+  // Chat panel orb button → open orb
+  var orbBtn = document.getElementById('chatOrbBtn');
+  if (orbBtn) {
+    orbBtn.addEventListener('click', openJarvisOrb);
+  }
+
+  // Orb mic button → toggle listening
+  var orbMicBtn = document.getElementById('jarvisOrbMicBtn');
+  if (orbMicBtn) {
+    orbMicBtn.addEventListener('click', function() {
+      if (orbState === 'listening') stopOrbListening();
+      else startOrbListening();
+    });
+  }
+
+  // Orb text mode button → close orb, open chat panel
+  var textModeBtn = document.getElementById('jarvisOrbTextModeBtn');
+  if (textModeBtn) {
+    textModeBtn.addEventListener('click', function() {
+      closeJarvisOrb();
+      openChat();
+    });
+  }
+
+  // Resize canvas when window resizes while orb is open
+  window.addEventListener('resize', function() {
+    if (orbIsOpen) resizeOrbCanvas();
+  });
+}
 
 // ============================================================
 // SECTION 14: NEW UTILITY & FEATURE FUNCTIONS
