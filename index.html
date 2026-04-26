@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://js.puter.com/v2/"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -660,7 +661,10 @@
         <span class="chat-subtitle">Writing Assistant</span>
         <span class="chat-memory-badge" id="chatMemoryBadge" style="display:none" title="Story memory active from earlier in this session">● Memory</span>
       </div>
-      <button class="chat-close" id="chatClose">✕</button>
+      <div class="chat-header-right">
+        <button class="chat-voice-toggle" id="chatVoiceToggle" title="Toggle Jarvis voice">🔊</button>
+        <button class="chat-close" id="chatClose">✕</button>
+      </div>
     </div>
 
     <!-- Embedded Jarvis orb — always visible inside the chat panel -->

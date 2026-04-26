@@ -3025,6 +3025,126 @@ async function executeJarvisTool(name, input) {
   }
 }
 
+// ============================================================
+// J3: TIERED CONTEXT INJECTION
+// selectRelevantCards(message) → { tier1, tier2, tier3 } card ID arrays
+// buildTieredContext(message) → context string injected into system prompt every turn
+// ============================================================
+
+var lastCardSelection = null; // { categories, tier1, tier2, tier3 } — smart cache
+
+function selectRelevantCards(message) {
+  var msg = message.toLowerCase();
+  var activeCards = cards.filter(function(c) { return c.status !== 'archived'; });
+  if (activeCards.length === 0) return { tier1: [], tier2: [], tier3: [], categories: new Set() };
+
+  var charTypes  = ['character', 'relationship'];
+  var worldTypes = ['world', 'location', 'lore', 'faction'];
+  var arcTypes   = ['arc', 'event', 'scene', 'theme', 'idea'];
+
+  // Detect keyword categories (additive OR logic)
+  var categories = new Set();
+  activeCards.forEach(function(c) {
+    if (c.title.length < 3) return;
+    if (!msg.includes(c.title.toLowerCase())) return;
+    if (charTypes.includes(c.type))  categories.add('character');
+    if (worldTypes.includes(c.type)) categories.add('world');
+    if (arcTypes.includes(c.type))   categories.add('arc');
+    if (c.type === 'quote')          categories.add('quote');
+  });
+  if (/\b(character|person|protagonist|villain|hero)\b/.test(msg))  categories.add('character');
+  if (/\b(world|place|location|city|realm|kingdom)\b/.test(msg))    categories.add('world');
+  if (/\b(arc|plot|story|chapter|event|scene)\b/.test(msg))         categories.add('arc');
+  if (/\b(quote|said|dialogue|says|told)\b/.test(msg))              categories.add('quote');
+
+  // Smart cache: reuse if category overlap ≥50%
+  if (lastCardSelection && lastCardSelection.categories.size > 0 && categories.size > 0) {
+    var overlap = 0;
+    categories.forEach(function(cat) { if (lastCardSelection.categories.has(cat)) overlap++; });
+    var ratio = overlap / Math.max(categories.size, lastCardSelection.categories.size);
+    if (ratio >= 0.5) {
+      return { tier1: lastCardSelection.tier1, tier2: lastCardSelection.tier2, tier3: lastCardSelection.tier3, categories: categories, cached: true };
+    }
+  }
+
+  // Tier 1: cards named in the message (up to 3, full content)
+  var tier1Cards = activeCards.filter(function(c) {
+    return c.title.length >= 3 && msg.includes(c.title.toLowerCase());
+  }).slice(0, 3);
+  var tier1Set = new Set(tier1Cards.map(function(c) { return c.id; }));
+
+  // Determine matched types from categories
+  var matchedTypes = new Set();
+  if (categories.has('character')) charTypes.forEach(function(t)  { matchedTypes.add(t); });
+  if (categories.has('world'))     worldTypes.forEach(function(t) { matchedTypes.add(t); });
+  if (categories.has('arc'))       arcTypes.forEach(function(t)   { matchedTypes.add(t); });
+  if (categories.has('quote'))     matchedTypes.add('quote');
+
+  // Connections to Tier 1 cards (bonus score for Tier 2 ranking)
+  var connectedToTier1 = new Set();
+  connections.forEach(function(conn) {
+    if (tier1Set.has(conn.from)) connectedToTier1.add(conn.to);
+    if (tier1Set.has(conn.to))   connectedToTier1.add(conn.from);
+  });
+
+  var recent14 = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  function wordCount(c) { return (c.content || '').split(/\s+/).filter(Boolean).length; }
+
+  // Tier 2+3 candidates: matched types not already in Tier 1
+  var candidates = activeCards.filter(function(c) { return matchedTypes.has(c.type) && !tier1Set.has(c.id); });
+
+  // Zero-match fallback: top 5 cards by word count
+  if (candidates.length === 0 && categories.size === 0) {
+    var fallback = activeCards.slice().sort(function(a, b) { return wordCount(b) - wordCount(a); }).slice(0, 5);
+    var result0 = { categories: new Set(), tier1: [], tier2: fallback.map(function(c) { return c.id; }), tier3: [] };
+    lastCardSelection = result0;
+    return result0;
+  }
+
+  candidates.sort(function(a, b) {
+    var aS = 0, bS = 0;
+    if (new Date(a.lastModified || a.createdAt).getTime() > recent14) aS += 2;
+    if (new Date(b.lastModified || b.createdAt).getTime() > recent14) bS += 2;
+    aS += Math.min(wordCount(a) / 50, 2);
+    bS += Math.min(wordCount(b) / 50, 2);
+    if (connectedToTier1.has(a.id)) aS += 3;
+    if (connectedToTier1.has(b.id)) bS += 3;
+    return bS - aS;
+  });
+
+  var result = {
+    categories: categories,
+    tier1: tier1Cards.map(function(c) { return c.id; }),
+    tier2: candidates.slice(0, 7).map(function(c) { return c.id; }),
+    tier3: candidates.slice(7, 17).map(function(c) { return c.id; })
+  };
+  lastCardSelection = result;
+  return result;
+}
+
+function buildTieredContext(message) {
+  if (cards.length === 0) return '';
+  var sel = selectRelevantCards(message);
+
+  var counts = {};
+  cards.forEach(function(c) { counts[c.type] = (counts[c.type] || 0) + 1; });
+  var countSummary = Object.keys(counts).map(function(t) { return counts[t] + ' ' + t; }).join(', ');
+
+  var ctx = 'Story notes for "Life of Bon" (' + countSummary + '):\n';
+
+  function cardLine(c, truncate) {
+    var raw = c.content || '';
+    var content = truncate ? raw.slice(0, 200) + (raw.length > 200 ? '…' : '') : raw;
+    return '[' + c.type + '] ' + c.title + (content ? ': ' + content : '');
+  }
+
+  sel.tier1.forEach(function(id) { var c = cards.find(function(x) { return x.id === id; }); if (c) ctx += cardLine(c, false) + '\n'; });
+  sel.tier2.forEach(function(id) { var c = cards.find(function(x) { return x.id === id; }); if (c) ctx += cardLine(c, false) + '\n'; });
+  sel.tier3.forEach(function(id) { var c = cards.find(function(x) { return x.id === id; }); if (c) ctx += cardLine(c, true) + '\n'; });
+
+  return ctx.trim();
+}
+
 // sendChatMessage: two-call structure —
 //   Call A (conditional): if chatHistory > 20 turns, summarize oldest 10 into sf_chat_memory
 //   Call B (always): main response, injecting sf_chat_memory as system context + last 20 turns
@@ -3090,28 +3210,20 @@ async function sendChatMessage() {
     }
 
     // Build system prompt, injecting stored memory and saved suggestions if available
-    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.\n\nYou also have Jarvis tool capabilities — you can take direct actions in the StoryForge app: navigate tabs, create cards, edit cards, and search story notes. Use tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "update that card"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.';
+    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.\n\nYou also have Jarvis tool capabilities — you can take direct actions in the StoryForge app: navigate tabs, create cards, edit cards, and search story notes. Use tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "update that card"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
     var storedMemory = localStorage.getItem('sf_chat_memory');
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
     if (storedMemory) systemPrompt += '\n\nStory planning memory from earlier in this session:\n' + storedMemory;
     if (suggestionsCtx) systemPrompt += '\n\n' + suggestionsCtx;
 
-    // Build messages: if first turn, prepend a context exchange
-    var messages = [];
-    if (chatHistory.length === 1) {
-      messages.push({
-        role:    'user',
-        content: 'Here is my story data:\n\n' + buildStoryContext() + '\nI will now ask you questions.'
-      });
-      messages.push({
-        role:    'assistant',
-        content: 'Got it! I can see your "Life of Bon" story notes. Ready to help with writing, characters, plot, dialogue — whatever you need.'
-      });
-    }
-    // Cap history sent to API at last 20 turns to control token usage
+    // J3: inject tiered story context into system prompt every turn
+    var tieredCtx = buildTieredContext(msg);
+    if (tieredCtx) systemPrompt += '\n\nRelevant story notes (auto-selected for this message):\n' + tieredCtx;
+
+    // Cap history sent to API at last 20 turns
     var trimmedHistory = chatHistory.length > 20 ? chatHistory.slice(-20) : chatHistory;
-    messages = messages.concat(trimmedHistory);
+    var messages = trimmedHistory.slice();
 
     // Remove typing indicator and start Jarvis status
     var typingEl = document.getElementById(typingId);
@@ -3357,9 +3469,9 @@ function removeJarvisStatus() {
 // SECTION 13B: JARVIS VOICE — Phase 6 (chat TTS + mic) & Phase 7 (orb)
 // ============================================================
 
-// ── Voice always on (no toggle) ──────────────────────────────
-var voiceEnabled = true;
-var jarvisVoice  = null; // selected TTS voice; set by loadJarvisVoice()
+var voiceEnabled     = true;
+var currentPuterAudio = null; // tracks active Puter.js audio for cancellation
+var jarvisVoice      = null;  // selected Web Speech API fallback voice
 
 // ── Orb state ─────────────────────────────────────────────────
 var orbIsOpen     = false;
@@ -3411,7 +3523,8 @@ function closeJarvisOrb() {
   if (orbAnimFrame) { cancelAnimationFrame(orbAnimFrame); orbAnimFrame = null; }
   stopOrbListening();
   stopOrbMic();
-  window.speechSynthesis.cancel();
+  if (currentPuterAudio) { currentPuterAudio.pause(); currentPuterAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
 function setOrbState(state) {
@@ -3653,11 +3766,12 @@ function updateOrbTranscript(text) {
 }
 
 // ── Text-to-speech output ────────────────────────────────────
-// Used by both the chat panel voice toggle and the orb overlay
-function speakJarvisReply(text) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  // Strip markdown/emoji for cleaner speech
+// Tries Puter.js + ElevenLabs (Daniel voice); falls back to Web Speech API.
+async function speakJarvisReply(text) {
+  // Cancel any ongoing speech before starting new
+  if (currentPuterAudio) { currentPuterAudio.pause(); currentPuterAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+
   var clean = text
     .replace(/```[\s\S]*?```/g, '')
     .replace(/[*_`#\[\]]/g, '')
@@ -3666,19 +3780,45 @@ function speakJarvisReply(text) {
     .slice(0, 900);
   if (!clean) return;
 
+  // Try Puter.js + ElevenLabs Daniel voice (British, authoritative)
+  if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2speech) {
+    try {
+      if (orbIsOpen) setOrbState('speaking');
+      var audio = await puter.ai.txt2speech(clean, { provider: 'elevenlabs', voice: 'Daniel' });
+      currentPuterAudio = audio;
+      audio.onended = function() { currentPuterAudio = null; if (orbIsOpen) setOrbState('idle'); };
+      audio.play();
+      return;
+    } catch (e) {
+      console.warn('[Jarvis TTS] Puter.js/ElevenLabs failed, falling back to Web Speech:', e);
+      currentPuterAudio = null;
+    }
+  }
+
+  // Fallback: Web Speech API
+  if (!window.speechSynthesis) { if (orbIsOpen) setOrbState('idle'); return; }
   var utt = new SpeechSynthesisUtterance(clean);
   if (jarvisVoice) utt.voice = jarvisVoice;
-  // Natural online voices are pre-tuned — don't adjust pitch/rate or quality degrades
   var isNatural = jarvisVoice && jarvisVoice.name.includes('Natural');
   utt.rate   = isNatural ? 1.0 : 1.05;
   utt.pitch  = isNatural ? 1.0 : 1.15;
   utt.volume = 1;
-
   utt.onstart = function() { if (orbIsOpen) setOrbState('speaking'); };
   utt.onend   = function() { if (orbIsOpen) setOrbState('idle'); };
   utt.onerror = function() { if (orbIsOpen) setOrbState('idle'); };
-
   window.speechSynthesis.speak(utt);
+}
+
+// ── Voice toggle ──────────────────────────────────────────────
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  if (!voiceEnabled) {
+    if (currentPuterAudio) { currentPuterAudio.pause(); currentPuterAudio = null; }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (orbIsOpen) setOrbState('idle');
+  }
+  var btn = document.getElementById('chatVoiceToggle');
+  if (btn) btn.textContent = voiceEnabled ? '🔊' : '🔇';
 }
 
 // ── Chat panel mic (Phase 6): one-shot speech → fill input → send ──
@@ -3733,10 +3873,18 @@ function startChatMicInput() {
 
 // ── Wire up voice/orb event listeners (called from the main init block) ──
 function initVoiceAndOrb() {
-  // Chat panel mic button
+  // Voice toggle button
+  var voiceToggle = document.getElementById('chatVoiceToggle');
+  if (voiceToggle) voiceToggle.addEventListener('click', toggleVoice);
+
+  // Chat panel mic button — hide entirely on browsers without SpeechRecognition
   var chatMic = document.getElementById('chatMic');
   if (chatMic) {
-    chatMic.addEventListener('click', startChatMicInput);
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+      chatMic.style.display = 'none';
+    } else {
+      chatMic.addEventListener('click', startChatMicInput);
+    }
   }
 
   // Resize canvas when window resizes while orb is open
