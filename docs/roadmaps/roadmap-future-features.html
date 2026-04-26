@@ -939,6 +939,74 @@
     </div>
   </div>
 
+  <!-- Sprint J — Jarvis Upgrades -->
+  <div class="section-header"><h2>Sprint J — Jarvis Intelligence Upgrades (Complete — 2026-04-25)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Voice quality, smart context injection, and conversational polish for Jarvis</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">J1 ✓</div>
+        <div class="feature-title">Voice Upgrade — Puter.js + ElevenLabs</div>
+      </div>
+      <div class="status-card-desc">Replaces Web Speech API with Puter.js + ElevenLabs Daniel voice (British, authoritative). Fallback chain to Web Speech API on failure. Voice on/off toggle (🔊/🔇) in Jarvis panel header.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">J3 ✓</div>
+        <div class="feature-title">Smart Context Injection (Tiered)</div>
+      </div>
+      <div class="status-card-desc">selectRelevantCards() injects up to 20 tiered cards into every Jarvis message. Tier 1: named cards (full). Tier 2: matched-category cards ranked by recency + word count + connections (full, ≤7). Tier 3: additional matches truncated to 200 chars (≤10). Smart caching reuses selection when topic hasn't shifted (≥50% category overlap). Replaces first-turn-only buildStoryContext().</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">J5 ✓</div>
+        <div class="feature-title">Follow-Up Questions When Ambiguous</div>
+      </div>
+      <div class="status-card-desc">Jarvis asks one focused follow-up when a request is ambiguous. Biases toward stating assumptions over asking. Voice mode stricter threshold (answer &gt;3 sentences + generative task + interpretations share &lt;30%). User override: "just answer" or "continue" skips asking.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">J2 ✓</div>
+        <div class="feature-title">Mic Button Guard</div>
+      </div>
+      <div class="status-card-desc">Chat mic button now hidden entirely on browsers without SpeechRecognition support (Firefox, Safari). Chrome/Edge show the button normally.</div>
+    </div>
+  </div>
+
+  <!-- Sprint K — Living Workshop UI -->
+  <div class="section-header"><h2>Sprint K — "Living Workshop" UI/UX Overhaul (Complete — 2026-04-25)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Ambient depth and signature glow — quiet ambience, loud response, layers you can feel</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">K1 ✓</div>
+        <div class="feature-title">Ambient Particles + App Shell Aurora</div>
+      </div>
+      <div class="status-card-desc">22 indigo particles drifting upward on a fixed canvas layer (requestAnimationFrame, paused when tab is hidden). Subtle aurora radial gradient drifting on body::before (32s loop). Both disabled in distraction-free mode and by prefers-reduced-motion.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">K2 ✓</div>
+        <div class="feature-title">Glass Surfaces + Depth</div>
+      </div>
+      <div class="status-card-desc">Jarvis panel: backdrop-filter blur(12px) glass + animated indigo accent line on left edge. Modals: heavier blur(16px) overlay + blur(8px) box + scale-in animation. Cards: rgba semi-transparent background + hover backdrop-filter + richer drop shadow with indigo inner glow.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-id" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">K3 ✓</div>
+        <div class="feature-title">Orb Breathing + Tab Active Glow</div>
+      </div>
+      <div class="status-card-desc">Jarvis orb: orbBreath CSS pulse (4s, scale + drop-shadow glow) always on. Active tab: stronger text-shadow glow + scale(1.02). All ambient animations killed by prefers-reduced-motion media query.</div>
+    </div>
+  </div>
+
   <!-- UX Sprint I -->
   <div class="section-header"><h2>UX Sprint I — Planning Tools (Later)</h2></div>
   <div class="phase-block">
@@ -1196,11 +1264,13 @@
     <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint D (D1–D3)</strong> — Design system refresh, animated tab transitions, branding &amp; logo area. <em>Complete — 2026-04-22.</em></div></li>
     <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint E (E1–E4)</strong> — Writing stats + word goal, export .txt/.md, find &amp; replace with keyboard navigation, distraction-free mode. <em>Complete — 2026-04-22.</em></div></li>
     <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>UX Sprint F1 + H1</strong> — Column spotlight mode (board focus) and global card search. <em>Complete — 2026-04-22.</em></div></li>
-    <li><div class="next-num">6</div><div><strong>UX Sprint H (H2–H3)</strong> — Story Bible export and AI Consistency Checker. H2 is the higher-value next step; do before H3 which requires a larger card corpus.</div></li>
-    <li><div class="next-num">7</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the core UX is polished.</div></li>
-    <li><div class="next-num">8</div><div><strong>Phase 5a</strong> (character name auto-highlight in Writing tab) — high value, low complexity. <strong>Phase 5b/5c</strong> (scene-to-card links, draft version history) — deeper writing/canvas integration.</div></li>
-    <li><div class="next-num">9</div><div><strong>UX Sprint G (G1–G2)</strong> — Structured map zones and background labels. Moderate complexity; best done once card data is rich and connections are populated.</div></li>
-    <li><div class="next-num">10</div><div><strong>UX Sprint I (I1–I2)</strong> — Chapter planning mini-board and tag cloud. <strong>Phase 6</strong> (character relationship web, avatars). <strong>Phase 4c</strong> (mobile). <strong>Phase 8</strong> (settings panel).</div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>Sprint J (J1–J5)</strong> — Jarvis voice upgrade (Puter.js + ElevenLabs), smart tiered context injection, follow-up questions, mic guard. <em>Complete — 2026-04-25.</em></div></li>
+    <li><div class="next-num" style="background:var(--green-dim);color:var(--green);border-color:var(--green);">✓</div><div><strong>Sprint K</strong> — "Living Workshop" aesthetic: ambient particles, glass Jarvis panel, card depth, orb breathing, aurora shell. <em>Complete — 2026-04-25.</em></div></li>
+    <li><div class="next-num">8</div><div><strong>UX Sprint H (H2–H3)</strong> — Story Bible export and AI Consistency Checker. H2 is the higher-value next step; do before H3 which requires a larger card corpus.</div></li>
+    <li><div class="next-num">9</div><div><strong>UX Sprint C (C1–C3)</strong> — Import batch history, card sections/sub-cards, AI stale detection. Advanced organization once the core UX is polished.</div></li>
+    <li><div class="next-num">10</div><div><strong>Phase 5a</strong> (character name auto-highlight in Writing tab) — high value, low complexity. <strong>Phase 5b/5c</strong> (scene-to-card links, draft version history) — deeper writing/canvas integration.</div></li>
+    <li><div class="next-num">11</div><div><strong>UX Sprint G (G1–G2)</strong> — Structured map zones and background labels. Moderate complexity; best done once card data is rich and connections are populated.</div></li>
+    <li><div class="next-num">12</div><div><strong>UX Sprint I (I1–I2)</strong> — Chapter planning mini-board and tag cloud. <strong>Phase 6</strong> (character relationship web, avatars). <strong>Phase 4c</strong> (mobile). <strong>Phase 8</strong> (settings panel).</div></li>
   </ol>
 
   <!-- Not Planned -->
