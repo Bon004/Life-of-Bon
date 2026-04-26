@@ -26,7 +26,10 @@
       "Bash(cp \"NEW NOTES/Life-of-Bon-FINAL-MASTER.txt\" \"story/Life-of-Bon-FINAL-MASTER-NEW.txt\")",
       "Bash(cp -r Notes/. story/)",
       "Bash(rm -rf \"Notes\")",
-      "Bash(rm -rf \"NEW NOTES\")"
+      "Bash(rm -rf \"NEW NOTES\")",
+      "WebFetch(domain:x.com)",
+      "Bash(git commit *)",
+      "Bash(git tag *)"
     ]
   },
   "hooks": {
