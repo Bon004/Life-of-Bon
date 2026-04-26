@@ -6186,3 +6186,53 @@ renderCards();
 renderHomePage();
 renderArchivePanel();
 initApiKeyUx(); // async: loads key from file → localStorage → shows banner if missing
+
+// ============================================================
+// SPRINT K: AMBIENT PARTICLE SYSTEM
+// ≤25 indigo particles drifting upward, paused when tab is hidden
+// ============================================================
+(function initParticles() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var canvas = document.getElementById('particleCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var COUNT = 22;
+  var particles = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (var i = 0; i < COUNT; i++) {
+    particles.push({
+      x:     Math.random() * window.innerWidth,
+      y:     Math.random() * window.innerHeight,
+      r:     0.8 + Math.random() * 1.8,
+      speed: 0.18 + Math.random() * 0.32,
+      drift: (Math.random() - 0.5) * 0.25,
+      alpha: 0.06 + Math.random() * 0.14
+    });
+  }
+
+  function draw() {
+    if (document.hidden) { requestAnimationFrame(draw); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(129,140,248,' + p.alpha.toFixed(3) + ')';
+      ctx.fill();
+      p.y -= p.speed;
+      p.x += p.drift;
+      if (p.y < -8)                  { p.y = canvas.height + 8; p.x = Math.random() * canvas.width; }
+      if (p.x < -8)                  p.x = canvas.width + 8;
+      if (p.x > canvas.width + 8)    p.x = -8;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}());

@@ -4168,3 +4168,131 @@ body.distraction-free .writing-panes { height: calc(100vh - 120px); }
 }
 #df-exit-btn:hover { opacity: 1; }
 body.distraction-free #df-exit-btn { display: block; }
+
+/* ============================================================
+   SPRINT K — "LIVING WORKSHOP" AMBIENT + DEPTH OVERHAUL
+   ============================================================ */
+
+/* ── Layering: push main content above particle canvas ─────── */
+.app-main { position: relative; z-index: 1; }
+
+/* ── App shell aurora (subtle drifting radial gradient) ──────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 55% 35% at 20% 65%, rgba(124,58,237,0.05) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 28% at 75% 25%, rgba(99,102,241,0.04) 0%, transparent 60%);
+  animation: auroraShift 32s ease-in-out infinite alternate;
+}
+@keyframes auroraShift {
+  0%   { transform: translate(0,    0)    scale(1); }
+  50%  { transform: translate(4%,   2%)   scale(1.04); }
+  100% { transform: translate(-3%,  4%)   scale(1.02); }
+}
+body.distraction-free::before { animation: none; }
+
+/* ── Ambient particle canvas ──────────────────────────────── */
+#particleCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 1;
+}
+body.distraction-free #particleCanvas { display: none; }
+
+/* ── Jarvis orb: breathing pulse ──────────────────────────── */
+@keyframes orbBreath {
+  0%, 100% { filter: drop-shadow(0 0 6px  rgba(99,102,241,0.22)); transform: scale(1); }
+  50%       { filter: drop-shadow(0 0 14px rgba(99,102,241,0.42)); transform: scale(1.025); }
+}
+.jarvis-orb-canvas { animation: orbBreath 4s ease-in-out infinite; }
+
+/* ── Jarvis panel: glass surface + animated accent left edge ── */
+.chat-panel {
+  background: rgba(11, 13, 26, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.65), -1px 0 0 rgba(124,58,237,0.12);
+}
+.chat-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px; height: 100%;
+  background: linear-gradient(180deg,
+    transparent 5%,
+    rgba(124,58,237,0.55) 25%,
+    rgba(99,102,241,0.80) 55%,
+    rgba(124,58,237,0.40) 82%,
+    transparent 96%
+  );
+  animation: accentPulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes accentPulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1; }
+}
+
+/* ── Cards: semi-transparent + richer hover depth ──────────── */
+.story-card {
+  background: rgba(14, 16, 32, 0.85);
+  transition:
+    box-shadow    0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform     0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color  0.18s ease,
+    background    0.18s ease;
+}
+.story-card:hover {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translateY(-3px);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(124,58,237,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ── Modals: heavier glass + scale-in ──────────────────────── */
+.modal-overlay {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.modal-box {
+  background: rgba(10, 12, 22, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: modalScaleIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@keyframes modalScaleIn {
+  from { transform: scale(0.96) translateY(12px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+/* ── Tab buttons: richer active glow ──────────────────────── */
+.tab-btn {
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.tab-btn.active {
+  text-shadow: 0 0 22px rgba(124,58,237,0.55), 0 0 8px rgba(99,102,241,0.30);
+  transform: scale(1.02);
+}
+.tab-btn:hover:not(.active) { transform: scale(1.01); }
+
+/* ── prefers-reduced-motion: kill ALL ambient motion ──────── */
+@media (prefers-reduced-motion: reduce) {
+  body::before                        { animation: none !important; }
+  #particleCanvas                     { display: none !important; }
+  .jarvis-orb-canvas                  { animation: none !important; }
+  .chat-panel::before                 { animation: none !important; }
+  .story-card                         { transition-duration: 0s !important; }
+  .tab-btn                            { transition: none !important; transform: none !important; }
+  .tab-btn.active                     { transform: none !important; }
+}
