@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-27</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Story Wiki: Knowledge Layer + Ecosystem Review</h1>
+    <p class="subtitle">A research and tooling session — no app code changes. Reviewed the Claude Code ecosystem (100 repos, skills, LLM wiki, Managed Agents), identified what was already built vs. what was genuinely new, then designed and built the Story Wiki: a persistent knowledge layer for Life of Bon that Claude can read at the start of any writing session.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-27</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>a48d770 (pre-session)</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p>No story cards were added or edited this session. However, this session produced the most structured story reference material the project has had — the wiki pages distilled from the master doc are now the canonical quick-reference for any writing session.</p>
+      <p>Key story canon confirmed and captured in the wiki this session: Leon is dead (killed by Bon's fire magic misfire, not from weakness — he ran toward it); Elena is alive but enslaved (location TBD); the Tragic Champion arc has been suspended as of April 2026; the guild rank system is E→S (Bronze/Diamond was cut); Vaela's true name is confirmed; the best friend's arc is currently open.</p>
+      <p>For the last story-data card snapshot, refer to <a href="session-report-2026-04-20.html">session-report-2026-04-20.html</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p>Full character wiki page generated at <code>story/wiki/characters.md</code>. Covers: Bon (both identities), Elena, Leon, best friend (arc suspended), love interest, Vaela with full three-layer naming structure (The Unnamed / She Who Remains / Vaela) and origin backstory.</p>
+      <p>Notable canon locked this session via wiki generation: Leon's death is not random — it's the final repetition of the pattern that defined his adventuring career (making the call that costs someone he loves). The best friend's Tragic Champion arc was removed in April 2026 and the role is suspended until a better structural home is found.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p>Full timeline wiki page generated at <code>story/wiki/timeline.md</code>. Arc 0 (Japan) through Arc 6 (Final Confrontation) with age ranges, chapter ranges (working estimates), overarching goals, key events, and Bon's emotional state at the end of each arc.</p>
+      <p>Arc 2.5 (early mercenary period, Ch 36–50) is a new addition from the master doc — bridges Arc 2 and Arc 3. Arc 5 structure is currently open pending redesign after the Tragic Champion arc suspension.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p>Full world-rules wiki page generated at <code>story/wiki/world-rules.md</code>. Covers: Aetheria/Eldarion (open name decision), magic system (4 elements, 5 power levels, Touki, silent casting, Bon's visually impure signature), dungeons, guild system (E→S — Bronze/Diamond cut), Demon Lords, The Seers, The 10 Great Monarchs (3 not yet locked), Vaela's anchor network, and elven medicine (Brynth).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p class="na">No writing this session — research and tooling only.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel)</li>
+        <li>[x] Home page / landing screen</li>
+        <li>[x] Writing tab rich text toolbar</li>
+        <li>[x] Character grouping by name</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons</li>
+        <li>[x] 36 Dramatic Situations: reorderable list</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing</li>
+        <li>[x] Tag chip + source_section rendering</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode</li>
+        <li>[x] UX Sprint F1: column spotlight mode</li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code></li>
+        <li>[x] Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button</li>
+        <li>[x] Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge</li>
+        <li>[x] Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields, backward-compatible</li>
+        <li>[x] Import pipeline bug fixed: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Import verified live: 200+ cards from Life-of-Bon-FINAL-MASTER-NEW.txt</li>
+        <li>[x] Rules system: CLAUDE.md slimmed; <code>.claude/rules/</code> created with 5 topic files</li>
+        <li>[x] Ask Claude button moved from floating FAB to header bar</li>
+        <li>[x] Arcs tab: resizable timeline section — drag handle, persists height to <code>sf_arcs_timeline_h</code></li>
+        <li>[x] Find &amp; Replace "Replace Next": fixed to replace current match index</li>
+        <li>[x] Jarvis agentic loop: navigate tabs, create/edit/search cards via chat</li>
+        <li>[x] Jarvis streaming: SSE-based streaming responses, word-by-word</li>
+        <li>[x] Jarvis voice: Microsoft Aria Online (Natural) selected automatically</li>
+        <li>[x] Jarvis orb: embedded permanently in chat panel, no overlay/mode-switching</li>
+        <li>[x] <strong>Story Wiki (J1): 5 wiki pages generated at <code>story/wiki/</code> — this session</strong></li>
+        <li>[x] <strong><code>/refresh-wiki</code> skill created at <code>.claude/skills/refresh-wiki/SKILL.md</code> — this session</strong></li>
+        <li>[x] <strong>Roadmap updated with Sprint J (J1/J2/J3 + 3-layer architecture) — this session</strong></li>
+        <li>[x] <strong>CLAUDE.md updated with wiki path and skill entries — this session</strong></li>
+        <li>[ ] Browser re-test Sprint E + F1 (onclick fixes — never user-confirmed)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser</li>
+        <li>[ ] Browser test Jarvis: streaming, voice, embedded orb layout</li>
+        <li>[ ] Browser test previous session: header FAB, timeline resize, F&amp;R replace-next</li>
+        <li>[ ] Add <code>sf_arcs_timeline_h</code> to CODEBASE.md (overdue)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>The browser test backlog from the previous session remains uncleared — Sprints E, F1, C, Jarvis UX, header FAB, timeline resize. This is now critical debt spanning multiple sessions.</li>
+        <li><code>sf_arcs_timeline_h</code> still not added to CODEBASE.md — this is a hard project rule that has been deferred since the session it was introduced.</li>
+        <li>The wiki pages are a snapshot of the master doc as of April 2026. They will drift as the story evolves — run <code>/refresh-wiki</code> whenever major canon changes are made to the master document.</li>
+        <li>The consolidation/intake step (Phase 0 of the 3-layer pipeline) is intentionally deferred. Future customers will arrive with raw mixed files; the current wiki assumes a pre-organized master doc. Revisit when closer to the subscription product.</li>
+        <li>The <code>open-questions.md</code> wiki page has 12 intentional creative forks — none need decisions now, but they should be reviewed before line-editing any arc in the manuscript.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Try using the wiki in a real writing session — open <code>story/wiki/characters.md</code> or <code>timeline.md</code> alongside Claude and see if the reference layer actually helps or if anything is missing.</li>
+        <li>Review <code>story/wiki/open-questions.md</code> — 12 intentional creative forks are listed. A few (world name, mentor figure) could be locked soon without waiting for the full story to be written.</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li><strong>Priority 1 (overdue):</strong> Clear the browser test backlog — open the app in Edge and test Jarvis streaming, voice (Aria Natural), and embedded orb. Then verify Sprints E, F1, C in sequence.</li>
+        <li><strong>Priority 2 (overdue):</strong> Add <code>sf_arcs_timeline_h</code> to CODEBASE.md localStorage key table. Hard project rule — should have been done sessions ago.</li>
+        <li><strong>Priority 3:</strong> Next feature sprint candidates from the roadmap: Sprint H2 (Story Bible export — high value, no dependencies) or Sprint G1 (structured map zones).</li>
+        <li>Consider running <code>/fewer-permission-prompts</code> — it's already available and reduces tool-approval friction in heavy sessions.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>a48d770 — Jarvis UX overhaul: streaming responses, Aria Natural voice, embedded orb</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>CLAUDE.md</code> — added <code>story/wiki/</code> to "Where Things Live" table; added <code>/refresh-wiki</code> to Skills table; updated <code>.claude/skills/</code> description</li>
+        <li><code>docs/roadmaps/roadmap-future-features.html</code> — added Sprint J section (J1 local wiki, J2 refresh skill, J3 future per-user knowledge layer + 3-layer pipeline architecture note); added J1/J2 to dependency map; added item 11 to build order; updated footer date to 2026-04-27</li>
+        <li><code>.claude/skills/refresh-wiki/SKILL.md</code> — new skill spec; instructs Claude to read master doc, overwrite 5 wiki pages, cap at ~300 lines each, never invent canon</li>
+        <li><code>story/wiki/characters.md</code> — new: all main characters with roles, arcs, key traits, canon fates, relationships</li>
+        <li><code>story/wiki/timeline.md</code> — new: Arc 0 through Arc 6 with age ranges, chapter ranges, goals, key events, Bon's emotional state per arc</li>
+        <li><code>story/wiki/world-rules.md</code> — new: Aetheria, magic system (E→S guild ranks), dungeons, Demon Lords, Seers, anchor network, elven medicine</li>
+        <li><code>story/wiki/themes.md</code> — new: 4 thematic pillars, philosophical core, tone anchors, Bon's internal voice templates, growth axes, situation templates, narrative techniques</li>
+        <li><code>story/wiki/open-questions.md</code> — new: 12 intentional creative forks as checkboxes + full continuity audit status from Sections 12 &amp; 13 of master doc</li>
+        <li><code>docs/session-reports/session-report-2026-04-27.html</code> — this file</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Story Wiki is a dev tool first, product feature later.</strong> Built locally in <code>story/wiki/</code> — no app code changes. The concept (per-user knowledge layer) was documented in the roadmap as J3/Phase 2. Rationale: validate it solves the "Claude re-reading 92KB every session" problem before building cloud infrastructure for it.</li>
+        <li><strong>Consolidation/intake step (Phase 0) deliberately deferred.</strong> Future customers will have raw mixed files; the current setup assumes a pre-organized master doc. Decision: document the architectural insight, don't build it yet. Rationale: the local wiki first proves the value of the layer; the intake step is a product feature that belongs after that validation.</li>
+        <li><strong>Correct guild rank system confirmed and used: E→S (not Bronze→Diamond).</strong> The Bronze/Diamond system appeared in the Story Bible but was cut in the master doc (Section 13, resolved). All wiki pages use E→S. The Story Bible is not the authoritative source — the master doc is.</li>
+        <li><strong>Tragic Champion arc suspension documented explicitly.</strong> The April 2026 canon note (Section 5 of master doc) was captured in both characters.md and timeline.md — the best friend's fall-to-darkness arc was removed, the role is suspended, the long-term arc is open. This prevents future sessions from accidentally writing toward the old version.</li>
+        <li><strong>git-guardrails skill identified as easy win but not installed this session.</strong> Noted as a future quick task — drop a .md file into <code>.claude/skills/</code>, no npm required, prevents accidental force-push or hard reset across two machines. Deferred to avoid scope creep.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Open the app in Edge and clear the browser test backlog — Jarvis streaming/voice/orb first, then Sprint E, F1, C.</li>
+        <li>Add <code>sf_arcs_timeline_h</code> to CODEBASE.md localStorage key table — this is overdue.</li>
+        <li>Try a writing session using the new wiki pages as context — open <code>story/wiki/characters.md</code> and ask Claude about a character to see if the reference layer is actually useful.</li>
+        <li>Next build sprint candidates: Sprint H2 (Story Bible export) or Sprint G1 (structured map zones).</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>Browser test debt is now critical — 4+ sprints of untested code including Jarvis APIs that cannot be verified by reading code.</li>
+        <li><code>sf_arcs_timeline_h</code> missing from CODEBASE.md is a hard project rule violation that must be fixed before the next commit touches app code.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Review 9 research files about the Claude Code ecosystem and cross-reference against what was already implemented in StoryForge.</li>
+        <li>Identify which concepts were genuinely new vs. already surpassed by the existing setup.</li>
+        <li>Walk through the Story Wiki concept with context from Perplexity, decide whether to implement now or later.</li>
+        <li>Look at <code>story/</code> before designing anything — recon first.</li>
+        <li>Execute 4 steps: update roadmap, update CLAUDE.md, create <code>/refresh-wiki</code> skill, generate 5 wiki pages from the master doc.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Recon before design.</strong> Reading the actual <code>story/</code> files before designing the wiki skill revealed critical details: the source is mostly plain text (not PDFs), the master doc is already 80% organized, the guild rank system changed, and the Tragic Champion arc was suspended in April 2026. Without the recon, the wiki could have been built on outdated Story Bible canon.</li>
+        <li><strong>Perplexity + Claude tag-team worked well.</strong> Perplexity handled conceptual clarification (explaining the wiki to the user in plain English, explaining the 3-layer product architecture); Claude handled the gap analysis, pushback on scope, and execution. The handoff between them was clean.</li>
+        <li><strong>Pushback on scope was correct.</strong> When the user asked about implementing the consolidation/intake step (Phase 0), Claude recommended deferring — validate the wiki layer first, build the intake step after. Perplexity agreed. The session stayed focused.</li>
+        <li><strong>The open-questions.md page format (checkboxes, 30-second scan).</strong> Perplexity's specific note about formatting open-questions.md as a checklist (not paragraphs) was worth following. The page is genuinely useful as-is.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>The browser test backlog should have been addressed before this session.</strong> The previous session report explicitly called it out as "Priority 1" and "critical debt." A research/tooling session was a valid use of time, but the untested Jarvis changes are still sitting unverified. Next session must start with a browser pass.</li>
+        <li><strong>git-guardrails should be installed proactively.</strong> It was identified as a 5-minute easy win early in the session and then deferred to avoid scope creep. Given that the user works across two machines, this is worth doing in under 5 minutes at the start of any session — not a whole task, just a quick drop of a .md file.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>The Story Wiki is now the correct starting point for any writing session.</strong> Instead of asking Claude to read the 92KB master doc, point it at <code>story/wiki/</code> — 5 lean reference pages covering characters, timeline, world-rules, themes, and open questions. Run <code>/refresh-wiki</code> whenever major canon changes are made to the master doc. The open-questions page in particular is worth reviewing before writing any arc — 12 creative forks are documented there that should inform scene design.
+      </div>
+
+      <div class="callout warn">
+        <strong>Browser test debt remains critical — now spanning 4+ sprints.</strong> Jarvis streaming (SSE), Aria Natural voice (browser speech API), embedded orb (canvas), Sprint E onclick fixes, Sprint F1, and Sprint C are all untested in a live browser. The next session must open Edge and run through these before touching any new code.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-27 · Run 1: Story Wiki — knowledge layer, /refresh-wiki skill, ecosystem review</div>
+
+</div>
+</body>
+</html>

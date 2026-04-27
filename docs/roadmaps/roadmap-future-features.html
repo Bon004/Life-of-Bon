@@ -1186,6 +1186,16 @@
       <div class="dep-row-line"></div>
       <div class="dep-row-desc">Requires G1 (Structured Zones) for zone coordinates</div>
     </div>
+    <div class="dep-row">
+      <div class="dep-row-name">J1 (Local Story Wiki)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">No dependencies — dev tool only, no app code changes</div>
+    </div>
+    <div class="dep-row">
+      <div class="dep-row-name">J2 (/refresh-wiki Skill)</div>
+      <div class="dep-row-line"></div>
+      <div class="dep-row-desc">Requires J1 (wiki pages must exist to refresh)</div>
+    </div>
   </div>
 
   <!-- Next Session -->
@@ -1201,7 +1211,69 @@
     <li><div class="next-num">8</div><div><strong>Phase 5a</strong> (character name auto-highlight in Writing tab) — high value, low complexity. <strong>Phase 5b/5c</strong> (scene-to-card links, draft version history) — deeper writing/canvas integration.</div></li>
     <li><div class="next-num">9</div><div><strong>UX Sprint G (G1–G2)</strong> — Structured map zones and background labels. Moderate complexity; best done once card data is rich and connections are populated.</div></li>
     <li><div class="next-num">10</div><div><strong>UX Sprint I (I1–I2)</strong> — Chapter planning mini-board and tag cloud. <strong>Phase 6</strong> (character relationship web, avatars). <strong>Phase 4c</strong> (mobile). <strong>Phase 8</strong> (settings panel).</div></li>
+    <li><div class="next-num">11</div><div><strong>UX Sprint J (J1–J2)</strong> — Local story wiki + <code>/refresh-wiki</code> skill. Dev tool only — no app code changes. Validates the per-user knowledge layer concept before building it into the shipped product.</div></li>
   </ol>
+
+  <!-- UX Sprint J -->
+  <div class="section-header"><h2>UX Sprint J — Story Wiki (Dev Tool + Future Product Feature)</h2></div>
+  <div class="phase-block">
+    <div class="phase-label">Local dev tool today · Product architecture insight for later · No app code changes</div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title">Local Story Wiki</div>
+        <div class="feature-id">J1</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-high">High Priority</span>
+        <span class="badge badge-dep">No dependencies</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> <code>/story/wiki/</code> contains 5 reference pages Claude can read at the start of any writing session — without re-parsing the full 92KB master doc every time</div>
+      <ul class="task-list">
+        <li>Create <code>story/wiki/characters.md</code> — all main characters: roles, arcs, key traits, relationships</li>
+        <li>Create <code>story/wiki/timeline.md</code> — arc-by-arc with age ranges, chapter ranges, overarching goals, key events</li>
+        <li>Create <code>story/wiki/world-rules.md</code> — Aetheria world, magic system, guild ranks, dungeon mechanics</li>
+        <li>Create <code>story/wiki/themes.md</code> — core themes, tone anchors, philosophical core, Bon's growth arc</li>
+        <li>Create <code>story/wiki/open-questions.md</code> — intentional creative forks from Sections 12 &amp; 13 of master doc</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-title"><code>/refresh-wiki</code> Skill</div>
+        <div class="feature-id">J2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-medium">Medium Priority</span>
+        <span class="badge badge-dep">Requires J1</span>
+      </div>
+      <div class="done-when"><strong>Done when:</strong> Running <code>/refresh-wiki</code> in Claude Code regenerates all 5 wiki pages from source files — keeps the wiki current as the story evolves</div>
+      <ul class="task-list">
+        <li>Claude skill at <code>.claude/skills/refresh-wiki/SKILL.md</code></li>
+        <li>Reads <code>story/Life-of-Bon-FINAL-MASTER-NEW.txt</code> as primary source</li>
+        <li>Overwrites (never appends) each wiki page — keeps them lean and current</li>
+        <li>Each page capped at ~300 lines — reference layer, not a copy of the source</li>
+      </ul>
+      <div class="dep-note">J1 must exist first; J2 is the maintenance tool that keeps J1 current</div>
+    </div>
+
+    <div class="feature-card" style="border-color: var(--purple-dim);">
+      <div class="feature-header">
+        <div class="feature-title">Future Architecture: Per-User Knowledge Layer</div>
+        <div class="feature-id" style="color: var(--purple); background: var(--purple-dim);">J3 · Phase 2</div>
+      </div>
+      <div class="feature-meta">
+        <span class="badge badge-low">Future / Not Building Yet</span>
+      </div>
+      <div class="done-when"><strong>Concept:</strong> When StoryForge ships as a subscription product, the wiki concept becomes a per-user knowledge layer stored in the database — so every AI feature reads from a user's pre-processed notes instead of re-reading raw uploads on every API call</div>
+      <ul class="task-list">
+        <li><strong>Full pipeline (3 layers):</strong> Raw messy uploads → Consolidation step → Structured master → Wiki/knowledge layer → AI features</li>
+        <li><strong>Phase 0 (not built yet):</strong> Consolidation/intake step — takes whatever format a user uploads (Word, PDF, txt, mixed) and organizes it into a structured master document before the wiki builds. Most AI note apps skip this; it's a competitive differentiator.</li>
+        <li><strong>Token economics:</strong> Without the knowledge layer, every subscriber AI call re-reads their full raw notes (expensive at scale). With it, the wiki is built once and stays lean — every AI call reads from the pre-processed layer instead.</li>
+        <li>Validate the concept locally first (J1 + J2); build this into the product only once the wiki is proven useful</li>
+      </ul>
+    </div>
+  </div>
 
   <!-- Not Planned -->
   <div class="section-header"><h2>Intentionally Out of Scope</h2></div>
@@ -1212,7 +1284,7 @@
     <li>Real-time sync across devices</li>
   </ul>
 
-  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-17</div>
+  <div class="doc-footer">StoryForge · Life of Bon · Roadmap last updated 2026-04-27</div>
 
 </div>
 </body>
