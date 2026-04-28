@@ -25,7 +25,8 @@ StoryForge is a web app for organizing the "Life of Bon" isekai/anime story. It 
 | `docs/roadmaps/` | Feature roadmap |
 | `design/` | UI reference images |
 | `story/` | Source story notes and manuscript files |
-| `.claude/skills/` | `/insights` and `/status` skill specs |
+| `story/wiki/` | Claude-generated story reference pages (characters, timeline, world-rules, themes, open-questions) |
+| `.claude/skills/` | `/insights`, `/status`, and `/refresh-wiki` skill specs |
 | `.claude/rules/` | Topic-specific persistent rules |
 | `CODEBASE.md` | Full technical reference: file map, schemas, localStorage keys, key functions |
 
@@ -51,6 +52,7 @@ StoryForge is a web app for organizing the "Life of Bon" isekai/anime story. It 
 |---|---|---|
 | `/insights` | `.claude/skills/insights/SKILL.md` | End of session — generates HTML report |
 | `/status` | `.claude/skills/status/SKILL.md` | Start of session — quick orientation |
+| `/refresh-wiki` | `.claude/skills/refresh-wiki/SKILL.md` | Regenerate story wiki pages from source files |
 
 ## Git Workflow
 - Remote: `https://github.com/Bon004/Life-of-Bon.git`
