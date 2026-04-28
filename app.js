@@ -21,13 +21,80 @@
 
 
 // ============================================================
+// SECTION 0: PROJECT BOOTSTRAP
+// ─────────────────────────────────────────────────────────────
+// Runs before anything else. Establishes which project is active
+// and provides projectKey() for all per-project localStorage reads.
+// ============================================================
+
+(function() {
+  var storedProjects = localStorage.getItem('sf_projects');
+  var storedActive   = localStorage.getItem('sf_active_project');
+  window._sf_projects       = storedProjects ? JSON.parse(storedProjects) : [];
+  window._sf_activeProjectId = storedActive || '';
+
+  // Auto-migrate legacy single-story data → "' + currentProjectName + '" project
+  // Old sf_* keys are left in place as a safety net (not deleted).
+  if (!window._sf_activeProjectId && localStorage.getItem(projectKey('cards')) !== null) {
+    var legacyId = 'proj_lob_' + Date.now();
+    window._sf_projects = [{ id: legacyId, name: 'Life of Bon', createdAt: new Date().toISOString() }];
+    localStorage.setItem('sf_projects', JSON.stringify(window._sf_projects));
+    var legacySuffixes = [
+      'cards','positions','connections','arc_order','arc_sequence_map',
+      'situation_order','outline','character_profiles','writing_copy','writing_draft',
+      'draft_history','writing_split_ratio','word_goal','zoom','batches',
+      'dismissed_batches','unsynced_ids','arcs_timeline_h','brainstorm_height',
+      'brainstorm_collapsed','summary_expanded','summary','chat_memory',
+      'suggestions','synced_files'
+    ];
+    legacySuffixes.forEach(function(suffix) {
+      var v = localStorage.getItem('sf_' + suffix);
+      if (v !== null) localStorage.setItem(legacyId + '_' + suffix, v);
+    });
+    window._sf_activeProjectId = legacyId;
+    localStorage.setItem('sf_active_project', legacyId);
+  }
+
+  // If no data at all, create a blank default project
+  if (!window._sf_activeProjectId || !window._sf_projects.length) {
+    var newId = 'proj_' + Date.now();
+    window._sf_projects = [{ id: newId, name: 'My Novel', createdAt: new Date().toISOString() }];
+    localStorage.setItem('sf_projects', JSON.stringify(window._sf_projects));
+    window._sf_activeProjectId = newId;
+    localStorage.setItem('sf_active_project', newId);
+  }
+
+  // Resolve active project — fall back to first if registry is corrupted
+  var found = window._sf_projects.find(function(p) { return p.id === window._sf_activeProjectId; });
+  if (!found) {
+    found = window._sf_projects[0];
+    window._sf_activeProjectId = found.id;
+    localStorage.setItem('sf_active_project', found.id);
+    console.warn('[StoryForge] Active project not found in registry — reset to first project');
+  }
+  window._sf_activeProject    = found;
+  window._sf_currentProjectName = found.name;
+})();
+
+var projects           = window._sf_projects;
+var activeProjectId    = window._sf_activeProjectId;
+var activeProject      = window._sf_activeProject;
+var currentProjectName = window._sf_currentProjectName;
+
+function projectKey(suffix) {
+  if (!activeProjectId) {
+    console.error('[StoryForge] projectKey() called with no activeProjectId — data may be lost');
+  }
+  return activeProjectId + '_' + suffix;
+}
+
+// ============================================================
 // SECTION 1: CARD DATA
 // ─────────────────────────────────────────────────────────────
 // What it does: Initializes all persistent state by reading from
 // localStorage. This runs once when the page loads.
 //
-// Reads:  localStorage keys: sf_cards, sf_api_key, sf_positions,
-//         sf_connections, sf_zoom
+// Reads:  per-project localStorage keys via projectKey()
 // Writes: populates cards[], cardPositions{}, connections[],
 //         apiKey, mapZoom
 // ============================================================
@@ -35,7 +102,7 @@
 let cards = [];
 
 try {
-  const saved = localStorage.getItem('sf_cards');
+  const saved = localStorage.getItem(projectKey('cards'));
   cards = saved ? JSON.parse(saved) : [];
 } catch (e) {
   cards = [];
@@ -49,11 +116,11 @@ let connections    = [];
 let viewMode       = 'board'; // 'board' or 'map'
 let connectingFrom = null;    // cardId we're connecting FROM
 
-try { cardPositions = JSON.parse(localStorage.getItem('sf_positions') || '{}'); } catch(e) {}
-try { connections   = JSON.parse(localStorage.getItem('sf_connections') || '[]'); } catch(e) {}
+try { cardPositions = JSON.parse(localStorage.getItem(projectKey('positions')) || '{}'); } catch(e) {}
+try { connections   = JSON.parse(localStorage.getItem(projectKey('connections')) || '[]'); } catch(e) {}
 
 // Map zoom level (0.1 = very far out, 5.0 = very zoomed in)
-var mapZoom = parseFloat(localStorage.getItem('sf_zoom') || '1.0');
+var mapZoom = parseFloat(localStorage.getItem(projectKey('zoom')) || '1.0');
 
 // Visual translate applied to mapInner so cards are centered when zoom is too low
 // for scroll-centering alone (scroll can't go negative). Reset by centerMapOnCards().
@@ -66,9 +133,12 @@ var wasDragging = false;
 // Track new/edited cards not yet organized on the map
 var unsyncedIds = new Set();
 try {
-  var _savedUnsynced = JSON.parse(localStorage.getItem('sf_unsynced_ids') || '[]');
+  var _savedUnsynced = JSON.parse(localStorage.getItem(projectKey('unsynced_ids')) || '[]');
   unsyncedIds = new Set(_savedUnsynced);
 } catch(e) { unsyncedIds = new Set(); }
+
+// Outline tab: persists selected node across re-renders
+var selectedOutlineNodeId = null;
 
 // Color lookup for each card type
 const TYPE_COLORS = {
@@ -92,7 +162,7 @@ const JARVIS_TOOLS = [
       properties: {
         tab_name: {
           type: 'string',
-          enum: ['home', 'canvas', 'writing', 'characters', 'arcs'],
+          enum: ['home', 'canvas', 'writing', 'characters', 'arcs', 'outline'],
           description: 'The tab to navigate to.'
         }
       },
@@ -169,6 +239,81 @@ const JARVIS_TOOLS = [
       type: 'object',
       properties: {},
       required: []
+    }
+  },
+  {
+    name: 'write_draft',
+    description: 'Write content to the Draft section of the Writing tab. Draft is scratch space for AI-generated output — the user manually promotes content to Working Copy. Use mode "append" to add below existing content (default), or "replace" to clear the draft and write fresh.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'string',
+          description: 'Plain text to write. Use double line breaks to separate paragraphs. Single line breaks within a paragraph are preserved as line breaks.'
+        },
+        mode: {
+          type: 'string',
+          enum: ['append', 'replace'],
+          description: 'append (default): add below existing draft content. replace: clear the draft first, then write.'
+        }
+      },
+      required: ['content']
+    }
+  },
+  {
+    name: 'create_outline_node',
+    description: 'Add a node to the story Outline. Nodes form a hierarchy: act → arc → chapter → scene. Omit parent_id to create a root-level act.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        type:      { type: 'string', enum: ['act','arc','chapter','scene'], description: 'The level of this node in the outline hierarchy.' },
+        title:     { type: 'string', description: 'Title for this outline node.' },
+        parent_id: { type: 'string', description: 'ID of the parent node. Omit for root-level acts.' }
+      },
+      required: ['type', 'title']
+    }
+  },
+  {
+    name: 'edit_outline_node',
+    description: 'Update the title, beats (bullet-point notes), or status of an existing outline node.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        id:     { type: 'string', description: 'ID of the outline node to edit.' },
+        title:  { type: 'string', description: 'New title (omit to keep current).' },
+        beats:  { type: 'array', items: { type: 'string' }, description: 'Full replacement beats array (omit to keep current).' },
+        status: { type: 'string', enum: ['not_started','drafted','done'], description: 'New status (omit to keep current).' }
+      },
+      required: ['id']
+    }
+  },
+  {
+    name: 'read_outline',
+    description: 'Returns the full story outline as a JSON array of nodes with their hierarchy, beats, linked cards, and status.',
+    input_schema: { type: 'object', properties: {}, required: [] }
+  },
+  {
+    name: 'link_card_to_node',
+    description: 'Attach an existing canvas card to an outline node so they stay connected.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        node_id: { type: 'string', description: 'ID of the outline node.' },
+        card_id: { type: 'string', description: 'ID of the canvas card to link.' }
+      },
+      required: ['node_id', 'card_id']
+    }
+  },
+  {
+    name: 'unlink_card_from_node',
+    description: 'Remove a canvas card link from an outline node.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        node_id: { type: 'string', description: 'ID of the outline node.' },
+        card_id: { type: 'string', description: 'ID of the canvas card to unlink.' }
+      },
+      required: ['node_id', 'card_id']
     }
   }
 ];
@@ -285,7 +430,7 @@ const EIGHT_SEQUENCES = [
 
 // saveCards: turns our cards array into a text string and stores it
 function saveCards() {
-  localStorage.setItem('sf_cards', JSON.stringify(cards));
+  localStorage.setItem(projectKey('cards'), JSON.stringify(cards));
 }
 
 // generateId: makes a random short ID like "a3f9b2" for each card
@@ -668,9 +813,9 @@ function renderBatchStrip() {
   if (!stripEl) return;
 
   var batches = [];
-  try { batches = JSON.parse(localStorage.getItem('sf_batches') || '[]'); } catch(e) {}
+  try { batches = JSON.parse(localStorage.getItem(projectKey('batches')) || '[]'); } catch(e) {}
   var dismissed = [];
-  try { dismissed = JSON.parse(localStorage.getItem('sf_dismissed_batches') || '[]'); } catch(e) {}
+  try { dismissed = JSON.parse(localStorage.getItem(projectKey('dismissed_batches')) || '[]'); } catch(e) {}
 
   // Find the most recent non-dismissed batch within 24 hours
   var now = Date.now();
@@ -725,7 +870,7 @@ function renderBatchStrip() {
   stripEl.querySelector('.batch-dismiss-btn').addEventListener('click', function() {
     var id = this.getAttribute('data-id');
     dismissed.push(id);
-    localStorage.setItem('sf_dismissed_batches', JSON.stringify(dismissed));
+    localStorage.setItem(projectKey('dismissed_batches'), JSON.stringify(dismissed));
     stripEl.classList.add('hidden');
   });
 }
@@ -735,13 +880,13 @@ function undoLastBatch(batchId) {
   cards = cards.filter(function(c) { return c.batchId !== batchId; });
   saveCards();
   var batches = [];
-  try { batches = JSON.parse(localStorage.getItem('sf_batches') || '[]'); } catch(e) {}
+  try { batches = JSON.parse(localStorage.getItem(projectKey('batches')) || '[]'); } catch(e) {}
   batches = batches.filter(function(b) { return b.id !== batchId; });
-  localStorage.setItem('sf_batches', JSON.stringify(batches));
+  localStorage.setItem(projectKey('batches'), JSON.stringify(batches));
   var dismissed = [];
-  try { dismissed = JSON.parse(localStorage.getItem('sf_dismissed_batches') || '[]'); } catch(e) {}
+  try { dismissed = JSON.parse(localStorage.getItem(projectKey('dismissed_batches')) || '[]'); } catch(e) {}
   dismissed = dismissed.filter(function(id) { return id !== batchId; });
-  localStorage.setItem('sf_dismissed_batches', JSON.stringify(dismissed));
+  localStorage.setItem(projectKey('dismissed_batches'), JSON.stringify(dismissed));
   renderCards();
   renderHomePage();
 }
@@ -845,6 +990,8 @@ tabButtons.forEach(function(button) {
     if (targetTab === 'arcs') renderArcsTimeline();
     // Refresh home page stats when switching to home
     if (targetTab === 'home') renderHomePage();
+    // Render Outline tab
+    if (targetTab === 'outline') renderOutlineTab();
   });
 });
 
@@ -1722,9 +1869,9 @@ function showImportPreview(proposedCards) {
 
     // Save batch metadata
     var batches = [];
-    try { batches = JSON.parse(localStorage.getItem('sf_batches') || '[]'); } catch(e) {}
+    try { batches = JSON.parse(localStorage.getItem(projectKey('batches')) || '[]'); } catch(e) {}
     batches.push({ id: batchId, createdAt: createdAt, cardCount: addedCount });
-    localStorage.setItem('sf_batches', JSON.stringify(batches));
+    localStorage.setItem(projectKey('batches'), JSON.stringify(batches));
 
     closePreview();
     document.querySelector('[data-tab="canvas"]').click();
@@ -1780,7 +1927,7 @@ async function syncStoryNotes() {
 
   try {
     const SUPPORTED = ['txt', 'md', 'pdf', 'docx', 'jpg', 'jpeg', 'png', 'heic'];
-    const synced = JSON.parse(localStorage.getItem('sf_synced_files') || '[]');
+    const synced = JSON.parse(localStorage.getItem(projectKey('synced_files')) || '[]');
 
     // Scan all files in the selected folder (top-level only)
     const filesToProcess = [];
@@ -1845,7 +1992,7 @@ async function syncStoryNotes() {
         totalAdded += added;
         // Mark as processed so we skip it next time
         synced.push(fileKey);
-        localStorage.setItem('sf_synced_files', JSON.stringify(synced));
+        localStorage.setItem(projectKey('synced_files'), JSON.stringify(synced));
       } catch (fileErr) {
         // Skip this file and continue — don't abort the whole sync
         showToast('⚠️ Skipped ' + name + ': ' + fileErr.message);
@@ -2005,7 +2152,7 @@ function applyZoom(newZoom) {
   mapZoom = Math.max(0.1, Math.min(5.0, newZoom));
   mapZoom = Math.round(mapZoom * 100) / 100; // avoid floating-point drift
 
-  localStorage.setItem('sf_zoom', String(mapZoom));
+  localStorage.setItem(projectKey('zoom'), String(mapZoom));
 
   var mapInner  = document.getElementById('mapInner');
   var mapScaler = document.getElementById('mapScaler');
@@ -2477,11 +2624,11 @@ function deleteConnection(connId) {
 }
 
 function saveCardPositions() {
-  localStorage.setItem('sf_positions', JSON.stringify(cardPositions));
+  localStorage.setItem(projectKey('positions'), JSON.stringify(cardPositions));
 }
 
 function saveConnections() {
-  localStorage.setItem('sf_connections', JSON.stringify(connections));
+  localStorage.setItem(projectKey('connections'), JSON.stringify(connections));
 }
 
 // handleCardContextMenuAction: called when user picks an option from the ⋮ dropdown on a map card
@@ -2537,7 +2684,7 @@ async function handleCardContextMenuAction(action, cardId) {
     prompt = 'Summarize this story note in 2-3 clear sentences:\n\n' + cardText;
 
   } else if (action === 'continue') {
-    prompt = 'Based on this story note from "Life of Bon", suggest 2-3 specific ways the story could continue from here:\n\n' + cardText;
+    prompt = 'Based on this story note from "' + currentProjectName + '", suggest 2-3 specific ways the story could continue from here:\n\n' + cardText;
 
   } else if (action === 'related') {
     // Use compact card list (titles + types only) instead of full content — saves ~2k tokens per tap
@@ -2549,7 +2696,7 @@ async function handleCardContextMenuAction(action, cardId) {
       showToast('This card has no connections. Use ⊕ to connect cards first.');
       return;
     }
-    prompt = 'These connected story notes are from "Life of Bon". Reconcile and merge them into a coherent combined description (2-4 sentences):\n\nMain card:\n' + cardText + '\n\nConnected cards:\n' + connText;
+    prompt = 'These connected story notes are from "' + currentProjectName + '". Reconcile and merge them into a coherent combined description (2-4 sentences):\n\nMain card:\n' + cardText + '\n\nConnected cards:\n' + connText;
   }
 
   // Send to Claude and add result to chat without auto-opening it
@@ -2585,7 +2732,7 @@ document.getElementById('refreshSummary').addEventListener('click', generateSumm
 document.getElementById('toggleSummary').addEventListener('click', function() {
   var bar = document.getElementById('summaryBar');
   var collapsed = bar.classList.toggle('collapsed');
-  localStorage.setItem('sf_summary_expanded', collapsed ? 'false' : 'true');
+  localStorage.setItem(projectKey('summary_expanded'), collapsed ? 'false' : 'true');
 });
 
 async function generateSummary() {
@@ -2629,7 +2776,7 @@ async function generateSummary() {
         max_tokens: 300,
         messages: [{
           role:    'user',
-          content: 'Write a 3–5 sentence story overview for an isekai light novel called "Life of Bon" based on these notes. Be specific about characters, current arcs, and world details. Max 120 words.\n\n' + storyData
+          content: 'Write a 3–5 sentence story overview for an isekai light novel called "' + currentProjectName + '" based on these notes. Be specific about characters, current arcs, and world details. Max 120 words.\n\n' + storyData
         }]
       })
     });
@@ -2639,11 +2786,11 @@ async function generateSummary() {
 
     var text = (data.content?.[0]?.text || '').trim();
     document.getElementById('summaryText').textContent = text;
-    localStorage.setItem('sf_summary', text);
+    localStorage.setItem(projectKey('summary'), text);
 
     // Make sure bar is expanded so user sees the new summary
     document.getElementById('summaryBar').classList.remove('collapsed');
-    localStorage.setItem('sf_summary_expanded', 'true');
+    localStorage.setItem(projectKey('summary_expanded'), 'true');
 
   } catch (err) {
     document.getElementById('summaryText').textContent = 'Could not generate summary — ' + err.message;
@@ -2652,10 +2799,10 @@ async function generateSummary() {
 
 // Load saved summary and collapsed state on startup
 (function() {
-  var saved = localStorage.getItem('sf_summary');
+  var saved = localStorage.getItem(projectKey('summary'));
   if (saved) document.getElementById('summaryText').textContent = saved;
 
-  var expanded = localStorage.getItem('sf_summary_expanded');
+  var expanded = localStorage.getItem(projectKey('summary_expanded'));
   // Default expanded (true). Collapse only if explicitly saved as 'false'.
   if (expanded === 'false') {
     document.getElementById('summaryBar').classList.add('collapsed');
@@ -2705,6 +2852,7 @@ document.getElementById('chatInput').addEventListener('input', function() {
 function openChat() {
   chatIsOpen = true;
   document.getElementById('chatPanel').classList.add('open');
+  document.body.classList.add('chat-open');
   document.getElementById('chatInput').focus();
   // Clear notification dot when chat is opened
   var dot = document.getElementById('chatNotifDot');
@@ -2712,7 +2860,7 @@ function openChat() {
   // Show memory badge if we have a stored memory summary
   var memBadge = document.getElementById('chatMemoryBadge');
   if (memBadge) {
-    memBadge.style.display = localStorage.getItem('sf_chat_memory') ? '' : 'none';
+    memBadge.style.display = localStorage.getItem(projectKey('chat_memory')) ? '' : 'none';
   }
   openJarvisOrb();
 }
@@ -2720,6 +2868,7 @@ function openChat() {
 function closeChat() {
   chatIsOpen = false;
   document.getElementById('chatPanel').classList.remove('open');
+  document.body.classList.remove('chat-open');
   closeJarvisOrb();
 }
 
@@ -2764,10 +2913,10 @@ document.getElementById('canonReviewBtn').addEventListener('click', function() {
 
 // ── SUGGESTION MEMORY ─────────────────────────────────────────
 
-var suggestions = JSON.parse(localStorage.getItem('sf_suggestions') || '[]');
+var suggestions = JSON.parse(localStorage.getItem(projectKey('suggestions')) || '[]');
 
 function saveSuggestions() {
-  localStorage.setItem('sf_suggestions', JSON.stringify(suggestions));
+  localStorage.setItem(projectKey('suggestions'), JSON.stringify(suggestions));
   updateSuggestionsCountBadge();
 }
 
@@ -2913,7 +3062,7 @@ function buildStoryContext() {
     byType[c.type].push('• ' + c.title + status + date + (isRecent && c.content ? ': ' + c.content : ''));
   });
 
-  var ctx = 'Story notes for "Life of Bon" (' + countSummary + '):\n\n';
+  var ctx = 'Story notes for "' + currentProjectName + '" (' + countSummary + '):\n\n';
   var labels = { character: 'Characters', world: 'World Building', arc: 'Plot & Arcs', quote: 'Key Quotes', idea: 'Ideas' };
   Object.keys(byType).forEach(function(type) {
     ctx += (labels[type] || type) + ':\n' + byType[type].join('\n') + '\n\n';
@@ -2928,7 +3077,7 @@ async function executeJarvisTool(name, input) {
     switch (name) {
 
       case 'navigate_tab': {
-        var validTabs = ['home', 'canvas', 'writing', 'characters', 'arcs'];
+        var validTabs = ['home', 'canvas', 'writing', 'characters', 'arcs', 'outline'];
         if (!validTabs.includes(input.tab_name)) {
           return 'Error: "' + input.tab_name + '" is not a valid tab. Valid values: ' + validTabs.join(', ');
         }
@@ -3015,6 +3164,108 @@ async function executeJarvisTool(name, input) {
         var out = 'FULL STORY CARDS:\n\n' + fullCards;
         if (profileLines.length > 0) out += '\n\nCHARACTER PROFILES:\n' + profileLines.join('\n');
         return out.slice(0, 15000);
+      }
+
+      case 'write_draft': {
+        var draftEditor = document.getElementById('writingDraftEditor');
+        if (!draftEditor) return JSON.stringify({ success: false, error: 'Draft editor not found.' });
+        var draftMode = input.mode || 'append';
+        var draftParagraphs = (input.content || '').split(/\n{2,}/).filter(function(p) { return p.trim(); });
+        if (draftMode === 'replace') draftEditor.innerHTML = '';
+        draftParagraphs.forEach(function(text) {
+          var p = document.createElement('p');
+          text.split('\n').forEach(function(line, i) {
+            if (i > 0) p.appendChild(document.createElement('br'));
+            p.appendChild(document.createTextNode(line));
+          });
+          draftEditor.appendChild(p);
+        });
+        localStorage.setItem(projectKey('writing_draft'), draftEditor.innerHTML);
+        var draftVerb = draftMode === 'replace' ? 'replaced' : 'appended to';
+        var draftCount = draftParagraphs.length;
+        return JSON.stringify({
+          success: true,
+          message: 'Draft ' + draftVerb + ' (' + draftCount + ' paragraph' + (draftCount !== 1 ? 's' : '') + ' written). Content is in Draft — user must promote to Working Copy.'
+        });
+      }
+
+      case 'create_outline_node': {
+        var validNodeTypes = ['act', 'arc', 'chapter', 'scene'];
+        if (!validNodeTypes.includes(input.type)) {
+          return JSON.stringify({ success: false, error: 'Invalid type. Must be: ' + validNodeTypes.join(', ') });
+        }
+        if (!input.title || !input.title.trim()) {
+          return JSON.stringify({ success: false, error: 'title is required.' });
+        }
+        var outlineNodes = loadOutline();
+        var siblings = outlineNodes.filter(function(n) { return n.parent_id === (input.parent_id || null); });
+        var newNode = {
+          id: generateId(),
+          type: input.type,
+          title: input.title.trim(),
+          beats: [],
+          linked_card_ids: [],
+          status: 'not_started',
+          parent_id: input.parent_id || null,
+          order: siblings.length
+        };
+        outlineNodes.push(newNode);
+        saveOutline(outlineNodes);
+        if (document.getElementById('panel-outline') && !document.getElementById('panel-outline').classList.contains('hidden')) {
+          renderOutlineTab();
+        }
+        return JSON.stringify({ success: true, node: newNode });
+      }
+
+      case 'edit_outline_node': {
+        var outlineNodes = loadOutline();
+        var nodeToEdit = outlineNodes.find(function(n) { return n.id === input.id; });
+        if (!nodeToEdit) return JSON.stringify({ success: false, error: 'Node not found with id: ' + input.id });
+        if (input.title !== undefined) nodeToEdit.title = input.title.trim();
+        if (input.beats !== undefined) nodeToEdit.beats = input.beats;
+        if (input.status !== undefined) nodeToEdit.status = input.status;
+        saveOutline(outlineNodes);
+        if (document.getElementById('panel-outline') && !document.getElementById('panel-outline').classList.contains('hidden')) {
+          renderOutlineTab();
+        }
+        return JSON.stringify({ success: true, node: nodeToEdit });
+      }
+
+      case 'read_outline': {
+        var outlineNodes = loadOutline();
+        return JSON.stringify(outlineNodes);
+      }
+
+      case 'link_card_to_node': {
+        var outlineNodes = loadOutline();
+        var nodeToLink = outlineNodes.find(function(n) { return n.id === input.node_id; });
+        if (!nodeToLink) return JSON.stringify({ success: false, error: 'Node not found: ' + input.node_id });
+        var cardToLink = cards.find(function(c) { return c.id === input.card_id; });
+        if (!cardToLink) return JSON.stringify({ success: false, error: 'Card not found: ' + input.card_id });
+        if (!nodeToLink.linked_card_ids.includes(input.card_id)) {
+          nodeToLink.linked_card_ids.push(input.card_id);
+          saveOutline(outlineNodes);
+          if (document.getElementById('panel-outline') && !document.getElementById('panel-outline').classList.contains('hidden')) {
+            renderOutlineDetail(nodeToLink.id);
+          }
+        }
+        return JSON.stringify({ success: true, message: 'Card "' + cardToLink.title + '" linked to "' + nodeToLink.title + '".' });
+      }
+
+      case 'unlink_card_from_node': {
+        var outlineNodes = loadOutline();
+        var nodeToUnlink = outlineNodes.find(function(n) { return n.id === input.node_id; });
+        if (!nodeToUnlink) return JSON.stringify({ success: false, error: 'Node not found: ' + input.node_id });
+        var beforeLen = nodeToUnlink.linked_card_ids.length;
+        nodeToUnlink.linked_card_ids = nodeToUnlink.linked_card_ids.filter(function(cid) { return cid !== input.card_id; });
+        if (nodeToUnlink.linked_card_ids.length === beforeLen) {
+          return JSON.stringify({ success: false, error: 'Card ' + input.card_id + ' was not linked to this node.' });
+        }
+        saveOutline(outlineNodes);
+        if (document.getElementById('panel-outline') && !document.getElementById('panel-outline').classList.contains('hidden')) {
+          renderOutlineDetail(nodeToUnlink.id);
+        }
+        return JSON.stringify({ success: true, message: 'Card unlinked from "' + nodeToUnlink.title + '".' });
       }
 
       default:
@@ -3130,7 +3381,7 @@ function buildTieredContext(message) {
   cards.forEach(function(c) { counts[c.type] = (counts[c.type] || 0) + 1; });
   var countSummary = Object.keys(counts).map(function(t) { return counts[t] + ' ' + t; }).join(', ');
 
-  var ctx = 'Story notes for "Life of Bon" (' + countSummary + '):\n';
+  var ctx = 'Story notes for "' + currentProjectName + '" (' + countSummary + '):\n';
 
   function cardLine(c, truncate) {
     var raw = c.content || '';
@@ -3158,6 +3409,13 @@ async function sendChatMessage() {
     appendChatMsg('assistant', 'Please set your API key first — click "+ Add Notes" and expand the API Key section.');
     return;
   }
+
+  // Stop any in-progress speech before starting a new exchange
+  ttsQueue = []; ttsBusy = false; ttsSentBuf = '';
+  if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+  ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+  if (currentPuterAudio) { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); currentPuterAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
 
   appendChatMsg('user', msg);
   input.value = '';
@@ -3199,10 +3457,10 @@ async function sendChatMessage() {
         if (memRes.ok) {
           var memSummary = (memData.content?.[0]?.text || '').trim();
           // Append to any existing memory, then cap at 3000 chars (keep most recent)
-          var existing = localStorage.getItem('sf_chat_memory') || '';
+          var existing = localStorage.getItem(projectKey('chat_memory')) || '';
           var combined = (existing ? existing + '\n' : '') + memSummary;
           if (combined.length > 3000) combined = combined.slice(-3000);
-          localStorage.setItem('sf_chat_memory', combined);
+          localStorage.setItem(projectKey('chat_memory'), combined);
           var memBadge = document.getElementById('chatMemoryBadge');
           if (memBadge) memBadge.style.display = '';
         }
@@ -3210,8 +3468,8 @@ async function sendChatMessage() {
     }
 
     // Build system prompt, injecting stored memory and saved suggestions if available
-    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "Life of Bon" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.\n\nYou also have Jarvis tool capabilities — you can take direct actions in the StoryForge app: navigate tabs, create cards, edit cards, and search story notes. Use tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "update that card"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
-    var storedMemory = localStorage.getItem('sf_chat_memory');
+    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "' + currentProjectName + '" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, and link/unlink cards to outline nodes. You CANNOT: write to the Working Copy (user controls that), delete cards, or do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true }. If a tool fails, tell the user exactly what failed. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
+    var storedMemory = localStorage.getItem(projectKey('chat_memory'));
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
     if (storedMemory) systemPrompt += '\n\nStory planning memory from earlier in this session:\n' + storedMemory;
@@ -3228,7 +3486,7 @@ async function sendChatMessage() {
     // Remove typing indicator and start Jarvis status
     var typingEl = document.getElementById(typingId);
     if (typingEl) typingEl.remove();
-    showJarvisStatus('Jarvis is thinking...');
+    showJarvisStatus('Sage is thinking...');
     if (orbIsOpen) setOrbState('thinking');
 
     // Agentic loop: streaming fetch until end_turn or tool limit reached
@@ -3299,6 +3557,7 @@ async function sendChatMessage() {
             if (ev.delta.type === 'text_delta') {
               curBlock._text += ev.delta.text;
               streamedText   += ev.delta.text;
+              flushTTSSentences(ev.delta.text, false);
               // Lazy-create streaming bubble; insert before the status indicator
               if (!streamingDiv) {
                 streamingDiv = document.createElement('div');
@@ -3333,15 +3592,17 @@ async function sendChatMessage() {
         }
       }
 
-      console.log('[Jarvis] iteration', iteration, 'stop_reason:', stopReason);
+      console.log('[Sage] iteration', iteration, 'stop_reason:', stopReason);
 
       if (stopReason === 'end_turn') {
+        flushTTSSentences('', true);
         finalReply = streamedText.trim() || 'Done.';
         // streamingDiv stays in DOM — text already rendered
         break;
       }
 
       if (stopReason === 'tool_use') {
+        flushTTSSentences('', true);
         // Remove any partial streamed text (tool-call thinking; not shown to user)
         if (streamingDiv) { streamingDiv.remove(); streamingDiv = null; }
 
@@ -3363,19 +3624,19 @@ async function sendChatMessage() {
         }
 
         messages.push({ role: 'user', content: toolResultContents });
-        updateJarvisStatus('Jarvis is thinking...');
+        updateJarvisStatus('Sage is thinking...');
         continue;
       }
 
       // Unexpected stop reason — bail out
-      console.warn('[Jarvis] Unexpected stop_reason:', stopReason);
+      console.warn('[Sage] Unexpected stop_reason:', stopReason);
       break;
     }
 
     removeJarvisStatus();
 
     if (!finalReply && iteration >= MAX_TOOL_ITERATIONS) {
-      finalReply = 'Jarvis hit the action limit. Actions completed: ' + toolsRun.join(', ');
+      finalReply = 'Sage hit the action limit. Actions completed: ' + toolsRun.join(', ');
     }
 
     var reply = finalReply || '';
@@ -3383,7 +3644,6 @@ async function sendChatMessage() {
       // Text already in DOM if streamed (end_turn); only append if not (action limit case)
       if (!streamingDiv) appendChatMsg('assistant', reply);
       chatHistory.push({ role: 'assistant', content: reply });
-      if (voiceEnabled || orbIsOpen) speakJarvisReply(reply);
     }
 
     // If this was a Canon Review, append a "Save Suggestions" button to the message
@@ -3441,7 +3701,7 @@ function showJarvisStatus(msg) {
   dot.className = 'jarvis-status-dot';
   var txt = document.createElement('span');
   txt.id = 'jarvisStatusText';
-  txt.textContent = msg || 'Jarvis is working...';
+  txt.textContent = msg || 'Sage is working...';
   el.appendChild(dot);
   el.appendChild(txt);
   msgs.appendChild(el);
@@ -3466,12 +3726,172 @@ function removeJarvisStatus() {
 
 
 // ============================================================
-// SECTION 13B: JARVIS VOICE — Phase 6 (chat TTS + mic) & Phase 7 (orb)
+// SECTION 13B: SAGE VOICE — Phase 6 (chat TTS + mic) & Phase 7 (orb)
 // ============================================================
 
 var voiceEnabled     = true;
 var currentPuterAudio = null; // tracks active Puter.js audio for cancellation
-var jarvisVoice      = null;  // selected Web Speech API fallback voice
+var sageVoice        = null;  // selected Web Speech API fallback voice
+
+// ── Sentence-level TTS streaming queue ───────────────────────
+var ttsQueue   = [];    // sentences waiting to be spoken
+var ttsBusy    = false; // true while ElevenLabs/Web Speech is active
+var ttsSentBuf = '';    // accumulates partial sentence across streaming chunks
+var ttsNextText  = null; // text currently being pre-fetched
+var ttsNextAudio = null; // resolved audio element for ttsNextText (null while in-flight)
+var ttsNextFetch = null; // Promise<audio|null> for the in-flight pre-fetch
+var ttsMode      = 'elevenlabs'; // 'elevenlabs' | 'browser' — toggled by ttsModeBtn
+
+// TODO: move API key to env var or backend proxy before deploying anywhere public
+var ELEVENLABS_API_KEY  = 'sk_f5c421755f47b299a9db88eb2c90b51245d02d9bd4eb2590';
+var ELEVENLABS_VOICE_ID = 'oL6xVEFZFZWN3ZxjScyK';
+
+async function fetchElevenLabsAudio(text) {
+  var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVENLABS_VOICE_ID + '/stream', {
+    method: 'POST',
+    headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: text,
+      model_id: 'eleven_flash_v2_5',
+      voice_settings: { stability: 0.4, similarity_boost: 0.75, style: 0.5, use_speaker_boost: true, speed: 1.1 }
+    })
+  });
+  if (!res.ok) throw new Error('ElevenLabs ' + res.status);
+  var blob = await res.blob();
+  var url = URL.createObjectURL(blob);
+  var audio = new Audio(url);
+  audio._objectUrl = url;
+  return audio;
+}
+
+// flushTTSSentences: called on each streaming text delta and at end-of-response.
+// Strips markdown, detects complete sentence boundaries, and enqueues each sentence.
+function flushTTSSentences(chunk, force) {
+  if (!voiceEnabled && !orbIsOpen) return;
+
+  // Strip markdown before buffering so code blocks don't confuse sentence detection
+  var clean = chunk
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]+`/g, '')
+    .replace(/[*_#\[\]]/g, '');
+  ttsSentBuf += clean;
+
+  // Find sentence boundaries: punctuation followed by whitespace + capital letter.
+  // Taking the full slice from the last cut to the end of the matched punct avoids
+  // splitting on abbreviations like "Dr." or decimals like "$4.99" (they won't be
+  // followed by space + capital in the middle of a sentence).
+  var re = /[.!?]+(?=\s+[A-Z"'])/g;
+  var match;
+  var lastCut = 0;
+  while ((match = re.exec(ttsSentBuf)) !== null) {
+    var end = match.index + match[0].length;
+    var candidate = ttsSentBuf.slice(lastCut, end).trim();
+    if (candidate.length >= 30) {
+      enqueueTTS(candidate);
+      lastCut = end;
+    }
+    // If candidate < 30 chars (e.g. "Dr."), don't cut — keep accumulating
+  }
+  if (lastCut > 0) ttsSentBuf = ttsSentBuf.slice(lastCut);
+
+  if (force) {
+    if (ttsSentBuf.trim().length >= 10) enqueueTTS(ttsSentBuf.trim());
+    ttsSentBuf = '';
+  }
+}
+
+// startNextPrefetch: peek at ttsQueue[0] and start an ElevenLabs fetch in background.
+// Called right after pressing play on the current sentence so the next is ready to fire instantly.
+function startNextPrefetch() {
+  if (ttsMode !== 'elevenlabs') return;
+  if (ttsQueue.length === 0) return;
+  var next = ttsQueue[0];
+  if (next === ttsNextText) return; // already fetching or ready
+  ttsNextText = next;
+  ttsNextAudio = null;
+  ttsNextFetch = fetchElevenLabsAudio(next)
+    .then(function(a) { if (ttsNextText === next) ttsNextAudio = a; return a; })
+    .catch(function() { return null; });
+}
+
+// enqueueTTS: clean and add text to the playback queue; start processing if idle.
+function enqueueTTS(text) {
+  var clean = text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]+`/g, '')
+    .replace(/[*_#\[\]]/g, '')
+    .replace(/[^\w\s.,!?'"();:\-–]/g, ' ')
+    .trim()
+    .slice(0, 900);
+  if (!clean) return;
+  ttsQueue.push(clean);
+  if (!ttsBusy) {
+    processTTSQueue();
+  } else if (ttsQueue.length === 1 && !ttsNextFetch) {
+    // First item added while another sentence plays and no pre-fetch running — start one now
+    startNextPrefetch();
+  }
+}
+
+// processTTSQueue: play next item using pre-fetched audio when available, chain via callbacks.
+async function processTTSQueue() {
+  if (ttsQueue.length === 0) {
+    ttsBusy = false;
+    if (orbIsOpen) setOrbState('idle');
+    return;
+  }
+  if (!voiceEnabled && !orbIsOpen) { ttsQueue = []; ttsBusy = false; return; }
+  ttsBusy = true;
+  var text = ttsQueue.shift();
+
+  if (ttsMode === 'elevenlabs') {
+    try {
+      if (orbIsOpen) setOrbState('speaking');
+      var audioPromise;
+      if (ttsNextText === text && ttsNextFetch) {
+        // Reuse in-flight or already-resolved pre-fetch — may be instant if audio is ready
+        audioPromise = ttsNextFetch;
+        ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+      } else {
+        // Pre-fetch miss (first sentence, or queue jumped) — fetch now
+        ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+        audioPromise = fetchElevenLabsAudio(text).catch(function() { return null; });
+      }
+      var audio = await audioPromise;
+      if (!audio) throw new Error('no audio');
+      currentPuterAudio = audio;
+      startNextPrefetch(); // begin fetching the sentence after this one while it plays
+      audio.onended = function() {
+        if (audio._objectUrl) URL.revokeObjectURL(audio._objectUrl);
+        currentPuterAudio = null;
+        startNextPrefetch(); // belt-and-suspenders: cover sentences enqueued after initial pre-fetch
+        ttsBusy = false;
+        processTTSQueue();
+      };
+      audio.play();
+      return;
+    } catch (e) {
+      console.warn('[Sage TTS] ElevenLabs failed, falling back to Web Speech:', e);
+      if (currentPuterAudio && currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl);
+      currentPuterAudio = null;
+      if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+      ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+    }
+  }
+
+  // Fallback: Web Speech API (no pre-fetch needed — no network latency)
+  if (!window.speechSynthesis) { ttsBusy = false; if (orbIsOpen) setOrbState('idle'); return; }
+  var utt = new SpeechSynthesisUtterance(text);
+  if (sageVoice) utt.voice = sageVoice;
+  var isNatural = sageVoice && sageVoice.name.includes('Natural');
+  utt.rate   = isNatural ? 1.0 : 1.05;
+  utt.pitch  = isNatural ? 1.0 : 1.15;
+  utt.volume = 1;
+  utt.onstart = function() { if (orbIsOpen) setOrbState('speaking'); };
+  utt.onend   = function() { ttsBusy = false; processTTSQueue(); };
+  utt.onerror = function() { ttsBusy = false; if (orbIsOpen) setOrbState('idle'); processTTSQueue(); };
+  window.speechSynthesis.speak(utt);
+}
 
 // ── Orb state ─────────────────────────────────────────────────
 var orbIsOpen     = false;
@@ -3523,7 +3943,10 @@ function closeJarvisOrb() {
   if (orbAnimFrame) { cancelAnimationFrame(orbAnimFrame); orbAnimFrame = null; }
   stopOrbListening();
   stopOrbMic();
-  if (currentPuterAudio) { currentPuterAudio.pause(); currentPuterAudio = null; }
+  ttsQueue = []; ttsBusy = false; ttsSentBuf = '';
+  if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+  ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+  if (currentPuterAudio) { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); currentPuterAudio = null; }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
@@ -3701,7 +4124,7 @@ function startOrbMic(onReady) {
       if (onReady) onReady();
     })
     .catch(function(err) {
-      console.warn('[Jarvis] Mic access denied:', err);
+      console.warn('[Sage] Mic access denied:', err);
       updateOrbTranscript('Microphone access denied. Check browser permissions.');
     });
 }
@@ -3742,7 +4165,7 @@ function startOrbListening() {
     };
 
     orbRecognition.onerror = function(e) {
-      console.warn('[Jarvis] Recognition error:', e.error);
+      console.warn('[Sage] Recognition error:', e.error);
       setOrbState('idle');
     };
 
@@ -3766,54 +4189,24 @@ function updateOrbTranscript(text) {
 }
 
 // ── Text-to-speech output ────────────────────────────────────
-// Tries Puter.js + ElevenLabs (Daniel voice); falls back to Web Speech API.
-async function speakJarvisReply(text) {
-  // Cancel any ongoing speech before starting new
-  if (currentPuterAudio) { currentPuterAudio.pause(); currentPuterAudio = null; }
+// Direct-call shortcut: cancels current audio, then routes through the TTS queue.
+function speakSageReply(text) {
+  ttsQueue = []; ttsBusy = false;
+  if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+  ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+  if (currentPuterAudio) { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); currentPuterAudio = null; }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
-
-  var clean = text
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/[*_`#\[\]]/g, '')
-    .replace(/[^\w\s.,!?'"();:\-–]/g, ' ')
-    .trim()
-    .slice(0, 900);
-  if (!clean) return;
-
-  // Try Puter.js + ElevenLabs Daniel voice (British, authoritative)
-  if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2speech) {
-    try {
-      if (orbIsOpen) setOrbState('speaking');
-      var audio = await puter.ai.txt2speech(clean, { provider: 'elevenlabs', voice: 'Daniel' });
-      currentPuterAudio = audio;
-      audio.onended = function() { currentPuterAudio = null; if (orbIsOpen) setOrbState('idle'); };
-      audio.play();
-      return;
-    } catch (e) {
-      console.warn('[Jarvis TTS] Puter.js/ElevenLabs failed, falling back to Web Speech:', e);
-      currentPuterAudio = null;
-    }
-  }
-
-  // Fallback: Web Speech API
-  if (!window.speechSynthesis) { if (orbIsOpen) setOrbState('idle'); return; }
-  var utt = new SpeechSynthesisUtterance(clean);
-  if (jarvisVoice) utt.voice = jarvisVoice;
-  var isNatural = jarvisVoice && jarvisVoice.name.includes('Natural');
-  utt.rate   = isNatural ? 1.0 : 1.05;
-  utt.pitch  = isNatural ? 1.0 : 1.15;
-  utt.volume = 1;
-  utt.onstart = function() { if (orbIsOpen) setOrbState('speaking'); };
-  utt.onend   = function() { if (orbIsOpen) setOrbState('idle'); };
-  utt.onerror = function() { if (orbIsOpen) setOrbState('idle'); };
-  window.speechSynthesis.speak(utt);
+  enqueueTTS(text);
 }
 
 // ── Voice toggle ──────────────────────────────────────────────
 function toggleVoice() {
   voiceEnabled = !voiceEnabled;
   if (!voiceEnabled) {
-    if (currentPuterAudio) { currentPuterAudio.pause(); currentPuterAudio = null; }
+    ttsQueue = []; ttsBusy = false;
+    if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+    ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+    if (currentPuterAudio) { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); currentPuterAudio = null; }
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (orbIsOpen) setOrbState('idle');
   }
@@ -3877,6 +4270,22 @@ function initVoiceAndOrb() {
   var voiceToggle = document.getElementById('chatVoiceToggle');
   if (voiceToggle) voiceToggle.addEventListener('click', toggleVoice);
 
+  // TTS source toggle: 'EL' (ElevenLabs via Puter.js) or '🗣' (Browser Web Speech only)
+  var ttsModeBtn = document.getElementById('ttsModeBtn');
+  if (ttsModeBtn) {
+    ttsModeBtn.addEventListener('click', function() {
+      ttsMode = ttsMode === 'elevenlabs' ? 'browser' : 'elevenlabs';
+      ttsModeBtn.textContent = ttsMode === 'elevenlabs' ? 'EL' : '🗣';
+      ttsModeBtn.title = ttsMode === 'elevenlabs' ? 'TTS source: ElevenLabs' : 'TTS source: Browser voice';
+      if (currentPuterAudio) { try { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); } catch(e){} currentPuterAudio = null; }
+      window.speechSynthesis.cancel();
+      ttsQueue.length = 0;
+      if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+      ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+      ttsBusy = false;
+    });
+  }
+
   // Chat panel mic button — hide entirely on browsers without SpeechRecognition
   var chatMic = document.getElementById('chatMic');
   if (chatMic) {
@@ -3893,32 +4302,32 @@ function initVoiceAndOrb() {
   });
 
   // Load best available TTS voice asynchronously
-  loadJarvisVoice();
+  loadSageVoice();
   if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = loadJarvisVoice;
+    window.speechSynthesis.onvoiceschanged = loadSageVoice;
   }
 }
 
-function loadJarvisVoice() {
+function loadSageVoice() {
   if (!window.speechSynthesis) return;
   var voices = window.speechSynthesis.getVoices();
   if (!voices.length) return; // not ready yet; onvoiceschanged will re-fire
   var preferred = [
     'Microsoft Aria Online (Natural) - English (United States)',
     'Microsoft Jenny Online (Natural) - English (United States)',
-    'Microsoft Zira - English (United States)',
-    'Google US English Female'
+    'Google US English Female',
+    'Microsoft Zira - English (United States)'
   ];
   for (var i = 0; i < preferred.length; i++) {
     var v = voices.find(function(x) { return x.name === preferred[i]; });
-    if (v) { jarvisVoice = v; break; }
+    if (v) { sageVoice = v; break; }
   }
-  if (!jarvisVoice) {
-    jarvisVoice = voices.find(function(v) {
+  if (!sageVoice) {
+    sageVoice = voices.find(function(v) {
       return v.lang.startsWith('en') && v.name.toLowerCase().includes('female');
     }) || voices.find(function(v) { return v.lang.startsWith('en'); }) || null;
   }
-  console.log('[Jarvis voice]', jarvisVoice ? jarvisVoice.name : 'browser default');
+  console.log('[Sage voice]', sageVoice ? sageVoice.name : 'browser default');
 }
 
 // ============================================================
@@ -3927,7 +4336,7 @@ function loadJarvisVoice() {
 
 // saveUnsyncedIds: persists unsynced card IDs to localStorage
 function saveUnsyncedIds() {
-  localStorage.setItem('sf_unsynced_ids', JSON.stringify(Array.from(unsyncedIds)));
+  localStorage.setItem(projectKey('unsynced_ids'), JSON.stringify(Array.from(unsyncedIds)));
   updateSyncButtonState();
 }
 
@@ -4377,7 +4786,7 @@ function updateWritingWordCounts() {
   if (copyEl && copyWcEl)   copyWcEl.textContent  = countWords(copyEl.textContent)  + ' words';
   if (draftEl && draftWcEl) draftWcEl.textContent = countWords(draftEl.textContent) + ' words';
 
-  var goal = parseInt(localStorage.getItem('sf_word_goal') || '0', 10);
+  var goal = parseInt(localStorage.getItem(projectKey('word_goal')) || '0', 10);
   var goalDisplay = document.getElementById('wordGoalDisplay');
   var barWrap = document.getElementById('wordGoalBarWrap');
   var bar = document.getElementById('wordGoalBar');
@@ -4417,7 +4826,7 @@ function toggleWritingDraft() {
 }
 
 function applyWritingSplitRatio() {
-  var ratio = parseFloat(localStorage.getItem('sf_writing_split_ratio') || '0.62');
+  var ratio = parseFloat(localStorage.getItem(projectKey('writing_split_ratio')) || '0.62');
   var copyPane  = document.getElementById('writingCopyPane');
   var draftPane = document.getElementById('writingDraftPane');
   if (copyPane)  copyPane.style.flexBasis  = (ratio * 100) + '%';
@@ -4430,20 +4839,20 @@ function applyWritingSplitRatio() {
   var draftEditor = document.getElementById('writingDraftEditor'); // contenteditable div
 
   // Load saved content — both editors store HTML
-  copyEditor.innerHTML  = localStorage.getItem('sf_writing_copy')  || '';
-  draftEditor.innerHTML = localStorage.getItem('sf_writing_draft') || '';
+  copyEditor.innerHTML  = localStorage.getItem(projectKey('writing_copy'))  || '';
+  draftEditor.innerHTML = localStorage.getItem(projectKey('writing_draft')) || '';
 
   // E1: Word goal — restore persisted goal value
   var goalInput = document.getElementById('wordGoalInput');
   if (goalInput) {
-    var savedGoal = localStorage.getItem('sf_word_goal');
+    var savedGoal = localStorage.getItem(projectKey('word_goal'));
     if (savedGoal) goalInput.value = savedGoal;
     goalInput.addEventListener('change', function() {
       var v = parseInt(goalInput.value, 10);
       if (v > 0) {
-        localStorage.setItem('sf_word_goal', String(v));
+        localStorage.setItem(projectKey('word_goal'), String(v));
       } else {
-        localStorage.removeItem('sf_word_goal');
+        localStorage.removeItem(projectKey('word_goal'));
         goalInput.value = '';
       }
       updateWritingWordCounts();
@@ -4458,17 +4867,17 @@ function applyWritingSplitRatio() {
     var content = copyEditor.innerHTML;
     if (!content || !copyEditor.textContent.trim()) return;
     var history = [];
-    try { history = JSON.parse(localStorage.getItem('sf_draft_history') || '[]'); } catch(e) {}
+    try { history = JSON.parse(localStorage.getItem(projectKey('draft_history')) || '[]'); } catch(e) {}
     // Skip if identical to the last snapshot
     if (history.length > 0 && history[history.length - 1].content === content) return;
     history.push({ savedAt: new Date().toISOString(), content: content });
     if (history.length > 10) history = history.slice(history.length - 10);
-    localStorage.setItem('sf_draft_history', JSON.stringify(history));
+    localStorage.setItem(projectKey('draft_history'), JSON.stringify(history));
   }
 
   // Auto-save on input — store innerHTML (preserves formatting)
   copyEditor.addEventListener('input', function() {
-    localStorage.setItem('sf_writing_copy', copyEditor.innerHTML);
+    localStorage.setItem(projectKey('writing_copy'), copyEditor.innerHTML);
     updateWritingWordCounts();
     renderHomePage(); // keep word count on home page in sync
     // Schedule a history snapshot after 3 min of inactivity
@@ -4476,7 +4885,7 @@ function applyWritingSplitRatio() {
     historySnapshotTimer = setTimeout(pushDraftSnapshot, 3 * 60 * 1000);
   });
   draftEditor.addEventListener('input', function() {
-    localStorage.setItem('sf_writing_draft', draftEditor.innerHTML);
+    localStorage.setItem(projectKey('writing_draft'), draftEditor.innerHTML);
     updateWritingWordCounts();
   });
 
@@ -4516,7 +4925,7 @@ function applyWritingSplitRatio() {
     var listEl = document.getElementById('draftHistoryList');
     if (!panel || !listEl) return;
     var history = [];
-    try { history = JSON.parse(localStorage.getItem('sf_draft_history') || '[]'); } catch(e) {}
+    try { history = JSON.parse(localStorage.getItem(projectKey('draft_history')) || '[]'); } catch(e) {}
     if (history.length === 0) {
       listEl.innerHTML = '<div class="draft-history-empty">No snapshots yet. Snapshots are saved automatically after a pause in typing.</div>';
       return;
@@ -4540,7 +4949,7 @@ function applyWritingSplitRatio() {
         item.querySelector('.draft-history-restore-btn').addEventListener('click', function() {
           if (confirm('Restore this snapshot? Your current working copy will be replaced.')) {
             copyEditor.innerHTML = entry.content;
-            localStorage.setItem('sf_writing_copy', entry.content);
+            localStorage.setItem(projectKey('writing_copy'), entry.content);
             updateWritingWordCounts();
             renderHomePage();
             document.getElementById('draftHistoryPanel').classList.add('hidden');
@@ -4567,7 +4976,7 @@ function applyWritingSplitRatio() {
     if (!draftEditor.textContent.trim()) return;
     if (confirm('Replace Working Copy with Draft content?')) {
       copyEditor.innerHTML = draft;
-      localStorage.setItem('sf_writing_copy', copyEditor.innerHTML);
+      localStorage.setItem(projectKey('writing_copy'), copyEditor.innerHTML);
       updateWritingWordCounts();
     }
   });
@@ -4583,7 +4992,7 @@ function applyWritingSplitRatio() {
       var totalW     = writingPanes.offsetWidth;
       var copyPane   = document.getElementById('writingCopyPane');
       var draftPane  = document.getElementById('writingDraftPane');
-      var startRatio = parseFloat(localStorage.getItem('sf_writing_split_ratio') || '0.62');
+      var startRatio = parseFloat(localStorage.getItem(projectKey('writing_split_ratio')) || '0.62');
       var startCopyW = totalW * startRatio;
 
       function onMove(e) {
@@ -4591,7 +5000,7 @@ function applyWritingSplitRatio() {
         var ratio    = Math.min(0.85, Math.max(0.15, newCopyW / totalW));
         if (copyPane)  copyPane.style.flexBasis  = (ratio * 100) + '%';
         if (draftPane) draftPane.style.flexBasis = ((1 - ratio) * 100) + '%';
-        localStorage.setItem('sf_writing_split_ratio', String(ratio));
+        localStorage.setItem(projectKey('writing_split_ratio'), String(ratio));
       }
       function onUp() {
         resizeHandle.classList.remove('dragging');
@@ -4650,7 +5059,7 @@ async function handleWritingAiAction(action) {
   var prompt;
 
   if (action === 'generate') {
-    prompt = 'You are a creative fiction writer. Using the story notes below, write a compelling narrative opening for "Life of Bon" — approximately 600–1000 words. Stay faithful to the established characters, world, and tone. Write in a vivid, immersive style.\n\n' + storyCtx;
+    prompt = 'You are a creative fiction writer. Using the story notes below, write a compelling narrative opening for "' + currentProjectName + '" — approximately 600–1000 words. Stay faithful to the established characters, world, and tone. Write in a vivid, immersive style.\n\n' + storyCtx;
   } else if (action === 'continue') {
     if (!copyContent) { showToast('Add some text to your Working Copy first.'); aiBtn.textContent = 'AI ▾'; aiBtn.disabled = false; return; }
     prompt = 'Continue the story from where this passage ends. Write approximately 300 more words in the same style and voice. Keep it consistent with the story notes.\n\nStory notes:\n' + storyCtx + '\n\nPassage so far:\n' + copyContent.slice(-1500);
@@ -4683,7 +5092,7 @@ async function handleWritingAiAction(action) {
     if (writesToDraft.includes(action)) {
       // Set as plain text (preserving line breaks) into the rich editor div
       draftEditor.textContent = result;
-      localStorage.setItem('sf_writing_draft', draftEditor.innerHTML);
+      localStorage.setItem(projectKey('writing_draft'), draftEditor.innerHTML);
       updateWritingWordCounts();
       showToast('Draft updated!');
     } else {
@@ -4715,11 +5124,11 @@ var characterProfiles = {};
 var selectedCharacterId = null;
 
 try {
-  characterProfiles = JSON.parse(localStorage.getItem('sf_character_profiles') || '{}');
+  characterProfiles = JSON.parse(localStorage.getItem(projectKey('character_profiles')) || '{}');
 } catch(e) { characterProfiles = {}; }
 
 function saveCharacterProfiles() {
-  localStorage.setItem('sf_character_profiles', JSON.stringify(characterProfiles));
+  localStorage.setItem(projectKey('character_profiles'), JSON.stringify(characterProfiles));
 }
 
 // groupCharactersByName: groups character cards that share the same root name.
@@ -5167,20 +5576,20 @@ var selectedSituationId = null;
 
 // User-defined arc order for the timeline strip (array of arc card IDs)
 var arcOrder = [];
-try { arcOrder = JSON.parse(localStorage.getItem('sf_arc_order') || '[]'); } catch(e) { arcOrder = []; }
-function saveArcOrder() { localStorage.setItem('sf_arc_order', JSON.stringify(arcOrder)); }
+try { arcOrder = JSON.parse(localStorage.getItem(projectKey('arc_order')) || '[]'); } catch(e) { arcOrder = []; }
+function saveArcOrder() { localStorage.setItem(projectKey('arc_order'), JSON.stringify(arcOrder)); }
 
 // User-defined situation display order (array of situation IDs 1–36)
 var situationOrder = [];
-try { situationOrder = JSON.parse(localStorage.getItem('sf_situation_order') || '[]'); } catch(e) { situationOrder = []; }
-function saveSituationOrder() { localStorage.setItem('sf_situation_order', JSON.stringify(situationOrder)); }
+try { situationOrder = JSON.parse(localStorage.getItem(projectKey('situation_order')) || '[]'); } catch(e) { situationOrder = []; }
+function saveSituationOrder() { localStorage.setItem(projectKey('situation_order'), JSON.stringify(situationOrder)); }
 
 try {
-  arcSequenceMap = JSON.parse(localStorage.getItem('sf_arc_sequence_map') || '{}');
+  arcSequenceMap = JSON.parse(localStorage.getItem(projectKey('arc_sequence_map')) || '{}');
 } catch(e) { arcSequenceMap = {}; }
 
 function saveArcSequenceMap() {
-  localStorage.setItem('sf_arc_sequence_map', JSON.stringify(arcSequenceMap));
+  localStorage.setItem(projectKey('arc_sequence_map'), JSON.stringify(arcSequenceMap));
 }
 
 var brainstormControlsInitialized = false;
@@ -5202,7 +5611,7 @@ function initBrainstormControls() {
   // Timeline resize handle
   var timelineSection = document.getElementById('arcsTimelineSection');
   var timelineResizeHandle = document.getElementById('arcsTimelineResizeHandle');
-  var savedTimelineH = localStorage.getItem('sf_arcs_timeline_h');
+  var savedTimelineH = localStorage.getItem(projectKey('arcs_timeline_h'));
   if (savedTimelineH && timelineSection) {
     timelineSection.style.height = savedTimelineH + 'px';
   }
@@ -5219,7 +5628,7 @@ function initBrainstormControls() {
       }
       function onUp() {
         timelineResizeHandle.classList.remove('resizing');
-        localStorage.setItem('sf_arcs_timeline_h', timelineSection.offsetHeight);
+        localStorage.setItem(projectKey('arcs_timeline_h'), timelineSection.offsetHeight);
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
       }
@@ -5229,13 +5638,13 @@ function initBrainstormControls() {
   }
 
   // Restore collapsed state from localStorage
-  if (localStorage.getItem('sf_brainstorm_collapsed') === '1' && section) {
+  if (localStorage.getItem(projectKey('brainstorm_collapsed')) === '1' && section) {
     section.classList.add('collapsed');
     if (collapseBtn) collapseBtn.textContent = '▶';
   }
 
   // Restore saved height
-  var savedH = localStorage.getItem('sf_brainstorm_height');
+  var savedH = localStorage.getItem(projectKey('brainstorm_height'));
   if (savedH && section && !section.classList.contains('collapsed')) {
     section.style.height = savedH + 'px';
     section.style.flex = 'none';
@@ -5245,9 +5654,9 @@ function initBrainstormControls() {
     collapseBtn.addEventListener('click', function() {
       var isCollapsed = section.classList.toggle('collapsed');
       collapseBtn.textContent = isCollapsed ? '▶' : '▼';
-      localStorage.setItem('sf_brainstorm_collapsed', isCollapsed ? '1' : '0');
+      localStorage.setItem(projectKey('brainstorm_collapsed'), isCollapsed ? '1' : '0');
       if (!isCollapsed) {
-        var savedH = localStorage.getItem('sf_brainstorm_height');
+        var savedH = localStorage.getItem(projectKey('brainstorm_height'));
         if (savedH) { section.style.height = savedH + 'px'; section.style.flex = 'none'; }
         else { section.style.height = ''; section.style.flex = ''; }
       }
@@ -5270,8 +5679,8 @@ function initBrainstormControls() {
       }
       function onUp() {
         resizeHandle.classList.remove('resizing');
-        localStorage.setItem('sf_brainstorm_height', section.offsetHeight);
-        localStorage.setItem('sf_brainstorm_collapsed', '0');
+        localStorage.setItem(projectKey('brainstorm_height'), section.offsetHeight);
+        localStorage.setItem(projectKey('brainstorm_collapsed'), '0');
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
       }
@@ -5279,6 +5688,420 @@ function initBrainstormControls() {
       document.addEventListener('mouseup', onUp);
     });
   }
+}
+
+// ============================================================
+// OUTLINE TAB
+// ─────────────────────────────────────────────────────────────
+// Hierarchical story outliner: Act → Arc → Chapter → Scene.
+// Each node has title, beats (bullet notes), linked card IDs,
+// and a status. Persisted to sf_outline in localStorage.
+// ============================================================
+
+function loadOutline() {
+  try { return JSON.parse(localStorage.getItem(projectKey('outline')) || '[]'); } catch(e) { return []; }
+}
+
+function saveOutline(nodes) {
+  localStorage.setItem(projectKey('outline'), JSON.stringify(nodes));
+}
+
+function makeOutlineNode(type, title, parentId, order) {
+  return {
+    id: generateId(),
+    type: type,
+    title: title,
+    beats: [],
+    linked_card_ids: [],
+    status: 'not_started',
+    parent_id: parentId || null,
+    order: order || 0
+  };
+}
+
+function renderOutlineTab() {
+  renderOutlineTree();
+  if (selectedOutlineNodeId) {
+    renderOutlineDetail(selectedOutlineNodeId);
+  } else {
+    var detail = document.getElementById('outlineDetail');
+    if (detail) detail.innerHTML = '<div class="outline-detail-empty">Select a node from the outline to see its details.</div>';
+  }
+}
+
+function renderOutlineTree() {
+  var treeEl = document.getElementById('outlineTree');
+  if (!treeEl) return;
+  var nodes = loadOutline();
+  var acts = nodes.filter(function(n) { return n.parent_id === null; })
+                  .sort(function(a,b) { return a.order - b.order; });
+
+  treeEl.innerHTML = '';
+
+  // Header
+  var header = document.createElement('div');
+  header.className = 'outline-tree-header';
+  var h3 = document.createElement('h3');
+  h3.textContent = 'Story Outline';
+  header.appendChild(h3);
+  treeEl.appendChild(header);
+
+  if (acts.length === 0) {
+    var emptyEl = document.createElement('div');
+    emptyEl.className = 'outline-empty-state';
+    var p = document.createElement('p');
+    p.textContent = 'No acts yet. Start by adding your first act.';
+    var btn = document.createElement('button');
+    btn.className = 'outline-empty-cta';
+    btn.textContent = '＋ Add Act';
+    btn.addEventListener('click', function() { outlineAddNode('act', null); });
+    emptyEl.appendChild(p);
+    emptyEl.appendChild(btn);
+    treeEl.appendChild(emptyEl);
+    return;
+  }
+
+  var list = document.createElement('div');
+  list.className = 'outline-tree-list';
+  acts.forEach(function(act) {
+    outlineRenderNode(list, act, nodes, 0);
+  });
+  treeEl.appendChild(list);
+
+  // Add Act button at the bottom
+  var addActRow = document.createElement('div');
+  addActRow.style.padding = '8px 16px 4px';
+  var addActBtn = document.createElement('button');
+  addActBtn.className = 'outline-add-act-btn';
+  addActBtn.textContent = '＋ Add Act';
+  addActBtn.addEventListener('click', function() { outlineAddNode('act', null); });
+  addActRow.appendChild(addActBtn);
+  treeEl.appendChild(addActRow);
+}
+
+function outlineRenderNode(container, node, allNodes, depth) {
+  var children = allNodes.filter(function(n) { return n.parent_id === node.id; })
+                         .sort(function(a,b) { return a.order - b.order; });
+  var hasChildren = children.length > 0;
+
+  var el = document.createElement('div');
+  el.className = 'outline-node' + (node.id === selectedOutlineNodeId ? ' selected' : '');
+  el.setAttribute('data-type', node.type);
+  el.setAttribute('data-indent', depth);
+  el.setAttribute('data-id', node.id);
+
+  // Status dot
+  var dot = document.createElement('span');
+  dot.className = 'outline-status-dot ' + node.status;
+  el.appendChild(dot);
+
+  // Toggle arrow (only if has children)
+  var toggle = document.createElement('span');
+  toggle.className = 'outline-node-toggle';
+  toggle.textContent = hasChildren ? '▾' : '';
+  el.appendChild(toggle);
+
+  // Title
+  var title = document.createElement('span');
+  title.className = 'outline-node-title';
+  title.textContent = node.title;
+  el.appendChild(title);
+
+  // Add child button
+  var childType = { act: 'arc', arc: 'chapter', chapter: 'scene', scene: null }[node.type];
+  if (childType) {
+    var addBtn = document.createElement('button');
+    addBtn.className = 'outline-node-add-child';
+    addBtn.title = 'Add ' + childType;
+    addBtn.textContent = '＋';
+    addBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      outlineAddNode(childType, node.id);
+    });
+    el.appendChild(addBtn);
+  }
+
+  el.addEventListener('click', function() {
+    selectedOutlineNodeId = node.id;
+    renderOutlineTab();
+  });
+
+  container.appendChild(el);
+
+  // Render children
+  children.forEach(function(child) {
+    outlineRenderNode(container, child, allNodes, depth + 1);
+  });
+}
+
+function outlineAddNode(type, parentId) {
+  var title = type.charAt(0).toUpperCase() + type.slice(1) + ' ' + (Date.now() % 10000);
+  var nodes = loadOutline();
+  var siblings = nodes.filter(function(n) { return n.parent_id === (parentId || null); });
+  var node = makeOutlineNode(type, title, parentId, siblings.length);
+  nodes.push(node);
+  saveOutline(nodes);
+  selectedOutlineNodeId = node.id;
+  renderOutlineTab();
+}
+
+function renderOutlineDetail(nodeId) {
+  var detail = document.getElementById('outlineDetail');
+  if (!detail) return;
+  var nodes = loadOutline();
+  var node = nodes.find(function(n) { return n.id === nodeId; });
+  if (!node) {
+    detail.innerHTML = '<div class="outline-detail-empty">Node not found.</div>';
+    return;
+  }
+
+  detail.innerHTML = '';
+
+  // Title section
+  var titleSection = document.createElement('div');
+  titleSection.className = 'outline-detail-section';
+  var titleLabel = document.createElement('div');
+  titleLabel.className = 'outline-detail-label';
+  titleLabel.textContent = node.type.charAt(0).toUpperCase() + node.type.slice(1) + ' Title';
+  var titleInput = document.createElement('input');
+  titleInput.className = 'outline-title-input';
+  titleInput.type = 'text';
+  titleInput.value = node.title;
+  titleInput.addEventListener('blur', function() {
+    var fresh = loadOutline();
+    var n = fresh.find(function(x) { return x.id === nodeId; });
+    if (n && titleInput.value.trim()) {
+      n.title = titleInput.value.trim();
+      saveOutline(fresh);
+      renderOutlineTree();
+    }
+  });
+  titleSection.appendChild(titleLabel);
+  titleSection.appendChild(titleInput);
+  detail.appendChild(titleSection);
+
+  // Status section
+  var statusSection = document.createElement('div');
+  statusSection.className = 'outline-detail-section';
+  var statusLabel = document.createElement('div');
+  statusLabel.className = 'outline-detail-label';
+  statusLabel.textContent = 'Status';
+  var statusSelect = document.createElement('select');
+  statusSelect.className = 'outline-status-select';
+  [['not_started','Not Started'],['drafted','Drafted'],['done','Done']].forEach(function(opt) {
+    var o = document.createElement('option');
+    o.value = opt[0];
+    o.textContent = opt[1];
+    if (node.status === opt[0]) o.selected = true;
+    statusSelect.appendChild(o);
+  });
+  statusSelect.addEventListener('change', function() {
+    var fresh = loadOutline();
+    var n = fresh.find(function(x) { return x.id === nodeId; });
+    if (n) { n.status = statusSelect.value; saveOutline(fresh); renderOutlineTree(); }
+  });
+  statusSection.appendChild(statusLabel);
+  statusSection.appendChild(statusSelect);
+  detail.appendChild(statusSection);
+
+  // Beats section
+  var beatsSection = document.createElement('div');
+  beatsSection.className = 'outline-detail-section';
+  var beatsLabel = document.createElement('div');
+  beatsLabel.className = 'outline-detail-label';
+  beatsLabel.textContent = 'Beats';
+  beatsSection.appendChild(beatsLabel);
+
+  var beatsList = document.createElement('div');
+  beatsList.className = 'outline-beats-list';
+
+  function renderBeats() {
+    beatsList.innerHTML = '';
+    var fresh = loadOutline();
+    var n = fresh.find(function(x) { return x.id === nodeId; });
+    var beats = (n && n.beats) ? n.beats : [];
+    beats.forEach(function(beat, idx) {
+      var row = document.createElement('div');
+      row.className = 'outline-beat-row';
+      var inp = document.createElement('input');
+      inp.className = 'outline-beat-input';
+      inp.type = 'text';
+      inp.value = beat;
+      inp.addEventListener('blur', function() {
+        var f = loadOutline();
+        var nd = f.find(function(x) { return x.id === nodeId; });
+        if (nd) { nd.beats[idx] = inp.value; saveOutline(f); }
+      });
+      var rm = document.createElement('button');
+      rm.className = 'outline-beat-remove';
+      rm.textContent = '×';
+      rm.title = 'Remove beat';
+      rm.addEventListener('click', function() {
+        var f = loadOutline();
+        var nd = f.find(function(x) { return x.id === nodeId; });
+        if (nd) { nd.beats.splice(idx, 1); saveOutline(f); renderBeats(); }
+      });
+      row.appendChild(inp);
+      row.appendChild(rm);
+      beatsList.appendChild(row);
+    });
+  }
+  renderBeats();
+
+  var addBeatBtn = document.createElement('button');
+  addBeatBtn.className = 'outline-add-beat-btn';
+  addBeatBtn.textContent = '＋ Add beat';
+  addBeatBtn.addEventListener('click', function() {
+    var f = loadOutline();
+    var nd = f.find(function(x) { return x.id === nodeId; });
+    if (nd) { nd.beats.push(''); saveOutline(f); renderBeats(); }
+  });
+
+  beatsSection.appendChild(beatsList);
+  beatsSection.appendChild(addBeatBtn);
+  detail.appendChild(beatsSection);
+
+  // Linked Cards section
+  var cardsSection = document.createElement('div');
+  cardsSection.className = 'outline-detail-section';
+  var cardsLabel = document.createElement('div');
+  cardsLabel.className = 'outline-detail-label';
+  cardsLabel.textContent = 'Linked Cards';
+  cardsSection.appendChild(cardsLabel);
+
+  var chipsList = document.createElement('div');
+  chipsList.className = 'outline-linked-cards-list';
+
+  function renderLinkedCards() {
+    chipsList.innerHTML = '';
+    var fresh = loadOutline();
+    var n = fresh.find(function(x) { return x.id === nodeId; });
+    var ids = (n && n.linked_card_ids) ? n.linked_card_ids : [];
+    ids.forEach(function(cid) {
+      var card = cards.find(function(c) { return c.id === cid; });
+      if (!card) return;
+      var chip = document.createElement('div');
+      chip.className = 'outline-card-chip';
+      chip.setAttribute('data-type', card.type);
+      var typeSpan = document.createElement('span');
+      typeSpan.className = 'outline-card-chip-type';
+      typeSpan.textContent = card.type;
+      var titleSpan = document.createElement('span');
+      titleSpan.textContent = card.title;
+      var unlinkBtn = document.createElement('button');
+      unlinkBtn.className = 'outline-card-chip-unlink';
+      unlinkBtn.title = 'Unlink';
+      unlinkBtn.textContent = '×';
+      unlinkBtn.addEventListener('click', function() {
+        var f = loadOutline();
+        var nd = f.find(function(x) { return x.id === nodeId; });
+        if (nd) {
+          nd.linked_card_ids = nd.linked_card_ids.filter(function(id) { return id !== cid; });
+          saveOutline(f);
+          renderLinkedCards();
+        }
+      });
+      chip.appendChild(typeSpan);
+      chip.appendChild(titleSpan);
+      chip.appendChild(unlinkBtn);
+      chipsList.appendChild(chip);
+    });
+  }
+  renderLinkedCards();
+  cardsSection.appendChild(chipsList);
+
+  // Card search + link row
+  var linkRow = document.createElement('div');
+  linkRow.className = 'outline-link-card-row';
+  var linkInput = document.createElement('input');
+  linkInput.className = 'outline-link-card-input';
+  linkInput.type = 'text';
+  linkInput.placeholder = 'Search cards to link...';
+  var linkBtn = document.createElement('button');
+  linkBtn.className = 'outline-link-card-btn';
+  linkBtn.textContent = 'Search';
+  var linkResults = document.createElement('div');
+  linkResults.className = 'outline-link-results';
+
+  function runCardSearch() {
+    var q = linkInput.value.trim().toLowerCase();
+    linkResults.innerHTML = '';
+    linkResults.style.display = 'none';
+    if (!q) return;
+    var matches = cards.filter(function(c) {
+      return (c.title.toLowerCase().includes(q) || (c.content || '').toLowerCase().includes(q)) && c.status !== 'archived';
+    }).slice(0, 8);
+    if (matches.length === 0) {
+      linkResults.style.display = 'block';
+      var none = document.createElement('div');
+      none.className = 'outline-link-result-item';
+      none.textContent = 'No cards found.';
+      none.style.color = 'var(--text-muted)';
+      linkResults.appendChild(none);
+      return;
+    }
+    linkResults.style.display = 'block';
+    matches.forEach(function(card) {
+      var item = document.createElement('div');
+      item.className = 'outline-link-result-item';
+      var typeSpan = document.createElement('span');
+      typeSpan.className = 'outline-card-chip-type';
+      typeSpan.setAttribute('style', 'color: var(--color-' + (card.type === 'character' ? 'character' : card.type === 'arc' || card.type === 'scene' ? 'arc' : card.type === 'quote' ? 'quote' : card.type === 'idea' || card.type === 'theme' || card.type === 'relationship' ? 'idea' : 'world') + ')');
+      typeSpan.textContent = card.type;
+      var titleSpan = document.createElement('span');
+      titleSpan.textContent = card.title;
+      item.appendChild(typeSpan);
+      item.appendChild(titleSpan);
+      item.addEventListener('click', function() {
+        var f = loadOutline();
+        var nd = f.find(function(x) { return x.id === nodeId; });
+        if (nd && !nd.linked_card_ids.includes(card.id)) {
+          nd.linked_card_ids.push(card.id);
+          saveOutline(f);
+          renderLinkedCards();
+        }
+        linkInput.value = '';
+        linkResults.style.display = 'none';
+      });
+      linkResults.appendChild(item);
+    });
+  }
+
+  linkBtn.addEventListener('click', runCardSearch);
+  linkInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') runCardSearch(); });
+  linkInput.addEventListener('input', function() { if (!linkInput.value.trim()) { linkResults.style.display = 'none'; } });
+
+  linkRow.appendChild(linkInput);
+  linkRow.appendChild(linkBtn);
+  cardsSection.appendChild(linkRow);
+  cardsSection.appendChild(linkResults);
+  detail.appendChild(cardsSection);
+
+  // Delete node button
+  var deleteSection = document.createElement('div');
+  deleteSection.className = 'outline-detail-section';
+  deleteSection.style.marginTop = '32px';
+  var deleteBtn = document.createElement('button');
+  deleteBtn.className = 'outline-delete-node-btn';
+  deleteBtn.textContent = 'Delete this ' + node.type;
+  deleteBtn.addEventListener('click', function() {
+    if (!confirm('Delete "' + node.title + '" and all its children?')) return;
+    var f = loadOutline();
+    function collectIds(id) {
+      var ids = [id];
+      f.filter(function(n) { return n.parent_id === id; }).forEach(function(child) {
+        ids = ids.concat(collectIds(child.id));
+      });
+      return ids;
+    }
+    var toRemove = collectIds(nodeId);
+    f = f.filter(function(n) { return !toRemove.includes(n.id); });
+    saveOutline(f);
+    selectedOutlineNodeId = null;
+    renderOutlineTab();
+  });
+  deleteSection.appendChild(deleteBtn);
+  detail.appendChild(deleteSection);
 }
 
 function renderArcsTimeline() {
@@ -5652,7 +6475,7 @@ async function generateStoryIdeas() {
   var directionNote = contextNote ? '\n\nUser direction: ' + contextNote : '';
 
   var prompt =
-    'You are a story development assistant for an isekai/anime story called "Life of Bon".\n' +
+    'You are a story development assistant for an isekai/anime story called "' + currentProjectName + '".\n' +
     'Based on the story so far, generate exactly 3 distinct "What if..." story ideas for what could happen next.\n' +
     'Each idea should be 2–3 sentences. Number them 1, 2, 3. Make them varied and interesting.\n\n' +
     storyCtx + '\n\n' + arcSummary + sitNote + directionNote;
@@ -5681,6 +6504,87 @@ async function generateStoryIdeas() {
 
 
 // ============================================================
+// SECTION 0b: PROJECT MANAGEMENT
+// ─────────────────────────────────────────────────────────────
+// Project switcher UI, create/switch/rename functions.
+// ============================================================
+
+function createProject(name) {
+  var trimmed = name.trim();
+  if (!trimmed) return;
+  if (projects.some(function(p) { return p.name.toLowerCase() === trimmed.toLowerCase(); })) {
+    alert('A project named "' + trimmed + '" already exists.');
+    return;
+  }
+  var id = 'proj_' + Date.now();
+  projects.push({ id: id, name: trimmed, createdAt: new Date().toISOString() });
+  localStorage.setItem('sf_projects', JSON.stringify(projects));
+  switchProject(id);
+}
+
+function switchProject(id) {
+  if (id === activeProjectId) {
+    document.getElementById('projectDropdown').hidden = true;
+    return;
+  }
+  localStorage.setItem('sf_active_project', id);
+  location.reload();
+}
+
+function renameProject(id, newName) {
+  var proj = projects.find(function(p) { return p.id === id; });
+  if (proj && newName.trim()) {
+    proj.name = newName.trim();
+    localStorage.setItem('sf_projects', JSON.stringify(projects));
+    if (id === activeProjectId) {
+      document.getElementById('projectSwitcherName').textContent = proj.name;
+    }
+  }
+}
+
+function promptCreateProject() {
+  document.getElementById('projectDropdown').hidden = true;
+  var name = prompt('New project name:');
+  if (name) createProject(name);
+}
+
+function renderProjectDropdown() {
+  var dd = document.getElementById('projectDropdown');
+  dd.innerHTML = projects.map(function(p) {
+    var cls = p.id === activeProjectId ? ' class="active"' : '';
+    return '<button' + cls + ' data-id="' + p.id + '">' + p.name + '</button>';
+  }).join('') + '<hr><button class="new-project-btn" id="newProjectBtn">+ New Project</button>';
+  dd.querySelectorAll('[data-id]').forEach(function(btn) {
+    btn.addEventListener('click', function() { switchProject(this.dataset.id); });
+  });
+  document.getElementById('newProjectBtn').addEventListener('click', promptCreateProject);
+}
+
+// Wire the project switcher button
+(function() {
+  var nameEl = document.getElementById('projectSwitcherName');
+  if (nameEl) nameEl.textContent = currentProjectName;
+
+  // Also update the home tab project name and page title
+  var homeName = document.querySelector('.home-project-name');
+  if (homeName) homeName.textContent = currentProjectName;
+  document.title = 'StoryForge — ' + currentProjectName;
+
+  var btn = document.getElementById('projectSwitcherBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var dd = document.getElementById('projectDropdown');
+    dd.hidden = !dd.hidden;
+    if (!dd.hidden) renderProjectDropdown();
+  });
+  document.addEventListener('click', function() {
+    var dd = document.getElementById('projectDropdown');
+    if (dd) dd.hidden = true;
+  });
+})();
+
+// ============================================================
 // SECTION 14: EXPORT / IMPORT DATA (Backup & Restore)
 // ─────────────────────────────────────────────────────────────
 // Export: reads localStorage into a downloadable JSON file.
@@ -5690,19 +6594,20 @@ async function generateStoryIdeas() {
 //         No API key required — no network calls at all.
 // ============================================================
 
-// All keys included in a backup (settings + UI state excluded)
-const BACKUP_KEYS = [
-  'sf_cards',
-  'sf_positions',
-  'sf_connections',
-  'sf_character_profiles',
-  'sf_arc_sequence_map',
-  'sf_arc_order',
-  'sf_situation_order',
-  'sf_writing_copy',
-  'sf_writing_draft',
-  'sf_suggestions',
+// Per-project key suffixes included in a backup (no sf_ prefix, no project ID prefix).
+// Export writes these under backup.data.<suffix>.
+// Import reads from backup.data.<suffix> (v2) or backup.sf_<suffix> (v1 legacy).
+const BACKUP_SUFFIXES = [
+  'cards', 'positions', 'connections', 'character_profiles',
+  'arc_sequence_map', 'arc_order', 'situation_order',
+  'writing_copy', 'writing_draft', 'suggestions', 'outline',
 ];
+
+// Returns backup data for a given suffix, supporting v1 (flat sf_*) and v2 (data obj) formats
+function getBackupData(backup, suffix) {
+  if (backup.version === 2 && backup.data) return backup.data[suffix];
+  return backup['sf_' + suffix]; // v1 legacy
+}
 
 // ── Backup modal open / close ──────────────────────────────
 const backupModal     = document.getElementById('backupModal');
@@ -5731,13 +6636,23 @@ function setBackupStatus(msg, type) {
 
 // ── Export ─────────────────────────────────────────────────
 document.getElementById('exportBtn').addEventListener('click', function() {
-  var backup = { version: 1, exportedAt: new Date().toISOString() };
+  var backup = {
+    version: 2,
+    type: 'project',
+    project: { id: activeProjectId, name: currentProjectName, createdAt: activeProject.createdAt },
+    exportedAt: new Date().toISOString(),
+    data: {}
+  };
 
-  for (var i = 0; i < BACKUP_KEYS.length; i++) {
-    var key = BACKUP_KEYS[i];
-    var raw = localStorage.getItem(key);
+  for (var i = 0; i < BACKUP_SUFFIXES.length; i++) {
+    var suffix = BACKUP_SUFFIXES[i];
+    var raw = localStorage.getItem(projectKey(suffix));
     if (raw !== null) {
-      try { backup[key] = JSON.parse(raw); } catch(e) { backup[key] = raw; }
+      if (suffix === 'writing_copy' || suffix === 'writing_draft') {
+        backup.data[suffix] = raw;
+      } else {
+        try { backup.data[suffix] = JSON.parse(raw); } catch(e) { backup.data[suffix] = raw; }
+      }
     }
   }
 
@@ -5746,8 +6661,9 @@ document.getElementById('exportBtn').addEventListener('click', function() {
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   var date = new Date().toISOString().slice(0, 10);
+  var safeName = currentProjectName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   a.href     = url;
-  a.download = 'storyforge-backup-' + date + '.json';
+  a.download = 'storyforge-' + safeName + '-' + date + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -5777,8 +6693,10 @@ document.getElementById('importFileInput').addEventListener('change', function(e
       return;
     }
 
-    // Validate it looks like a StoryForge backup
-    if (!backup || !Array.isArray(backup.sf_cards)) {
+    // Detect format: v2 has version:2 + data obj; v1 has flat sf_* keys
+    var _isV2 = backup.version === 2 && backup.type === 'project' && backup.data;
+    var _cardsArr = _isV2 ? backup.data.cards : backup.sf_cards;
+    if (!backup || !Array.isArray(_cardsArr)) {
       setBackupStatus("Error: this doesn't look like a StoryForge backup file.", 'err');
       return;
     }
@@ -5786,7 +6704,7 @@ document.getElementById('importFileInput').addEventListener('change', function(e
     var mode = document.querySelector('input[name="importMode"]:checked').value;
 
     if (mode === 'replace') {
-      var count = (backup.sf_cards || []).length;
+      var count = _cardsArr.length;
       if (!confirm('Replace all current data with this backup?\n\nThis will load ' + count + ' cards and overwrite all your current cards, connections, and character profiles.\n\nClick OK to continue.')) {
         e.target.value = '';
         return;
@@ -5802,11 +6720,11 @@ document.getElementById('importFileInput').addEventListener('change', function(e
   reader.readAsText(file);
 });
 
-// sf_writing_copy and sf_writing_draft are raw HTML strings in localStorage
-// (not JSON-encoded). Everything else is JSON. This helper stores correctly.
-function setBackupValue(key, value) {
-  if (key === 'sf_writing_copy' || key === 'sf_writing_draft') {
-    // value is already an HTML string — store as-is
+// writing_copy and writing_draft are raw HTML strings; everything else is JSON.
+// Suffix is stored under the active project's namespaced key.
+function setBackupValue(suffix, value) {
+  var key = projectKey(suffix);
+  if (suffix === 'writing_copy' || suffix === 'writing_draft') {
     localStorage.setItem(key, typeof value === 'string' ? value : '');
   } else {
     localStorage.setItem(key, JSON.stringify(value));
@@ -5814,12 +6732,10 @@ function setBackupValue(key, value) {
 }
 
 function applyReplace(backup) {
-  // Write all keys present in the backup, skip missing ones
-  for (var i = 0; i < BACKUP_KEYS.length; i++) {
-    var key = BACKUP_KEYS[i];
-    if (backup[key] !== undefined) {
-      setBackupValue(key, backup[key]);
-    }
+  for (var i = 0; i < BACKUP_SUFFIXES.length; i++) {
+    var suffix = BACKUP_SUFFIXES[i];
+    var value = getBackupData(backup, suffix);
+    if (value !== undefined) setBackupValue(suffix, value);
   }
   setBackupStatus('Restored from backup. Reloading…', 'ok');
   setTimeout(function() { location.reload(); }, 1200);
@@ -5828,93 +6744,88 @@ function applyReplace(backup) {
 function applyMerge(backup) {
   var added = 0, skipped = 0;
 
-  // sf_cards — merge by id
-  var existingCards = cards.slice(); // current in-memory array
+  // cards — merge by id
+  var existingCards = cards.slice();
   var existingIds   = new Set(existingCards.map(function(c) { return c.id; }));
-  var newCards      = (backup.sf_cards || []).filter(function(c) {
+  var newCards      = (getBackupData(backup, 'cards') || []).filter(function(c) {
     if (existingIds.has(c.id)) { skipped++; return false; }
     added++;
     return true;
   });
   if (newCards.length > 0) {
     var merged = existingCards.concat(newCards);
-    localStorage.setItem('sf_cards', JSON.stringify(merged));
-    cards = merged; // sync in-memory state
+    localStorage.setItem(projectKey('cards'), JSON.stringify(merged));
+    cards = merged;
   }
 
-  // sf_positions — add missing card positions
+  // positions — add missing
   var pos = {};
-  try { pos = JSON.parse(localStorage.getItem('sf_positions') || '{}'); } catch(e) {}
-  var bPos = backup.sf_positions || {};
-  Object.keys(bPos).forEach(function(id) {
-    if (!pos[id]) pos[id] = bPos[id];
-  });
-  localStorage.setItem('sf_positions', JSON.stringify(pos));
+  try { pos = JSON.parse(localStorage.getItem(projectKey('positions')) || '{}'); } catch(e) {}
+  var bPos = getBackupData(backup, 'positions') || {};
+  Object.keys(bPos).forEach(function(id) { if (!pos[id]) pos[id] = bPos[id]; });
+  localStorage.setItem(projectKey('positions'), JSON.stringify(pos));
 
-  // sf_connections — merge by id
+  // connections — merge by id
   var existingConns = [];
-  try { existingConns = JSON.parse(localStorage.getItem('sf_connections') || '[]'); } catch(e) {}
+  try { existingConns = JSON.parse(localStorage.getItem(projectKey('connections')) || '[]'); } catch(e) {}
   var existingConnIds = new Set(existingConns.map(function(c) { return c.id; }));
-  var newConns = (backup.sf_connections || []).filter(function(c) {
+  var newConns = (getBackupData(backup, 'connections') || []).filter(function(c) {
     return c.id && !existingConnIds.has(c.id);
   });
   if (newConns.length > 0) {
-    localStorage.setItem('sf_connections', JSON.stringify(existingConns.concat(newConns)));
+    localStorage.setItem(projectKey('connections'), JSON.stringify(existingConns.concat(newConns)));
   }
 
-  // sf_character_profiles — add missing profiles
+  // character_profiles — add missing
   var charProfs = {};
-  try { charProfs = JSON.parse(localStorage.getItem('sf_character_profiles') || '{}'); } catch(e) {}
-  var bCharProfs = backup.sf_character_profiles || {};
-  Object.keys(bCharProfs).forEach(function(id) {
-    if (!charProfs[id]) charProfs[id] = bCharProfs[id];
-  });
-  localStorage.setItem('sf_character_profiles', JSON.stringify(charProfs));
+  try { charProfs = JSON.parse(localStorage.getItem(projectKey('character_profiles')) || '{}'); } catch(e) {}
+  var bCharProfs = getBackupData(backup, 'character_profiles') || {};
+  Object.keys(bCharProfs).forEach(function(id) { if (!charProfs[id]) charProfs[id] = bCharProfs[id]; });
+  localStorage.setItem(projectKey('character_profiles'), JSON.stringify(charProfs));
 
-  // sf_arc_sequence_map — add missing sequence slots
+  // arc_sequence_map — add missing slots
   var seqMap = {};
-  try { seqMap = JSON.parse(localStorage.getItem('sf_arc_sequence_map') || '{}'); } catch(e) {}
-  var bSeqMap = backup.sf_arc_sequence_map || {};
-  Object.keys(bSeqMap).forEach(function(slot) {
-    if (!seqMap[slot]) seqMap[slot] = bSeqMap[slot];
-  });
-  localStorage.setItem('sf_arc_sequence_map', JSON.stringify(seqMap));
+  try { seqMap = JSON.parse(localStorage.getItem(projectKey('arc_sequence_map')) || '{}'); } catch(e) {}
+  var bSeqMap = getBackupData(backup, 'arc_sequence_map') || {};
+  Object.keys(bSeqMap).forEach(function(slot) { if (!seqMap[slot]) seqMap[slot] = bSeqMap[slot]; });
+  localStorage.setItem(projectKey('arc_sequence_map'), JSON.stringify(seqMap));
 
-  // sf_arc_order — add missing arc IDs (preserve current order, append new)
+  // arc_order — append missing IDs
   var arcOrd = [];
-  try { arcOrd = JSON.parse(localStorage.getItem('sf_arc_order') || '[]'); } catch(e) {}
+  try { arcOrd = JSON.parse(localStorage.getItem(projectKey('arc_order')) || '[]'); } catch(e) {}
   var arcOrdSet = new Set(arcOrd);
-  (backup.sf_arc_order || []).forEach(function(id) {
-    if (!arcOrdSet.has(id)) arcOrd.push(id);
-  });
-  localStorage.setItem('sf_arc_order', JSON.stringify(arcOrd));
+  (getBackupData(backup, 'arc_order') || []).forEach(function(id) { if (!arcOrdSet.has(id)) arcOrd.push(id); });
+  localStorage.setItem(projectKey('arc_order'), JSON.stringify(arcOrd));
 
-  // sf_situation_order — add missing situation indices
+  // situation_order — append missing indices
   var sitOrd = [];
-  try { sitOrd = JSON.parse(localStorage.getItem('sf_situation_order') || '[]'); } catch(e) {}
+  try { sitOrd = JSON.parse(localStorage.getItem(projectKey('situation_order')) || '[]'); } catch(e) {}
   var sitOrdSet = new Set(sitOrd);
-  (backup.sf_situation_order || []).forEach(function(n) {
-    if (!sitOrdSet.has(n)) sitOrd.push(n);
-  });
-  localStorage.setItem('sf_situation_order', JSON.stringify(sitOrd));
+  (getBackupData(backup, 'situation_order') || []).forEach(function(n) { if (!sitOrdSet.has(n)) sitOrd.push(n); });
+  localStorage.setItem(projectKey('situation_order'), JSON.stringify(sitOrd));
 
-  // sf_suggestions — merge by id
+  // suggestions — merge by id
   var existingSug = [];
-  try { existingSug = JSON.parse(localStorage.getItem('sf_suggestions') || '[]'); } catch(e) {}
+  try { existingSug = JSON.parse(localStorage.getItem(projectKey('suggestions')) || '[]'); } catch(e) {}
   var existingSugIds = new Set(existingSug.map(function(s) { return s.id; }));
-  var newSug = (backup.sf_suggestions || []).filter(function(s) {
+  var newSug = (getBackupData(backup, 'suggestions') || []).filter(function(s) {
     return s.id && !existingSugIds.has(s.id);
   });
   if (newSug.length > 0) {
-    localStorage.setItem('sf_suggestions', JSON.stringify(existingSug.concat(newSug)));
+    localStorage.setItem(projectKey('suggestions'), JSON.stringify(existingSug.concat(newSug)));
   }
 
-  // sf_writing_copy and sf_writing_draft — only import if current slot is empty
-  if (!localStorage.getItem('sf_writing_copy') && backup.sf_writing_copy) {
-    setBackupValue('sf_writing_copy', backup.sf_writing_copy);
+  // writing_copy and writing_draft — only if current slot is empty
+  if (!localStorage.getItem(projectKey('writing_copy')) && getBackupData(backup, 'writing_copy')) {
+    setBackupValue('writing_copy', getBackupData(backup, 'writing_copy'));
   }
-  if (!localStorage.getItem('sf_writing_draft') && backup.sf_writing_draft) {
-    setBackupValue('sf_writing_draft', backup.sf_writing_draft);
+  if (!localStorage.getItem(projectKey('writing_draft')) && getBackupData(backup, 'writing_draft')) {
+    setBackupValue('writing_draft', getBackupData(backup, 'writing_draft'));
+  }
+
+  // outline — restore if not present
+  if (!localStorage.getItem(projectKey('outline')) && getBackupData(backup, 'outline')) {
+    localStorage.setItem(projectKey('outline'), JSON.stringify(getBackupData(backup, 'outline')));
   }
 
   var msg = added + ' card' + (added !== 1 ? 's' : '') + ' added';
@@ -6024,8 +6935,8 @@ function toggleFindReplace() {
   } else {
     var copy  = document.getElementById('writingCopyEditor');
     var draft = document.getElementById('writingDraftEditor');
-    if (copy)  { frClearHighlights(copy);  localStorage.setItem('sf_writing_copy',  copy.innerHTML); }
-    if (draft) { frClearHighlights(draft); localStorage.setItem('sf_writing_draft', draft.innerHTML); }
+    if (copy)  { frClearHighlights(copy);  localStorage.setItem(projectKey('writing_copy'),  copy.innerHTML); }
+    if (draft) { frClearHighlights(draft); localStorage.setItem(projectKey('writing_draft'), draft.innerHTML); }
   }
 }
 
@@ -6051,8 +6962,8 @@ function frHighlightMatches() {
   var count = (plain.match(re) || []).length;
   pane.innerHTML = plain.replace(re, function(m) { return '<mark class="fr-hl">' + m + '</mark>'; });
   if (countEl) countEl.textContent = count ? count + ' match' + (count !== 1 ? 'es' : '') : 'no matches';
-  if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
-  else localStorage.setItem('sf_writing_draft', pane.innerHTML);
+  if (pane.id === 'writingCopyEditor') localStorage.setItem(projectKey('writing_copy'), pane.innerHTML);
+  else localStorage.setItem(projectKey('writing_draft'), pane.innerHTML);
   return count;
 }
 
@@ -6081,8 +6992,8 @@ function frReplaceNext() {
   var target = Math.max(0, frCurrentMatch);
   var idx = 0;
   pane.innerHTML = html.replace(re, function(m) { return (idx++ === target) ? replace : m; });
-  if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
-  else localStorage.setItem('sf_writing_draft', pane.innerHTML);
+  if (pane.id === 'writingCopyEditor') localStorage.setItem(projectKey('writing_copy'), pane.innerHTML);
+  else localStorage.setItem(projectKey('writing_draft'), pane.innerHTML);
   frCurrentMatch = target - 1;
   frHighlightMatches();
   frNavigateMatch(1);
@@ -6099,8 +7010,8 @@ function frReplaceAll() {
   var re = new RegExp(frEscapeRegex(term), 'gi');
   pane.innerHTML = html.replace(re, replace);
   document.getElementById('fr-match-count').textContent = 'Replaced all';
-  if (pane.id === 'writingCopyEditor') localStorage.setItem('sf_writing_copy', pane.innerHTML);
-  else localStorage.setItem('sf_writing_draft', pane.innerHTML);
+  if (pane.id === 'writingCopyEditor') localStorage.setItem(projectKey('writing_copy'), pane.innerHTML);
+  else localStorage.setItem(projectKey('writing_draft'), pane.innerHTML);
   updateWritingWordCounts();
 }
 

@@ -82,23 +82,46 @@ Search with **Ctrl+F** using the section name to jump directly.
 
 ## localStorage Keys
 
+### Global keys (shared across all projects)
+
 | Key | Stores |
 |---|---|
-| `sf_cards` | JSON array of all cards |
 | `sf_api_key` | Anthropic API key |
-| `sf_positions` | `{ [cardId]: { x, y, w, h } }` map positions |
-| `sf_connections` | `[{ id, from, to, auto }]` connection list |
-| `sf_zoom` | Map zoom level (0.1–5.0) |
-| `sf_unsynced_ids` | JSON array of card IDs not yet organized on map |
-| `sf_synced_files` | Filenames already imported via folder sync |
-| `sf_summary` | Cached AI-generated story overview |
-| `sf_summary_expanded` | Whether the summary bar is expanded |
-| `sf_chat_memory` | Compressed chat history (capped at 3,000 chars) |
-| `sf_batches` | `[{ id, createdAt, cardCount }]` — one entry per staged AI import batch |
-| `sf_dismissed_batches` | JSON array of batch IDs dismissed from the batch strip (B2) |
-| `sf_draft_history` | `[{ savedAt, content }]` — up to 10 working-copy snapshots (5c) |
-| `sf_word_goal` | Number — daily word goal for the Writing tab progress bar (E1) |
-| `sf_arcs_timeline_h` | Number (px) — saved height of the Arcs tab timeline section |
+| `sf_projects` | `[{ id, name, createdAt }]` — project registry |
+| `sf_active_project` | String — ID of the currently open project |
+
+### Per-project keys (prefix pattern: `<projectId>_<suffix>`)
+
+All per-project data is stored as `<projectId>_<suffix>` (e.g., `proj_lob_123_cards`).
+The `projectKey(suffix)` helper in app.js returns the correct namespaced key for the active project.
+
+| Suffix | Stores |
+|---|---|
+| `cards` | JSON array of all cards |
+| `positions` | `{ [cardId]: { x, y, w, h } }` map positions |
+| `connections` | `[{ id, from, to, auto }]` connection list |
+| `zoom` | Map zoom level (0.1–5.0) |
+| `unsynced_ids` | JSON array of card IDs not yet organized on map |
+| `synced_files` | Filenames already imported via folder sync |
+| `summary` | Cached AI-generated story overview |
+| `summary_expanded` | Whether the summary bar is expanded |
+| `chat_memory` | Compressed chat history (capped at 3,000 chars) |
+| `batches` | `[{ id, createdAt, cardCount }]` — one entry per staged AI import batch |
+| `dismissed_batches` | JSON array of batch IDs dismissed from the batch strip (B2) |
+| `draft_history` | `[{ savedAt, content }]` — up to 10 working-copy snapshots (5c) |
+| `word_goal` | Number — daily word goal for the Writing tab progress bar (E1) |
+| `arcs_timeline_h` | Number (px) — saved height of the Arcs tab timeline section |
+| `brainstorm_height` | Number (px) — saved height of the brainstorm section |
+| `brainstorm_collapsed` | `'1'` or `'0'` — brainstorm collapsed state |
+| `outline` | JSON array of outline nodes `{ id, type, title, beats, linked_card_ids, status, parent_id, order }` |
+| `writing_draft` | Raw HTML string — AI draft scratch area (user promotes to Working Copy) |
+| `writing_copy` | Raw HTML string — user's Working Copy in the Writing tab |
+| `writing_split_ratio` | Float (default 0.62) — writing pane split ratio |
+| `character_profiles` | `{ [cardId]: profileData }` — structured character profiles |
+| `arc_order` | JSON array of arc card IDs in display order |
+| `arc_sequence_map` | Object mapping arc IDs to 8-sequence structure data |
+| `situation_order` | JSON array of dramatic situation IDs in display order |
+| `suggestions` | JSON array of Claude suggestion objects saved by user |
 
 ---
 

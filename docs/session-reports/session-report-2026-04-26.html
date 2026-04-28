@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-26</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Sprint M — Multi-Project Support</h1>
+    <p class="subtitle">StoryForge can now manage multiple unrelated novels. All localStorage is namespaced per project. Existing "Life of Bon" data is auto-migrated on first load. A clickable project switcher in the header lets you create, switch, and rename projects — each with a fully isolated workspace. Three-way Perplexity collaboration drove the architecture through two planning rounds before implementation.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-26</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Uncommitted <strong>app.js, index.html, style.css, CODEBASE.md</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session — all work was on the app build side.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] UX Sprint A–F1: card refresh, collapsible content, quick-add, staged import, batch strip, role chips, archive summaries, extended card taxonomy, tag chips, design system, word goal, export, find &amp; replace, distraction-free, column spotlight</li>
+        <li>[x] Sprint C1: batch undo</li>
+        <li>[x] Sprint C2: card sections</li>
+        <li>[x] Sprint C3: stale detection (lastModified, amber badge)</li>
+        <li>[x] Import pipeline fixed: CHUNK_SIZE 10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Jarvis agentic loop: navigate tabs, create/edit/search cards via chat</li>
+        <li>[x] Jarvis streaming + orb + voice (renamed to Sage)</li>
+        <li>[x] Sprint J1: Puter.js/ElevenLabs TTS — Freya voice (ID <code>jsCqWAovK2LkecY7zXl4</code>)</li>
+        <li>[x] Sprint J3: tiered context injection + smart caching</li>
+        <li>[x] Sprint J5: follow-up question logic in Sage system prompt</li>
+        <li>[x] Sprint J2: mic button hidden on non-SpeechRecognition browsers</li>
+        <li>[x] Sprint K: ambient particles, glass surfaces, orb breathing, aurora, depth</li>
+        <li>[x] Sage rename + sentence-level TTS streaming (<code>flushTTSSentences</code>) + pre-fetch (<code>startNextPrefetch</code>)</li>
+        <li>[x] Sprint L1: <code>write_draft</code> Sage tool — writes to Draft pane via DOM APIs</li>
+        <li>[x] Sprint L2: Outline tab — Act→Arc→Chapter→Scene tree, beats, status, card linking</li>
+        <li>[x] 6 Sage outline tools: <code>write_draft</code>, <code>create_outline_node</code>, <code>edit_outline_node</code>, <code>read_outline</code>, <code>link_card_to_node</code>, <code>unlink_card_from_node</code></li>
+        <li>[ ] Browser test: inter-sentence TTS gap confirmed gone (pre-fetch)</li>
+        <li>[ ] Browser test: Freya voice tone confirmed</li>
+        <li>[ ] Browser test: write_draft writes to Draft pane, paragraph count correct</li>
+        <li>[ ] Browser test: Outline tab — add/edit/delete/link/persist cycle</li>
+        <li>[x] <strong>Sprint M: Multi-project support — project registry (<code>sf_projects</code>, <code>sf_active_project</code>), namespaced localStorage (all 25 per-project keys under <code>&lt;projectId&gt;_suffix</code>), auto-migration of "Life of Bon" legacy data, <code>projectKey()</code> helper, project switcher button in header, dropdown with "+ New Project", duplicate name guard, <code>location.reload()</code> on switch, v2 export format, v1 legacy import support — this session</strong></li>
+        <li>[ ] <strong>Browser test multi-project: 12-step verification checklist (see section 07)</strong></li>
+        <li>[ ] H2: Story Bible Export (next build priority)</li>
+        <li>[ ] Push all local commits + uncommitted changes to GitHub (user must authorize)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <p><strong>Multi-project verification checklist (must run in browser before committing):</strong></p>
+      <ul>
+        <li>1. Header shows clickable "Life of Bon" button after auto-migration</li>
+        <li>2. All existing cards, writing, characters, outline data load correctly</li>
+        <li>3. Click button → dropdown shows "Life of Bon" highlighted + "+ New Project"</li>
+        <li>4. Create a new project → page reloads, blank workspace, new name in header</li>
+        <li>5. Switch back to Life of Bon → all original data intact</li>
+        <li>6. Duplicate name guard → alert shown when creating "Life of Bon" again</li>
+        <li>7. Long project name → truncates with ellipsis in header button</li>
+        <li>8. Console clean — no <code>sf_cards</code> direct reads, no <code>projectKey()</code> errors</li>
+        <li>9. Export active project → JSON has <code>version: 2</code>, <code>type: "project"</code>, correct <code>data</code> keys</li>
+        <li>10. Import that export back → project appears in switcher with all data restored</li>
+        <li>11. Sage chat works — memory is per-project (Sage in new project has no memory of Life of Bon chats)</li>
+        <li>12. Import a legacy v1 backup (flat <code>sf_*</code> format) → creates new project entry, no double-prefix on keys</li>
+      </ul>
+      <p><strong>Carried forward from prior sessions:</strong></p>
+      <ul>
+        <li>Pre-fetch inter-sentence gap unverified in-browser (Sprint L carry-over from 2026-04-25)</li>
+        <li>Freya voice tone unconfirmed</li>
+        <li>write_draft and Outline tab untested in-browser</li>
+        <li>All changes (4 prior commits + Run 3–4 + Sprint M) not yet on GitHub</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Immediate — browser test multi-project:</strong></p>
+      <ul>
+        <li>Open the app in Live Server. The header should show "Life of Bon" as a clickable button (auto-migration ran on first load). Work through the 12-step checklist in section 07. The most critical: step 2 (existing data intact), step 4 (new project creates blank workspace), step 5 (switching back restores data).</li>
+        <li>While testing: also verify Sage voice (Freya) and the write_draft tool — these were pending from the last session and should be confirmed in the same browser session.</li>
+      </ul>
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Multiple sessions without a board review. Once multi-project and Sage tools are confirmed working, use the Outline tab to start roughing in the opening arc structure for Life of Bon.</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li><strong>Priority 1:</strong> Browser-test Sprint M (multi-project checklist above).</li>
+        <li><strong>Priority 2:</strong> When all tests pass, authorize commit + push to GitHub to sync the full backlog.</li>
+        <li><strong>Priority 3:</strong> H2 — Story Bible Export. High-value shareable document from all canvas cards.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>e6d9c92 — Update roadmap: Sprint J + K</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Uncommitted</div><div class="handoff-val"><code>app.js</code>, <code>index.html</code>, <code>style.css</code>, <code>CODEBASE.md</code> — all Sprint M multi-project changes (plus all Run 3–4 changes from 2026-04-25 that were never committed)</div></div>
+      <div class="handoff-row"><div class="handoff-key">GitHub status</div><div class="handoff-val">4 commits ahead of origin/main — Sprints J, K not pushed; user must authorize</div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>CODEBASE.md</code> — localStorage keys table split into Global keys (3 entries: <code>sf_api_key</code>, <code>sf_projects</code>, <code>sf_active_project</code>) and Per-project keys (25 suffixes with prefix pattern documented). Added 8 previously undocumented keys: <code>brainstorm_height</code>, <code>brainstorm_collapsed</code>, <code>writing_split_ratio</code>, <code>character_profiles</code>, <code>arc_order</code>, <code>arc_sequence_map</code>, <code>situation_order</code>, <code>suggestions</code></li>
+        <li><code>app.js</code> — Project bootstrap IIFE (Section 0): reads registry, auto-migrates <code>sf_cards</code> → "Life of Bon" project, handles blank-first-run and corrupted-registry edge cases, defines <code>projectKey(suffix)</code>. 25 replace-all passes on all per-project localStorage key strings. 6 occurrences of "Life of Bon" in AI prompt strings replaced with <code>currentProjectName</code> variable (required two-step fix — see Decisions). Project management functions: <code>createProject</code>, <code>switchProject</code>, <code>renameProject</code>, <code>promptCreateProject</code>, <code>renderProjectDropdown</code>. IIFE wires project switcher button, closes dropdown on outside click, sets header title and <code>document.title</code>. Export/import rewritten: <code>BACKUP_KEYS</code> → <code>BACKUP_SUFFIXES</code> (suffixes only, no <code>sf_</code> prefix), <code>getBackupData()</code> helper for v1/v2 compat, <code>setBackupValue()</code> uses <code>projectKey()</code>, v2 export format, v1 legacy import detection.</li>
+        <li><code>index.html</code> — Replaced <code>&lt;span class="app-subtitle"&gt;Life of Bon&lt;/span&gt;</code> with project switcher button + dropdown container (<code>#projectSwitcherBtn</code>, <code>#projectSwitcherName</code>, <code>#projectDropdown</code>)</li>
+        <li><code>style.css</code> — Added "PROJECT SWITCHER" section before TAB BAR: <code>.project-switcher-btn</code>, <code>.project-switcher-name</code>, <code>.project-switcher-chevron</code>, <code>.project-dropdown</code> and its children styles</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Namespace all per-project keys as <code>&lt;projectId&gt;_suffix</code> (no <code>sf_</code> in suffix).</strong> The export <code>data</code> object uses bare suffixes (e.g., <code>"cards"</code>) to avoid double-prefix: <code>proj_xxx_sf_cards</code> is a bug, <code>proj_xxx_cards</code> is correct. Perplexity flagged this risk explicitly in their plan review — it was the primary source of discussion.</li>
+        <li><strong>Auto-migrate on first load, leave old keys as safety net.</strong> Old <code>sf_cards</code> etc. are left in localStorage (not deleted) so the user can recover if migration breaks something. A future cleanup step can remove them once the user confirms everything works.</li>
+        <li><strong><code>location.reload()</code> on project switch.</strong> Rather than manually resetting 25+ in-memory state variables, a full page reload is cleaner and guarantees all state re-initializes correctly from the new namespaced keys. Performance cost is negligible for this use case.</li>
+        <li><strong>Two-step string replacement for "Life of Bon" in AI prompts.</strong> The occurrences were inside single-quoted JS strings. First pass replaced <code>"Life of Bon"</code> with <code>" + currentProjectName + "</code> (wrong — produced a literal string). Second pass fixed it to proper JS concatenation: <code>' + currentProjectName + '</code>. This was a predictable error that should have been accounted for in the first pass.</li>
+        <li><strong>Export/import section rewritten before the 25 key replace-all passes.</strong> The old <code>BACKUP_KEYS</code> array contained <code>'sf_cards'</code>, <code>'sf_positions'</code> etc. — if the replace-all passes had run first, those would have become <code>projectKey('cards')</code> inside the array literal, producing invalid JavaScript syntax.</li>
+        <li><strong>Duplicate project name guard is case-insensitive.</strong> "life of bon" and "Life of Bon" are treated as the same name to prevent confusing near-duplicates.</li>
+        <li><strong>Perplexity collaboration drove architecture.</strong> Two rounds of plan review before implementation. Perplexity endorsed the approach and added the double-prefix import bug and v1 backward-compat test as the two key risks to address.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Open app in Live Server. Verify "Life of Bon" appears in the header as a clickable button (auto-migration).</li>
+        <li>Work through the 12-step multi-project checklist in section 07. Steps 2, 4, 5 are the critical path.</li>
+        <li>While in the browser: also test Freya voice, write_draft tool, and Outline tab (all pending from 2026-04-25).</li>
+        <li>When all tests pass, say "commit and push" to sync everything to GitHub.</li>
+        <li>Next feature: H2 — Story Bible Export.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>Multi-project support not yet browser-tested — first live test pending.</li>
+        <li>If auto-migration doesn't fire (e.g., <code>sf_active_project</code> was already set from a previous experiment), the legacy data may not be copied. Check console for <code>[StoryForge]</code> bootstrap logs to confirm which path ran.</li>
+        <li>Large backlog of untested features: pre-fetch TTS gap, Freya voice, write_draft, Outline tab — all pending in-browser confirmation from previous sessions.</li>
+        <li>All changes unpushed — 4 commits + all working-tree modifications.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Read a Perplexity research document about multi-project support and Sage panel layout fix. Evaluate both and advise on implementation approach.</li>
+        <li>Plan multi-project support in plan mode — two rounds of Perplexity review incorporated into the plan before implementation was approved.</li>
+        <li>Determine whether the Sage panel fix was already implemented (answer: yes, it was).</li>
+        <li>Implement all four files: CODEBASE.md documentation first, then app.js bootstrap + 25 replace-all passes + AI prompt strings + management functions + export/import rewrite, then index.html, then style.css.</li>
+        <li>Generate /insights session report.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Three-way collaboration again (user + Perplexity + Claude).</strong> The plan went through two full Perplexity reviews before any code was written. Perplexity caught the double-prefix import bug (<code>proj_xxx_sf_cards</code> vs. <code>proj_xxx_cards</code>) and the v1 legacy import test case — both of which made it into the final implementation.</li>
+        <li><strong>Rewriting export/import before the replace-all passes.</strong> Doing the export section first prevented the <code>BACKUP_KEYS</code> array from being mangled by the mechanical replacement. Order of operations mattered here and was caught before it caused a problem.</li>
+        <li><strong>Replace-all ordering to avoid substring conflicts.</strong> Replacing <code>'sf_dismissed_batches'</code> before <code>'sf_batches'</code>, <code>'sf_summary_expanded'</code> before <code>'sf_summary'</code>, <code>'sf_arc_sequence_map'</code> before <code>'sf_arc_order'</code> — longer/overlapping keys first prevents partial replacement bugs.</li>
+        <li><strong>IIFE for bootstrap.</strong> Using an IIFE to run the project bootstrap prevented 10+ intermediate variables from polluting the global module scope, while still exporting the 4 needed values via <code>window._sf_*</code>.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Account for string quoting context in replace-all.</strong> The "Life of Bon" replacement produced <code>" + currentProjectName + "</code> (double-quoted interpolation inside single-quoted strings) on the first pass — wrong. The correct output required <code>' + currentProjectName + '</code>. The fix was a second replace-all pass, but the error should have been predicted before the first pass. Always check whether target strings are inside single or double quotes before writing the replacement.</li>
+        <li><strong>Browser test before /insights.</strong> Same note as last session — multi-project is implemented but unverified in-browser. The 12-step checklist is the first thing that should happen next session.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Multi-project support unlocks a completely new use case.</strong> StoryForge was designed around one story. With namespaced localStorage and a project switcher, any number of unrelated novels can coexist in the same browser — each with separate cards, writing, outlines, chat memory, and AI context. The migration path is automatic; existing Life of Bon data is preserved without any user action.
+      </div>
+
+      <div class="callout warn">
+        <strong>Large untested backlog.</strong> Four features remain unverified in-browser from the past two sessions: Freya voice (TTS), write_draft tool, Outline tab, and now multi-project support. Per browser-testing.md: test every sprint before starting the next. The next session should be a dedicated browser-test session before any new features.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Generated by /insights · StoryForge · Life of Bon · Session Report 2026-04-26 · Run 1: Sprint M — Multi-Project Support</div>
+</div>
+</body>
+</html>
