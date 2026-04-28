@@ -1255,14 +1255,14 @@
       <div class="dep-row-desc">Requires G1 (Structured Zones) for zone coordinates</div>
     </div>
     <div class="dep-row">
-      <div class="dep-row-name">J1 (Local Story Wiki)</div>
+      <div class="dep-row-name">L1 (Local Story Wiki)</div>
       <div class="dep-row-line"></div>
       <div class="dep-row-desc">No dependencies — dev tool only, no app code changes</div>
     </div>
     <div class="dep-row">
-      <div class="dep-row-name">J2 (/refresh-wiki Skill)</div>
+      <div class="dep-row-name">L2 (/refresh-wiki Skill)</div>
       <div class="dep-row-line"></div>
-      <div class="dep-row-desc">Requires J1 (wiki pages must exist to refresh)</div>
+      <div class="dep-row-desc">Requires L1 (wiki pages must exist to refresh)</div>
     </div>
   </div>
 
@@ -1284,15 +1284,15 @@
     <li><div class="next-num">12</div><div><strong>UX Sprint I (I1–I2)</strong> — Chapter planning mini-board and tag cloud. <strong>Phase 6</strong> (character relationship web, avatars). <strong>Phase 4c</strong> (mobile). <strong>Phase 8</strong> (settings panel).</div></li>
   </ol>
 
-  <!-- UX Sprint J -->
-  <div class="section-header"><h2>UX Sprint J — Story Wiki (Dev Tool + Future Product Feature)</h2></div>
+  <!-- UX Sprint L -->
+  <div class="section-header"><h2>UX Sprint L — Story Wiki (Dev Tool + Future Product Feature)</h2></div>
   <div class="phase-block">
     <div class="phase-label">Local dev tool today · Product architecture insight for later · No app code changes</div>
 
     <div class="feature-card">
       <div class="feature-header">
         <div class="feature-title">Local Story Wiki</div>
-        <div class="feature-id">J1</div>
+        <div class="feature-id">L1</div>
       </div>
       <div class="feature-meta">
         <span class="badge badge-high">High Priority</span>
@@ -1311,11 +1311,11 @@
     <div class="feature-card">
       <div class="feature-header">
         <div class="feature-title"><code>/refresh-wiki</code> Skill</div>
-        <div class="feature-id">J2</div>
+        <div class="feature-id">L2</div>
       </div>
       <div class="feature-meta">
         <span class="badge badge-medium">Medium Priority</span>
-        <span class="badge badge-dep">Requires J1</span>
+        <span class="badge badge-dep">Requires L1</span>
       </div>
       <div class="done-when"><strong>Done when:</strong> Running <code>/refresh-wiki</code> in Claude Code regenerates all 5 wiki pages from source files — keeps the wiki current as the story evolves</div>
       <ul class="task-list">
@@ -1324,13 +1324,13 @@
         <li>Overwrites (never appends) each wiki page — keeps them lean and current</li>
         <li>Each page capped at ~300 lines — reference layer, not a copy of the source</li>
       </ul>
-      <div class="dep-note">J1 must exist first; J2 is the maintenance tool that keeps J1 current</div>
+      <div class="dep-note">L1 must exist first; L2 is the maintenance tool that keeps L1 current</div>
     </div>
 
     <div class="feature-card" style="border-color: var(--purple-dim);">
       <div class="feature-header">
         <div class="feature-title">Future Architecture: Per-User Knowledge Layer</div>
-        <div class="feature-id" style="color: var(--purple); background: var(--purple-dim);">J3 · Phase 2</div>
+        <div class="feature-id" style="color: var(--purple); background: var(--purple-dim);">L3 · Phase 2</div>
       </div>
       <div class="feature-meta">
         <span class="badge badge-low">Future / Not Building Yet</span>
@@ -1340,7 +1340,7 @@
         <li><strong>Full pipeline (3 layers):</strong> Raw messy uploads → Consolidation step → Structured master → Wiki/knowledge layer → AI features</li>
         <li><strong>Phase 0 (not built yet):</strong> Consolidation/intake step — takes whatever format a user uploads (Word, PDF, txt, mixed) and organizes it into a structured master document before the wiki builds. Most AI note apps skip this; it's a competitive differentiator.</li>
         <li><strong>Token economics:</strong> Without the knowledge layer, every subscriber AI call re-reads their full raw notes (expensive at scale). With it, the wiki is built once and stays lean — every AI call reads from the pre-processed layer instead.</li>
-        <li>Validate the concept locally first (J1 + J2); build this into the product only once the wiki is proven useful</li>
+        <li>Validate the concept locally first (L1 + L2); build this into the product only once the wiki is proven useful</li>
       </ul>
     </div>
   </div>
