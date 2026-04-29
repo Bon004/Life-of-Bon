@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StoryForge — Life of Bon</title>
+  <title>StoryForge</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -84,7 +84,7 @@
           <div class="home-brand">
             <div class="home-logo-mark">⚔️</div>
             <h1 class="home-title">StoryForge</h1>
-            <p class="home-project-name">Life of Bon</p>
+            <p class="home-project-name"></p>
             <p class="home-subtitle">Your world. Your arcs. Your story.</p>
           </div>
 
@@ -388,7 +388,7 @@
       <div class="writing-panes" id="writingPanes">
         <div class="writing-pane pane-copy" id="writingCopyPane">
           <div class="writing-page-wrap">
-            <div class="writing-editor rich-editor" id="writingCopyEditor" contenteditable="true" spellcheck="true" data-placeholder="Start writing Life of Bon..."></div>
+            <div class="writing-editor rich-editor" id="writingCopyEditor" contenteditable="true" spellcheck="true" data-placeholder="Start writing..."></div>
           </div>
         </div>
         <div class="writing-resize-handle hidden" id="writingResizeHandle"></div>
@@ -561,11 +561,65 @@
         <button class="btn-clear-key hidden" id="clearKeyBtn">✕ Remove saved key</button>
       </details>
 
+      <details class="api-key-section" id="elabsKeyDetails">
+        <summary>🔊 ElevenLabs Key <span id="elabsKeyStatusChip" class="key-hint">— click to set</span></summary>
+        <div class="api-key-row">
+          <input type="password" id="elabsKeyInput" placeholder="sk_..." />
+          <button id="saveElabsKey" class="btn-save-key">Save</button>
+        </div>
+        <p class="api-key-note">
+          Required for Sage voice. Stored locally only — never committed to source.
+        </p>
+        <button class="btn-clear-key hidden" id="clearElabsKeyBtn">✕ Remove saved key</button>
+      </details>
+
       <div class="modal-footer">
         <span id="organizeStatus" class="organize-status"></span>
         <button class="btn-organize" id="organizeBtn">Organize with AI</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- NEW / EDIT PROJECT MODAL -->
+  <div class="modal-overlay hidden" id="newProjectModalOverlay" style="z-index:1099"></div>
+  <div class="modal-box hidden" id="newProjectModal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1100;width:min(480px,90vw);max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <span class="modal-icon">📖</span>
+        <h3 id="newProjectModalHeading">New Project</h3>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1rem;padding:1rem 1.25rem 1.25rem">
+
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.75rem;font-weight:600;opacity:.7;letter-spacing:.04em;text-transform:uppercase" for="newProjectFormat">Format</label>
+        <select id="newProjectFormat" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:.875rem;font-family:inherit;cursor:pointer">
+          <option value="novel">Novel</option>
+          <option value="biography">Biography</option>
+          <option value="memoir">Memoir</option>
+          <option value="nonfiction">Nonfiction</option>
+          <option value="screenplay">Screenplay</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.75rem;font-weight:600;opacity:.7;letter-spacing:.04em;text-transform:uppercase" for="newProjectTitle">Title <span style="color:var(--color-idea);font-weight:700">*</span></label>
+        <input type="text" id="newProjectTitle" placeholder="Working title" autocomplete="off"
+          style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:.875rem;font-family:inherit;width:100%;box-sizing:border-box" />
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.75rem;font-weight:600;opacity:.7;letter-spacing:.04em;text-transform:uppercase" for="newProjectBrief">Brief <span style="opacity:.55;font-weight:400;text-transform:none">(optional)</span></label>
+        <textarea id="newProjectBrief" rows="3"
+          style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:.875rem;font-family:inherit;resize:vertical;width:100%;box-sizing:border-box"></textarea>
+        <p style="font-size:.72rem;opacity:.45;margin:0">What are you writing? 2–3 sentences.</p>
+      </div>
+
+      <p id="newProjectError" class="hidden" style="margin:0;font-size:.8rem;color:var(--color-idea)"></p>
+      <button type="button" class="btn-organize" id="newProjectSave" style="width:100%">Create Project</button>
+      <button type="button" class="btn-secondary" id="newProjectPlanWithSage" style="width:100%;margin-top:8px;">✦ Plan with Sage →</button>
     </div>
   </div>
 
@@ -702,8 +756,8 @@
     <!-- CHAT VIEW -->
     <div class="chat-view" id="chatView">
       <div class="chat-messages" id="chatMessages">
-        <div class="chat-msg assistant">
-          <p>Hi! I'm here to help with "Life of Bon". Ask me about characters, plot, dialogue, world-building — anything.</p>
+        <div class="chat-msg assistant" id="sageIntroMsg">
+          <p>Hi! I'm here to help. Ask me anything about your project.</p>
         </div>
       </div>
       <div class="chat-footer">

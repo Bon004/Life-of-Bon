@@ -87,7 +87,8 @@ Search with **Ctrl+F** using the section name to jump directly.
 | Key | Stores |
 |---|---|
 | `sf_api_key` | Anthropic API key |
-| `sf_projects` | `[{ id, name, createdAt }]` — project registry |
+| `sf_elabs_key` | ElevenLabs API key (Sage voice) |
+| `sf_projects` | `[{ id, name, format, brief, createdAt }]` — project registry |
 | `sf_active_project` | String — ID of the currently open project |
 
 ### Per-project keys (prefix pattern: `<projectId>_<suffix>`)
@@ -122,6 +123,7 @@ The `projectKey(suffix)` helper in app.js returns the correct namespaced key for
 | `arc_sequence_map` | Object mapping arc IDs to 8-sequence structure data |
 | `situation_order` | JSON array of dramatic situation IDs in display order |
 | `suggestions` | JSON array of Claude suggestion objects saved by user |
+| `column_labels` | `{ character, world, arc, quote, idea }` — per-project column label overrides `{ label, strip }` |
 
 ---
 

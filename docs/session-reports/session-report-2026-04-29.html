@@ -150,13 +150,12 @@
 
   <header class="cover">
     <div class="eyebrow">StoryForge · Session Report</div>
-    <h1>Sprint M — Full Redesign Production Pass</h1>
-    <p class="subtitle">Executed Phase B of the full StoryForge redesign: replaced all AI slop patterns in style.css and app.js with a clean OKLCH token system, upgraded the Jarvis orb to a uniform spherical particle cloud, fixed JS-applied border stripes, and cleaned up the Sprint K block. Deleted the redesign preview file once production was confirmed.</p>
+    <h1>Sprint M + N + Bug Fix — Redesign, SaaS Generalization &amp; Critical Repair</h1>
+    <p class="subtitle">Sprint M shipped the OKLCH redesign and spherical orb. Sprint N generalized StoryForge into a format-neutral writing assistant (project schema, setup modal, column labels, Sage prompt). A follow-up session fixed two blocking Sprint N bugs: a SyntaxError from Unicode smart quotes killing all JS, and a CSS specificity trap making the New Project modal permanently visible but unresponsive. All changes committed and pushed this session.</p>
     <div class="chips">
       <span class="chip"><span class="chip-dot"></span><strong>2026-04-29</strong></span>
-      <span class="chip">Run <strong>1</strong></span>
       <span class="chip">Branch <strong>main</strong></span>
-      <span class="chip">Commit <strong>b62ac27</strong></span>
+      <span class="chip">Commit <strong>c3c1959</strong> (base) + this session's commit</span>
     </div>
   </header>
 
@@ -209,15 +208,17 @@
         <li>[x] Sprint G — Outline tab</li>
         <li>[x] Sprint H — Map tab (location cards, map canvas)</li>
         <li>[x] Sprint I — Home tab (stats, recent cards, quick nav)</li>
-        <li>[x] Sprint J — Design Polish D1 block (later audited and purged this sprint)</li>
-        <li>[x] Sprint K — Jarvis orb v1 (ring-based breathing animation, sidebar chat)</li>
+        <li>[x] Sprint J — Jarvis TTS (ElevenLabs/Puter.js), tiered context injection, follow-up question control, mic guard</li>
+        <li>[x] Sprint K — Living Workshop aesthetic: particles, glass, orb breathing, aurora (later redesigned out in M)</li>
         <li>[x] Sprint L — Story Wiki (/refresh-wiki skill, wiki pages, character/world/arc reference)</li>
-        <li>[x] Sprint M (this session) — Full redesign Phase B: OKLCH token system, AI slop purge, spherical orb v2, border-stripe JS fixes</li>
-        <li>[ ] Ambient chat UI — ephemeral full-screen conversational layout replacing 310px sidebar panel (designed in preview, not yet implemented in production)</li>
+        <li>[x] Sprint M — Full redesign Phase B: OKLCH token system, AI slop purge (aurora, glassmorphism, gradient buttons, border stripes), spherical orb v2 with depth-cued HSLA particles and pulse rings</li>
+        <li>[x] Sprint N — SaaS generalization: project schema (format + brief), setup modal, format-based column labels with inline rename, Sage prompt driven by project data, all hardcoded isekai strings replaced, story-utils.js parametrized</li>
+        <li>[x] Sprint N Bug Fix — SyntaxError from Unicode smart quotes on lines 6810–6817 (all JS dead); modal hidden/visible CSS specificity trap fixed (New Project buttons non-functional)</li>
+        <li>[ ] Browser test Sprint N — create Biography project, verify column labels rename, Sage intro references project correctly, pencil rename persists after refresh</li>
         <li>[ ] /impeccable critique — formal scoring pass on live app post-redesign</li>
         <li>[ ] Browser test backlog: Sprint C (C1/C2/C3), Sprint E onclick audit, Sprint F1 onclick audit, Jarvis voice/streaming verification</li>
-        <li>[ ] Add <code>sf_arcs_timeline_h</code> to CODEBASE.md (overdue across multiple sprints)</li>
-        <li>[ ] Orb: implement Speaking state wave ripple displacement (current orb handles Idle + Listening states; Speaking is wired but visual displacement not yet coded)</li>
+        <li>[ ] Orb Speaking state — wave ripple particle displacement (Idle + Listening done; Speaking wired but visual not coded)</li>
+        <li>[ ] Ambient chat UI — ephemeral full-screen conversational layout replacing 310px sidebar panel (designed, not yet implemented)</li>
       </ul>
     </div>
   </section>
@@ -226,12 +227,13 @@
     <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
     <div class="card">
       <ul>
-        <li><strong>Critique score unknown.</strong> Phase B is complete but no formal /impeccable critique pass has been run on the live app. Estimated ~30–31/40 but unverified.</li>
-        <li><strong>Ambient chat UI.</strong> The full-screen ephemeral chat was designed and validated in the preview but never ported to production. The sidebar panel is still active. This is the next significant UX upgrade.</li>
-        <li><strong>Orb Speaking state.</strong> The state machine fires correctly but the visual speaking behavior (wave ripple displacement) is not implemented — orb just shows the ambient glow without particle burst.</li>
-        <li><strong>Browser test debt.</strong> Sprints C, E, F1 have unaudited onclick handlers that may be silently broken in module mode. This debt has been carried for several sessions.</li>
-        <li><strong><code>sf_arcs_timeline_h</code> undocumented.</strong> This localStorage key exists in app.js but is not listed in CODEBASE.md. Risk: future edits may create key collisions.</li>
-        <li><strong>DESIGN.md missing.</strong> /impeccable nudges to run <code>/impeccable document</code> for better on-brand output on future craft passes. Not blocking but worth doing before next design sprint.</li>
+        <li><strong>Sprint N browser test not yet run.</strong> Both bugs are now fixed — first task next session is to open Live Server, create a Biography project with a brief, and verify column labels, Sage intro with brief snippet, and pencil rename all work as designed.</li>
+        <li><strong>Smart quote contamination source.</strong> The curly quotes on lines 6810–6817 were likely introduced by Claude generating a response with auto-corrected typographic quotes during the Sprint N session. Any future AI-generated code touching string literals should be checked with <code>node --input-type=module &lt; app.js</code> before committing.</li>
+        <li><strong>CSS <code>[hidden]</code> attribute reliability.</strong> The <code>hidden</code> attribute is silently overridden by any author CSS <code>display</code> rule without <code>!important</code>. <code>.modal-box { display:flex }</code> is the trap. Consider adding <code>[hidden] { display: none !important; }</code> to style.css as a global guard against recurrence.</li>
+        <li><strong>Critique score unknown.</strong> No /impeccable pass run post-redesign.</li>
+        <li><strong>Ambient chat UI.</strong> Designed and validated in preview but never ported to production.</li>
+        <li><strong>Orb Speaking state.</strong> State machine fires correctly but wave ripple visual displacement is not implemented.</li>
+        <li><strong>Browser test debt.</strong> Sprints C, E, F1 onclick handlers unaudited in module mode.</li>
       </ul>
     </div>
   </section>
@@ -241,16 +243,16 @@
     <div class="card">
       <p><strong>Story-side:</strong></p>
       <ul>
-        <li>No story work was done this session. Next story session: resume from wiki pages and import fresh notes if any new writing happened offline.</li>
+        <li>No story work done this session. Next story session: import fresh notes if any new writing happened offline.</li>
       </ul>
       <p><strong>Build-side:</strong></p>
       <ul>
-        <li><strong>Run <code>/impeccable critique</code></strong> — get the formal post-redesign score and a targeted punch list of what to fix to reach 34+/40.</li>
-        <li><strong>Ambient chat UI (Sprint N)</strong> — implement the full-screen ephemeral conversational layout in production. The design is already confirmed from the preview. This is the biggest remaining UX delta.</li>
-        <li><strong>Orb Speaking state</strong> — add wave ripple particle displacement to complete the three-state orb behavior.</li>
-        <li><strong>Browser test backlog</strong> — audit Sprints C, E, F1 for broken onclick handlers before adding more features on top.</li>
-        <li><strong>CODEBASE.md update</strong> — add <code>sf_arcs_timeline_h</code> to the localStorage keys table.</li>
-        <li><strong>Run <code>/impeccable document</code></strong> — generate DESIGN.md from current production code for better future craft output.</li>
+        <li><strong>Browser test Sprint N</strong> — highest priority. Open Live Server, create a Biography project with a brief, verify all Sprint N behaviors (column labels, Sage intro, pencil rename persistence). Do this before building anything new.</li>
+        <li><strong>Add global <code>[hidden] { display: none !important; }</code> to style.css</strong> — prevents the CSS specificity trap from recurring on any future modal that uses the <code>hidden</code> attribute.</li>
+        <li><strong>Run <code>/impeccable critique</code></strong> — get formal post-redesign score and targeted punch list.</li>
+        <li><strong>Orb Speaking state</strong> — wave ripple particle displacement to complete three-state orb behavior.</li>
+        <li><strong>Browser test backlog</strong> — audit Sprints C, E, F1 for broken onclick handlers.</li>
+        <li><strong>Ambient chat UI</strong> — implement full-screen ephemeral layout once test debt is cleared.</li>
       </ul>
     </div>
   </section>
@@ -259,42 +261,40 @@
     <h2><span class="num">09</span>Handoff</h2>
     <div class="card">
       <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
-      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>b62ac27 — Fix roadmap: rename wiki sprint from J to L throughout</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>c3c1959 — Sprint M base; Sprint N + bug fixes committed this session</code></div></div>
 
-      <p style="margin-top:14px;"><strong>Files changed this session (uncommitted):</strong></p>
+      <p style="margin-top:14px;"><strong>Files changed this session (committed):</strong></p>
       <ul>
-        <li><code>style.css</code> — Full Phase B redesign: OKLCH token system in :root, body font-size 14px, card background tints via color-mix(), canvas columns widened to 280px, home title Lora serif, home stats inline flex, D1 block purged (gradient text, gradient buttons, gradient tab underline, aurora animation, glassmorphism cards), Sprint K block purged (orbBreath, body::before aurora, chat panel gradient edge), arc-node/situation-detail/ideas-result border-left removed, home-nav-btn changed to border-top, prefers-reduced-motion updated</li>
-        <li><code>index.html</code> — Added Lora font to Google Fonts link</li>
-        <li><code>app.js</code> — Home nav tiles changed from borderLeftColor to borderTopColor; home-recent-card inline border-left removed; map-card borderLeftColor removed; orb particle init rewritten to uniform spherical distribution (340 particles, Math.acos formula, per-particle hue/baseSize/baseAlpha); orbPulseRings + orbPulseTimer state added; setOrbState wires pulse ring interval for listening state; renderOrb updated with ambient background glow, pulse ring animation, depth-cued HSLA particle rendering, painter's algorithm z-sort</li>
-        <li><code>CLAUDE.md</code> — Minor updates from previous session (exact changes not confirmed this session)</li>
-        <li><code>.claude/settings.local.json</code> — Permission settings updated</li>
-        <li><code>PRODUCT.md</code> — Created (new untracked file): register, users, brand personality, anti-references, 5 design principles</li>
-        <li><code>.claude/skills/brainstorming/</code>, <code>.claude/skills/impeccable/</code>, <code>.claude/skills/systematic-debugging/</code>, <code>.claude/skills/verification-before-completion/</code> — New untracked skill directories</li>
-        <li><code>docs/session-reports/session-report-2026-04-28.html</code> — New untracked (written last session, never committed)</li>
-        <li><code>docs/redesign-preview.html</code> — DELETED (design validated and implemented in production)</li>
+        <li><code>app.js</code> — Sprint N: project schema migration (format + brief fields); globals <code>currentProjectFormat</code> + <code>currentProjectBrief</code>; <code>FORMAT_COLUMNS</code> constant; <code>createProject(name, format, brief)</code>; <code>openNewProjectModal(projectId)</code>; <code>applyColumnLabels()</code>, <code>loadAndApplyColumnLabels()</code>, <code>initColumnRename()</code>; Sage prompt rewritten with projectFacts/assistantBehavior separation; hardcoded isekai strings replaced. Bug fix: Unicode smart quotes removed from lines 6810–6817; modal show/hide changed from <code>element.hidden</code> to <code>classList.add/remove('hidden')</code>.</li>
+        <li><code>index.html</code> — Sprint N: title generalized; <code>.home-project-name</code> cleared; writing placeholder generalized; <code>id="sageIntroMsg"</code> added; New Project modal HTML added. Bug fix: <code>#newProjectModal</code> changed from <code>hidden</code> attribute to <code>class="modal-box hidden"</code>.</li>
+        <li><code>style.css</code> — Sprint N: <code>.col-rename-btn</code> pencil; <code>.project-dd-row</code> flex layout; <code>.project-edit-btn</code> gear button.</li>
+        <li><code>story-utils.js</code> — Sprint N: <code>buildPrompt()</code> and <code>buildSyncPrompt()</code> accept <code>projectName</code> and <code>projectFormat</code> parameters.</li>
+        <li><code>CODEBASE.md</code> — Sprint N: <code>sf_projects</code> schema updated; <code>sf_elabs_key</code> and <code>column_labels</code> suffix added.</li>
       </ul>
 
       <p><strong>Decisions made:</strong></p>
       <ul>
-        <li><strong>OKLCH over hex/rgba for all tokens.</strong> Perceptually uniform color space; chroma automatically reduces near lightness extremes, preventing garish values. All CSS variables in :root rewritten.</li>
-        <li><strong>color-mix() for card tints.</strong> Category tints expressed as <code>color-mix(in srgb, rgb(var(--cat-char)) 7%, var(--surface))</code> — keeps category color meaningful without the old left-border stripe. Requires RGB triplet format for the custom properties.</li>
-        <li><strong>Uniform spherical distribution for orb particles.</strong> Previous ring-based layout created visible latitude bands that looked solid at small canvas sizes. Math.acos(1 - 2 * random()) for phi gives true uniform surface distribution.</li>
-        <li><strong>Deleted redesign-preview.html.</strong> All validated designs are now in production. The file had no ongoing value and was adding noise to git status.</li>
-        <li><strong>border-top instead of border-left for home nav tiles.</strong> The D1 block used border-left stripes as a color accent — banned pattern. border-top gives category color meaning (a cap/header accent) without the stripe cliche.</li>
+        <li><strong>Format-based column labels, not genre-based.</strong> "Genre" is a distinct concept reserved for future filtering. Format (novel, biography, memoir, nonfiction, screenplay, other) drives the default column vocabulary. Perplexity validated this distinction.</li>
+        <li><strong>Explicit strip abbreviations in FORMAT_COLUMNS.</strong> Each column entry has both <code>label</code> (full) and <code>strip</code> (explicit 4-char abbreviation), not derived via <code>label.slice(0,4)</code>. Perplexity recommended explicit abbreviations.</li>
+        <li><strong>projectFacts / assistantBehavior separation in Sage prompt.</strong> Project metadata and tone behavior are independent blocks. Perplexity recommended this separation.</li>
+        <li><strong>Use <code>.hidden</code> CSS class (not <code>hidden</code> attribute) for any modal that lives inside an element with a <code>display</code> CSS rule.</strong> The HTML <code>hidden</code> attribute loses to author-stylesheet <code>display:flex</code>. <code>.hidden { display: none !important; }</code> always wins. This is now the established pattern for all modals.</li>
+        <li><strong>Node stdin parse check as first-line syntax validator.</strong> <code>node --input-type=module &lt; app.js</code> catches syntax errors instantly and reports the exact line. Run this after any AI-generated string literal code before committing.</li>
+        <li><strong>Security review: clean.</strong> Two candidates evaluated (unescaped p.id in attribute, column labels from localStorage). Both dismissed — p.id is alphanumeric-only; labels use textContent throughout.</li>
       </ul>
 
       <p><strong>Resume here:</strong></p>
       <ul>
-        <li>Open the app in Live Server and run <code>/impeccable critique</code> to get the formal post-redesign score.</li>
-        <li>Then tackle the ambient chat UI (Sprint N): replace the 310px sidebar panel with the full-screen ephemeral layout designed in the now-deleted preview. The orb IS the chat interface — user text fades in below, AI response types in serif, old exchange fades out when next begins.</li>
-        <li>After chat UI: orb Speaking state wave ripple displacement (particles burst outward in waves, return to idle radius).</li>
+        <li>Open <code>index.html</code> in Live Server. Click the project switcher. Click <strong>+ New Project</strong>. Fill in title "Test Biography" and format "Biography" with a brief. Click <strong>Create Project</strong> — page should reload with column headers renamed to People / Research / Structure / Key Quotes / Ideas.</li>
+        <li>Open Sage chat — intro should say "Hi! I'm here to help with 'Test Biography'. [first sentence of brief]. Ask me anything."</li>
+        <li>Click pencil icon on a column, rename it, refresh — confirm it persists.</li>
+        <li>Switch back to Life of Bon — confirm columns are unchanged.</li>
+        <li>Once browser test passes: optionally add <code>[hidden] { display: none !important; }</code> to style.css as a global guard, then run /impeccable critique.</li>
       </ul>
 
       <p><strong>Known blockers / open questions:</strong></p>
       <ul>
-        <li>All changes are uncommitted. Commit and push before switching machines.</li>
-        <li>Browser test debt on Sprints C, E, F1 — any of these tabs may have silent onclick failures that have never been caught.</li>
-        <li><code>sf_arcs_timeline_h</code> is still undocumented in CODEBASE.md.</li>
+        <li>Sprint N browser test still not run — do this before building anything new.</li>
+        <li>Browser test debt on Sprints C, E, F1 — silent onclick failures may still exist in module mode.</li>
       </ul>
     </div>
   </section>
@@ -304,34 +304,33 @@
     <div class="card">
       <p><strong>What I asked Claude to do:</strong></p>
       <ul>
-        <li>Audit all AI slop patterns in style.css (D1 block + Sprint K block) with exact line numbers</li>
-        <li>Execute Phase B: rewrite :root tokens to OKLCH, purge gradient text, aurora, glassmorphism, border stripes, gradient buttons across the full CSS file</li>
-        <li>Fix JS-applied border-left stripes in app.js (home nav tiles, home-recent-card, map-card)</li>
-        <li>Upgrade orb from ring-based particles to uniform spherical cloud with depth-cued HSLA rendering</li>
-        <li>Delete the now-redundant redesign preview file</li>
-        <li>Run /insights to generate this session report</li>
-        <li>Commit all changes and push to GitHub</li>
+        <li>Incorporate 7 Perplexity refinements into Sprint N plan (format vs genre, persistent modal labels, projectFacts/assistantBehavior split, explicit strip abbreviations, pencil-first rename, lazy migration, brief truncation)</li>
+        <li>Implement Sprint N across 4 phases: project schema + setup modal; Sage prompt generalization; dynamic column labels + inline rename; HTML/UI cleanup</li>
+        <li>Diagnose why all app buttons were dead after Sprint N (SyntaxError from smart quotes on lines 6810–6817)</li>
+        <li>Diagnose why New Project modal buttons remained non-functional after the syntax fix (CSS specificity: <code>display:flex</code> overriding <code>hidden</code> attribute)</li>
+        <li>Run /insights and commit + push to GitHub</li>
       </ul>
 
       <p><strong>What worked well:</strong></p>
       <ul>
-        <li><strong>Art Director audit first.</strong> Having the agent enumerate all 16 banned patterns with exact line numbers before executing meant the execution pass had a precise target list rather than a vague "clean it up" instruction. Zero missed patterns.</li>
-        <li><strong>Jarvis executing directly after agent permissions wall.</strong> Both Art Director agents hit the Edit tool block in background context. Rather than retrying the same pattern, switching to direct execution in the main conversation was the right call and completed faster.</li>
-        <li><strong>Uniform spherical orb math.</strong> The Math.acos(1 - 2 * Math.random()) formula for phi is the correct closed-form solution for uniform sphere surface sampling. Depth-cued HSLA (lightness and alpha both scale with z-depth) gave the cloud its sense of depth without additional passes.</li>
-        <li><strong>color-mix() approach for card tints.</strong> Elegant one-liner per category, no extra variables, composable with the OKLCH surface token.</li>
+        <li><strong>Node stdin parse check.</strong> <code>node --input-type=module &lt; app.js 2&gt;&amp;1</code> instantly pinpointed the SyntaxError line. Faster and more precise than reading 7400 lines manually.</li>
+        <li><strong>Full-file Unicode scan before fixing.</strong> Scanning for <code>[''""]/</code> across the whole file found all 4 affected lines at once in one pass.</li>
+        <li><strong>Perplexity as second opinion.</strong> Validated the diagnosis, added the recommendation for a full-file scan, and flagged the <code>[hidden]</code> attribute risk as worth addressing globally.</li>
+        <li><strong>CSS specificity root cause analysis.</strong> Drilling into why <code>openNewProjectModal</code> was never being called — rather than papering over the symptom — led directly to the CSS specificity trap. The fix is durable, not a workaround.</li>
+        <li><strong>Three-party collaboration before Sprint N implementation.</strong> Two Perplexity review passes on the plan caught real issues before a line of code was written. Implementation was clean because the spec was tight.</li>
       </ul>
 
       <p><strong>What to do differently:</strong></p>
       <ul>
-        <li><strong>Don't use background subagents for file edits on this project.</strong> The Edit tool is consistently blocked in background agent context. Art Director research is valuable; execution must stay in the main session.</li>
-        <li><strong>Run /impeccable critique earlier.</strong> The formal score wasn't captured this session. Running critique immediately after Phase B would have given concrete targets for iteration rather than an estimated range.</li>
-        <li><strong>Address browser test debt before stacking more features.</strong> Sprint C/E/F1 onclick audits have been deferred for multiple sessions. The risk of silent breakage grows with each new sprint built on top.</li>
-        <li><strong>Commit more frequently.</strong> All Phase B changes are uncommitted. If the machine lost power today, everything since b62ac27 would be lost.</li>
+        <li><strong>Run <code>node --input-type=module &lt; app.js</code> after every AI-generated block touching strings.</strong> Smart quotes are invisible in most editors. A 2-second parse check would have caught the Sprint N bug before it was left uncommitted.</li>
+        <li><strong>Check the browser Console first, before reading code.</strong> The rules say this explicitly. This session started with static analysis instead — the console would have shown the SyntaxError line immediately.</li>
+        <li><strong>Browser test immediately after each sprint — never defer.</strong> Sprint N was never browser tested. Both bugs would have been caught in 60 seconds of Live Server testing right after implementation.</li>
+        <li><strong>Commit more frequently.</strong> Sprint M + N changes accumulated across multiple sessions before committing. One power failure would have wiped everything since c3c1959.</li>
       </ul>
     </div>
   </section>
 
-  <div class="footer">Generated by /insights · StoryForge · Life of Bon</div>
+  <div class="footer">Generated by /insights · StoryForge · Life of Bon · Updated 2026-04-29</div>
 </div>
 </body>
 </html>

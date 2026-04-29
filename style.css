@@ -198,6 +198,11 @@ body {
 .project-dropdown button:hover { background: rgba(255,255,255,0.06); }
 .project-dropdown button.active { color: var(--accent); font-weight: 600; }
 .project-dropdown hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.project-dd-row { display: flex; align-items: center; gap: 2px; }
+.project-dd-row button[data-id] { flex: 1; }
+.project-edit-btn { flex-shrink: 0; width: auto; padding: 6px 8px !important; opacity: .35; font-size: .8rem; }
+.project-dd-row:hover .project-edit-btn { opacity: .7; }
+.project-edit-btn:hover { opacity: 1 !important; }
 .project-dropdown .new-project-btn { color: var(--accent); opacity: 0.9; }
 
 /* ============================================================
@@ -618,6 +623,9 @@ body {
 .col-header-left { display: flex; align-items: center; gap: 7px; }
 .col-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .col-label { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.06em; text-transform: uppercase; }
+.col-rename-btn { background: none; border: none; padding: 0 2px; font-size: 11px; opacity: 0; cursor: pointer; color: var(--text); transition: opacity .15s; line-height: 1; }
+.col-header-left:hover .col-rename-btn { opacity: .45; }
+.col-rename-btn:hover { opacity: 1 !important; }
 .col-count {
   font-size: 11px;
   font-weight: 600;
@@ -3536,7 +3544,7 @@ body.chat-open .app-main {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 80px 14% 64px;
+  padding: clamp(40px, 7vh, 80px) 14% clamp(36px, 6vh, 64px);
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(232,93,4,0.06) 0%, transparent 60%), var(--bg);
   position: relative;
@@ -3554,14 +3562,14 @@ body.chat-open .app-main {
 }
 
 .home-brand {
-  margin-bottom: 36px;
+  margin-bottom: clamp(16px, 3vh, 36px);
   max-width: 720px;
   width: 100%;
 }
 
 .home-logo-mark {
   font-size: 44px;
-  margin-bottom: 14px;
+  margin-bottom: clamp(6px, 1.5vh, 14px);
   filter: drop-shadow(0 0 20px rgba(232,93,4,0.45));
   display: block;
 }
@@ -3598,7 +3606,7 @@ body.chat-open .app-main {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-  margin-bottom: 28px;
+  margin-bottom: clamp(14px, 2.5vh, 28px);
   max-width: 560px;
 }
 
@@ -3657,7 +3665,7 @@ body.chat-open .app-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 40px 14% 56px;
+  padding: clamp(28px, 4vh, 40px) 14% clamp(40px, 5vh, 56px);
   gap: 32px;
 }
 
@@ -4653,3 +4661,15 @@ body.distraction-free #particleCanvas { display: none; }
   transition: background var(--transition), border-color var(--transition);
 }
 .outline-delete-node-btn:hover { background: rgba(239,68,68,0.1); border-color: #ef4444; }
+
+/* Safety net for very short screens (≤700px) */
+@media (max-height: 700px) {
+  .home-logo-mark { font-size: 34px; }
+  .home-title     { font-size: clamp(1.6rem, 3.5vw, 2.4rem); }
+}
+
+/* New Project modal — compact on short viewports so Create Project is always visible */
+@media (max-height: 750px) {
+  #newProjectModal .modal-header { padding: 14px 18px 12px; }
+  #newProjectBrief               { height: 52px; }
+}

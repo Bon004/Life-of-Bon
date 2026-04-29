@@ -17,9 +17,11 @@ export function escapeHtml(str) {
   });
 }
 
-export function buildPrompt(existingTitles) {
+export function buildPrompt(existingTitles, projectName, projectFormat) {
+  var pName   = projectName   || 'this project';
+  var pFormat = projectFormat || 'story';
   return (
-    'You are a story organizer for an isekai/anime story called "Life of Bon" where the main character gets reincarnated.\n\n' +
+    'You are a story organizer for a ' + pFormat + ' called "' + pName + '".\n\n' +
     'Extract story elements from the content provided and return ONLY a valid JSON array.\n' +
     'Do not add any explanation, markdown, or code fences — just the raw JSON array.\n\n' +
     'Each item in the array must look exactly like this:\n' +
@@ -39,9 +41,11 @@ export function buildPrompt(existingTitles) {
   );
 }
 
-export function buildSyncPrompt(existingTitles) {
+export function buildSyncPrompt(existingTitles, projectName, projectFormat) {
+  var pName   = projectName   || 'this project';
+  var pFormat = projectFormat || 'story';
   return (
-    'You are a story organizer for an isekai/anime story called "Life of Bon" where the main character gets reincarnated.\n\n' +
+    'You are a story organizer for a ' + pFormat + ' called "' + pName + '".\n\n' +
     'Extract story elements from the content provided and return ONLY a valid JSON array.\n' +
     'Do not add any explanation, markdown, or code fences — just the raw JSON array.\n\n' +
     'Each item must look exactly like this:\n' +

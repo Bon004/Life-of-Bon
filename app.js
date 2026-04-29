@@ -37,7 +37,7 @@
   // Old sf_* keys are left in place as a safety net (not deleted).
   if (!window._sf_activeProjectId && localStorage.getItem(projectKey('cards')) !== null) {
     var legacyId = 'proj_lob_' + Date.now();
-    window._sf_projects = [{ id: legacyId, name: 'Life of Bon', createdAt: new Date().toISOString() }];
+    window._sf_projects = [{ id: legacyId, name: 'Life of Bon', format: 'novel', brief: '', createdAt: new Date().toISOString() }];
     localStorage.setItem('sf_projects', JSON.stringify(window._sf_projects));
     var legacySuffixes = [
       'cards','positions','connections','arc_order','arc_sequence_map',
@@ -58,11 +58,20 @@
   // If no data at all, create a blank default project
   if (!window._sf_activeProjectId || !window._sf_projects.length) {
     var newId = 'proj_' + Date.now();
-    window._sf_projects = [{ id: newId, name: 'My Novel', createdAt: new Date().toISOString() }];
+    window._sf_projects = [{ id: newId, name: 'My Project', format: 'novel', brief: '', createdAt: new Date().toISOString() }];
     localStorage.setItem('sf_projects', JSON.stringify(window._sf_projects));
     window._sf_activeProjectId = newId;
     localStorage.setItem('sf_active_project', newId);
   }
+
+  // Migrate existing projects missing format/brief fields
+  var migrated = false;
+  window._sf_projects = window._sf_projects.map(function(p) {
+    if (!p.format) { p.format = 'novel'; migrated = true; }
+    if (p.brief === undefined) { p.brief = ''; migrated = true; }
+    return p;
+  });
+  if (migrated) localStorage.setItem('sf_projects', JSON.stringify(window._sf_projects));
 
   // Resolve active project — fall back to first if registry is corrupted
   var found = window._sf_projects.find(function(p) { return p.id === window._sf_activeProjectId; });
@@ -72,14 +81,18 @@
     localStorage.setItem('sf_active_project', found.id);
     console.warn('[StoryForge] Active project not found in registry — reset to first project');
   }
-  window._sf_activeProject    = found;
-  window._sf_currentProjectName = found.name;
+  window._sf_activeProject      = found;
+  window._sf_currentProjectName  = found.name;
+  window._sf_currentProjectFormat = found.format || 'novel';
+  window._sf_currentProjectBrief  = found.brief  || '';
 })();
 
-var projects           = window._sf_projects;
-var activeProjectId    = window._sf_activeProjectId;
-var activeProject      = window._sf_activeProject;
-var currentProjectName = window._sf_currentProjectName;
+var projects              = window._sf_projects;
+var activeProjectId       = window._sf_activeProjectId;
+var activeProject         = window._sf_activeProject;
+var currentProjectName    = window._sf_currentProjectName;
+var currentProjectFormat  = window._sf_currentProjectFormat;
+var currentProjectBrief   = window._sf_currentProjectBrief;
 
 function projectKey(suffix) {
   if (!activeProjectId) {
@@ -346,6 +359,17 @@ const TYPE_TO_COLUMN = {
 
 // The 5 physical column IDs that exist in the HTML.
 const COLUMN_TYPES = ['character', 'world', 'arc', 'quote', 'idea'];
+
+// Format-based default column labels. Each entry: { label, strip }.
+// strip = explicit short form for the vertical strip (never sliced from label).
+const FORMAT_COLUMNS = {
+  novel:      { character: { label: 'Characters',   strip: 'Char' }, world: { label: 'World Building', strip: 'Wrld' }, arc: { label: 'Plot & Arcs',    strip: 'Plot' }, quote: { label: 'Key Quotes', strip: 'Quot' }, idea: { label: 'Ideas', strip: 'Idea' } },
+  biography:  { character: { label: 'People',       strip: 'Pepl' }, world: { label: 'Research',       strip: 'Rsrc' }, arc: { label: 'Structure',      strip: 'Strc' }, quote: { label: 'Key Quotes', strip: 'Quot' }, idea: { label: 'Ideas', strip: 'Idea' } },
+  memoir:     { character: { label: 'People',       strip: 'Pepl' }, world: { label: 'Context',        strip: 'Cntx' }, arc: { label: 'Structure',      strip: 'Strc' }, quote: { label: 'Key Quotes', strip: 'Quot' }, idea: { label: 'Ideas', strip: 'Idea' } },
+  nonfiction: { character: { label: 'People',       strip: 'Pepl' }, world: { label: 'Research',       strip: 'Rsrc' }, arc: { label: 'Structure',      strip: 'Strc' }, quote: { label: 'Key Quotes', strip: 'Quot' }, idea: { label: 'Ideas', strip: 'Idea' } },
+  screenplay: { character: { label: 'Characters',   strip: 'Char' }, world: { label: 'Setting',        strip: 'Set.' }, arc: { label: 'Story & Scenes', strip: 'Scne' }, quote: { label: 'Key Lines',  strip: 'Line' }, idea: { label: 'Ideas', strip: 'Idea' } },
+  other:      { character: { label: 'Characters',   strip: 'Char' }, world: { label: 'Setting',        strip: 'Set.' }, arc: { label: 'Structure',      strip: 'Strc' }, quote: { label: 'Key Quotes', strip: 'Quot' }, idea: { label: 'Ideas', strip: 'Idea' } }
+};
 
 // H1 — Global card search query (empty = show all)
 var cardSearchQuery = '';
@@ -1503,6 +1527,27 @@ async function initApiKeyUx() {
 
   // Clear button → remove from localStorage and show banner
   document.getElementById('clearKeyBtn').addEventListener('click', clearApiKey);
+
+  // ElevenLabs key — load from localStorage and wire up UI
+  const elabsCached = localStorage.getItem('sf_elabs_key') || '';
+  if (elabsCached) {
+    ELEVENLABS_API_KEY = elabsCached;
+    updateElabsKeyStatusUi(elabsCached);
+  }
+  document.getElementById('saveElabsKey').addEventListener('click', function() {
+    const k = document.getElementById('elabsKeyInput').value.trim();
+    if (!k) { setModalStatus('⚠️ Paste your ElevenLabs key first.'); return; }
+    ELEVENLABS_API_KEY = k;
+    localStorage.setItem('sf_elabs_key', k);
+    updateElabsKeyStatusUi(k);
+    setModalStatus('✅ ElevenLabs key saved!');
+  });
+  document.getElementById('clearElabsKeyBtn').addEventListener('click', function() {
+    ELEVENLABS_API_KEY = '';
+    localStorage.removeItem('sf_elabs_key');
+    updateElabsKeyStatusUi('');
+    setModalStatus('🗑️ ElevenLabs key removed.');
+  });
 }
 
 // updateKeyStatusUi: updates the summary chip, banner, input, and clear button
@@ -1524,6 +1569,23 @@ function updateKeyStatusUi(key) {
     chip.textContent = '— click to set';
     chip.classList.remove('has-key');
     banner.classList.remove('hidden');
+    input.value = '';
+    clearBtn.classList.add('hidden');
+  }
+}
+
+function updateElabsKeyStatusUi(key) {
+  const chip     = document.getElementById('elabsKeyStatusChip');
+  const input    = document.getElementById('elabsKeyInput');
+  const clearBtn = document.getElementById('clearElabsKeyBtn');
+  if (key) {
+    chip.textContent = '✓ active (···' + key.slice(-4) + ')';
+    chip.classList.add('has-key');
+    input.value = key;
+    clearBtn.classList.remove('hidden');
+  } else {
+    chip.textContent = '— click to set';
+    chip.classList.remove('has-key');
     input.value = '';
     clearBtn.classList.add('hidden');
   }
@@ -2775,7 +2837,7 @@ async function generateSummary() {
         max_tokens: 300,
         messages: [{
           role:    'user',
-          content: 'Write a 3–5 sentence story overview for an isekai light novel called "' + currentProjectName + '" based on these notes. Be specific about characters, current arcs, and world details. Max 120 words.\n\n' + storyData
+          content: 'Write a 3–5 sentence overview for a ' + currentProjectFormat + ' called "' + currentProjectName + '" based on these notes. Be specific about characters, current arcs, and world details. Max 120 words.\n\n' + storyData
         }]
       })
     });
@@ -3380,7 +3442,9 @@ function buildTieredContext(message) {
   cards.forEach(function(c) { counts[c.type] = (counts[c.type] || 0) + 1; });
   var countSummary = Object.keys(counts).map(function(t) { return counts[t] + ' ' + t; }).join(', ');
 
-  var ctx = 'Story notes for "' + currentProjectName + '" (' + countSummary + '):\n';
+  var ctx = 'Project: "' + currentProjectName + '" (' + currentProjectFormat + ')\n' +
+    (currentProjectBrief ? currentProjectBrief + '\n\n' : '') +
+    'Notes (' + countSummary + '):\n';
 
   function cardLine(c, truncate) {
     var raw = c.content || '';
@@ -3467,7 +3531,17 @@ async function sendChatMessage() {
     }
 
     // Build system prompt, injecting stored memory and saved suggestions if available
-    var baseSystem = 'You are a creative writing assistant helping develop an isekai/anime light novel called "' + currentProjectName + '" where the main character Bon gets reincarnated. Be specific, creative, and concise. Help with writing, brainstorming, characters, plot, and dialogue.\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, and link/unlink cards to outline nodes. You CANNOT: write to the Working Copy (user controls that), delete cards, or do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true }. If a tool fails, tell the user exactly what failed. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
+    var projectFacts = 'You are helping develop a ' + currentProjectFormat + ' called "' + currentProjectName + '".' +
+      (currentProjectBrief ? ' ' + currentProjectBrief : '');
+    var assistantBehavior = 'Be specific, creative, and concise. ' + ({
+      novel:      'Help with writing, brainstorming, characters, plot, and dialogue.',
+      biography:  'Help with structure, research organization, chronology, source integration, and narrative clarity.',
+      memoir:     'Help with voice, memory reconstruction, thematic structure, and emotional arc.',
+      nonfiction: 'Help with argument structure, research notes, clarity, and chapter organization.',
+      screenplay: 'Help with scene writing, dialogue, structure, and character motivation.',
+      other:      'Help with writing, brainstorming, structure, and development.'
+    }[currentProjectFormat] || 'Help with writing, brainstorming, structure, and development.');
+    var baseSystem = projectFacts + ' ' + assistantBehavior + '\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, and link/unlink cards to outline nodes. You CANNOT: write to the Working Copy (user controls that), delete cards, or do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true }. If a tool fails, tell the user exactly what failed. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
     var storedMemory = localStorage.getItem(projectKey('chat_memory'));
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
@@ -3590,8 +3664,6 @@ async function sendChatMessage() {
           }
         }
       }
-
-      console.log('[Sage] iteration', iteration, 'stop_reason:', stopReason);
 
       if (stopReason === 'end_turn') {
         flushTTSSentences('', true);
@@ -3741,8 +3813,7 @@ var ttsNextAudio = null; // resolved audio element for ttsNextText (null while i
 var ttsNextFetch = null; // Promise<audio|null> for the in-flight pre-fetch
 var ttsMode      = 'elevenlabs'; // 'elevenlabs' | 'browser' — toggled by ttsModeBtn
 
-// TODO: move API key to env var or backend proxy before deploying anywhere public
-var ELEVENLABS_API_KEY  = 'sk_f5c421755f47b299a9db88eb2c90b51245d02d9bd4eb2590';
+var ELEVENLABS_API_KEY  = localStorage.getItem('sf_elabs_key') || '';
 var ELEVENLABS_VOICE_ID = 'oL6xVEFZFZWN3ZxjScyK';
 
 async function fetchElevenLabsAudio(text) {
@@ -4320,7 +4391,6 @@ function loadSageVoice() {
       return v.lang.startsWith('en') && v.name.toLowerCase().includes('female');
     }) || voices.find(function(v) { return v.lang.startsWith('en'); }) || null;
   }
-  console.log('[Sage voice]', sageVoice ? sageVoice.name : 'browser default');
 }
 
 // ============================================================
@@ -5052,7 +5122,7 @@ async function handleWritingAiAction(action) {
   var prompt;
 
   if (action === 'generate') {
-    prompt = 'You are a creative fiction writer. Using the story notes below, write a compelling narrative opening for "' + currentProjectName + '" — approximately 600–1000 words. Stay faithful to the established characters, world, and tone. Write in a vivid, immersive style.\n\n' + storyCtx;
+    prompt = 'You are a creative writer working on a ' + currentProjectFormat + '. Using the notes below, write a compelling opening for "' + currentProjectName + '" — approximately 600–1000 words. Stay faithful to the established characters, world, and tone. Write in a vivid, immersive style.\n\n' + storyCtx;
   } else if (action === 'continue') {
     if (!copyContent) { showToast('Add some text to your Working Copy first.'); aiBtn.textContent = 'AI ▾'; aiBtn.disabled = false; return; }
     prompt = 'Continue the story from where this passage ends. Write approximately 300 more words in the same style and voice. Keep it consistent with the story notes.\n\nStory notes:\n' + storyCtx + '\n\nPassage so far:\n' + copyContent.slice(-1500);
@@ -6468,7 +6538,7 @@ async function generateStoryIdeas() {
   var directionNote = contextNote ? '\n\nUser direction: ' + contextNote : '';
 
   var prompt =
-    'You are a story development assistant for an isekai/anime story called "' + currentProjectName + '".\n' +
+    'You are a story development assistant for a ' + currentProjectFormat + ' called "' + currentProjectName + '".\n' +
     'Based on the story so far, generate exactly 3 distinct "What if..." story ideas for what could happen next.\n' +
     'Each idea should be 2–3 sentences. Number them 1, 2, 3. Make them varied and interesting.\n\n' +
     storyCtx + '\n\n' + arcSummary + sitNote + directionNote;
@@ -6502,16 +6572,20 @@ async function generateStoryIdeas() {
 // Project switcher UI, create/switch/rename functions.
 // ============================================================
 
-function createProject(name) {
-  var trimmed = name.trim();
+function createProject(name, format, brief) {
+  var trimmed = (name || '').trim();
   if (!trimmed) return;
-  if (projects.some(function(p) { return p.name.toLowerCase() === trimmed.toLowerCase(); })) {
-    alert('A project named "' + trimmed + '" already exists.');
-    return;
-  }
-  var id = 'proj_' + Date.now();
-  projects.push({ id: id, name: trimmed, createdAt: new Date().toISOString() });
+  if (projects.some(function(p) { return p.name.toLowerCase() === trimmed.toLowerCase(); })) return;
+  var id  = 'proj_' + Date.now();
+  var fmt = format || 'novel';
+  var brf = (brief || '').trim();
+  projects.push({ id: id, name: trimmed, format: fmt, brief: brf, createdAt: new Date().toISOString() });
   localStorage.setItem('sf_projects', JSON.stringify(projects));
+
+  // Save format-based default column labels for new project
+  var defaultLabels = FORMAT_COLUMNS[fmt] || FORMAT_COLUMNS['other'];
+  localStorage.setItem(id + '_column_labels', JSON.stringify(defaultLabels));
+
   switchProject(id);
 }
 
@@ -6537,20 +6611,188 @@ function renameProject(id, newName) {
 
 function promptCreateProject() {
   document.getElementById('projectDropdown').hidden = true;
-  var name = prompt('New project name:');
-  if (name) createProject(name);
+  openNewProjectModal(null);
+}
+
+function openNewProjectModal(projectId) {
+  var modal    = document.getElementById('newProjectModal');
+  var overlay  = document.getElementById('newProjectModalOverlay');
+  var titleIn  = document.getElementById('newProjectTitle');
+  var formatIn = document.getElementById('newProjectFormat');
+  var briefIn  = document.getElementById('newProjectBrief');
+  var saveBtn  = document.getElementById('newProjectSave');
+  var errEl    = document.getElementById('newProjectError');
+
+  var editing = projectId ? projects.find(function(p) { return p.id === projectId; }) : null;
+  document.getElementById('newProjectModalHeading').textContent = editing ? 'Edit Project' : 'New Project';
+  saveBtn.textContent = editing ? 'Save Changes' : 'Create Project';
+
+  if (editing) {
+    titleIn.value  = editing.name;
+    formatIn.value = editing.format || 'novel';
+    briefIn.value  = editing.brief  || '';
+  } else {
+    titleIn.value  = '';
+    formatIn.value = 'novel';
+    briefIn.value  = '';
+  }
+  errEl.textContent = '';
+  errEl.classList.add('hidden');
+
+  modal.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+  titleIn.focus();
+  titleIn.addEventListener('input', function() {
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+  });
+
+  function close() {
+    modal.classList.add('hidden');
+    overlay.classList.add('hidden');
+    saveBtn.removeEventListener('click', onSave);
+    overlay.removeEventListener('click', close);
+  }
+
+  function onSave() {
+    console.log('[modal] onSave fired, name:', titleIn.value.trim());
+    var name   = titleIn.value.trim();
+    var format = formatIn.value;
+    var brief  = briefIn.value.trim();
+    if (!name) { errEl.textContent = 'Title is required.'; errEl.classList.remove('hidden'); titleIn.focus(); return; }
+    if (!editing && projects.some(function(p) { return p.name.toLowerCase() === name.toLowerCase(); })) {
+      errEl.textContent = 'A project with that name already exists.'; errEl.classList.remove('hidden'); titleIn.select(); return;
+    }
+
+    if (editing) {
+      if (projects.some(function(p) { return p.id !== editing.id && p.name.toLowerCase() === name.toLowerCase(); })) {
+        errEl.textContent = 'A project with that name already exists.'; errEl.classList.remove('hidden'); return;
+      }
+      editing.name   = name;
+      editing.format = format;
+      editing.brief  = brief;
+      localStorage.setItem('sf_projects', JSON.stringify(projects));
+      close();
+      location.reload();
+    } else {
+      close();
+      createProject(name, format, brief);
+    }
+  }
+
+  saveBtn.addEventListener('click', onSave);
+  overlay.addEventListener('click', close);
+  titleIn.addEventListener('keydown', function(e) { if (e.key === 'Enter') onSave(); });
+
+  var sageBtn = document.getElementById('newProjectPlanWithSage');
+  if (sageBtn) {
+    sageBtn.onclick = function() {
+      console.log('[modal] Plan with Sage clicked');
+      var draft = (titleIn && titleIn.value || '').trim();
+      close();
+      openChat();
+      var inp = document.getElementById('chatInput');
+      if (inp) {
+        inp.value = draft
+          ? 'I want to start planning a new project called "' + draft + '". Help me think through the concept, format, and themes.'
+          : 'I want to start planning a new project. Help me think through the concept, format, and themes.';
+        inp.style.height = 'auto';
+        inp.style.height = Math.min(inp.scrollHeight, 110) + 'px';
+        inp.focus();
+      }
+    };
+  }
 }
 
 function renderProjectDropdown() {
   var dd = document.getElementById('projectDropdown');
   dd.innerHTML = projects.map(function(p) {
     var cls = p.id === activeProjectId ? ' class="active"' : '';
-    return '<button' + cls + ' data-id="' + p.id + '">' + p.name + '</button>';
+    return '<div class="project-dd-row">' +
+      '<button' + cls + ' data-id="' + p.id + '">' + escapeHtml(p.name) + '</button>' +
+      '<button class="project-edit-btn" data-edit-id="' + p.id + '" title="Edit project">⚙</button>' +
+      '</div>';
   }).join('') + '<hr><button class="new-project-btn" id="newProjectBtn">+ New Project</button>';
   dd.querySelectorAll('[data-id]').forEach(function(btn) {
     btn.addEventListener('click', function() { switchProject(this.dataset.id); });
   });
+  dd.querySelectorAll('[data-edit-id]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('projectDropdown').hidden = true;
+      openNewProjectModal(this.dataset.editId);
+    });
+  });
   document.getElementById('newProjectBtn').addEventListener('click', promptCreateProject);
+}
+
+// ─────────────────────────────────────────────────────────────
+// COLUMN LABEL SYSTEM — format-based defaults + per-project overrides
+// ─────────────────────────────────────────────────────────────
+
+function applyColumnLabels(labels) {
+  COLUMN_TYPES.forEach(function(colType) {
+    var entry  = labels[colType];
+    if (!entry) return;
+    var header = document.querySelector('.canvas-col[data-type="' + colType + '"] .col-label');
+    var strip  = document.querySelector('.canvas-col[data-type="' + colType + '"] .col-vs-label');
+    if (header) header.textContent = entry.label;
+    if (strip)  strip.textContent  = entry.strip;
+  });
+}
+
+function loadAndApplyColumnLabels() {
+  var key     = activeProjectId + '_column_labels';
+  var stored  = localStorage.getItem(key);
+  var labels  = stored ? JSON.parse(stored) : (FORMAT_COLUMNS[currentProjectFormat] || FORMAT_COLUMNS['other']);
+  applyColumnLabels(labels);
+  initColumnRename(labels, key);
+}
+
+function initColumnRename(labels, storageKey) {
+  COLUMN_TYPES.forEach(function(colType) {
+    var headerLeft = document.querySelector('.canvas-col[data-type="' + colType + '"] .col-header-left');
+    if (!headerLeft) return;
+
+    var pencil = document.createElement('button');
+    pencil.className   = 'col-rename-btn';
+    pencil.title       = 'Rename column';
+    pencil.textContent = '✎';
+    headerLeft.appendChild(pencil);
+
+    function startRename() {
+      var labelEl = headerLeft.querySelector('.col-label');
+      if (!labelEl || headerLeft.querySelector('.col-rename-input')) return;
+      var current = labels[colType] ? labels[colType].label : labelEl.textContent;
+      var input   = document.createElement('input');
+      input.className   = 'col-rename-input';
+      input.value       = current;
+      input.style.cssText = 'font-size:inherit;font-weight:inherit;width:8rem;border:none;border-bottom:1px solid var(--accent);background:transparent;color:inherit;outline:none;';
+      labelEl.replaceWith(input);
+      input.focus();
+      input.select();
+
+      function commit() {
+        var newLabel = input.value.trim() || current;
+        var restored = document.createElement('span');
+        restored.className   = 'col-label';
+        restored.textContent = newLabel;
+        input.replaceWith(restored);
+        if (!labels[colType]) labels[colType] = { label: newLabel, strip: newLabel.slice(0, 4) };
+        labels[colType].label = newLabel;
+        var stripEl = document.querySelector('.canvas-col[data-type="' + colType + '"] .col-vs-label');
+        if (stripEl) stripEl.textContent = labels[colType].strip;
+        localStorage.setItem(storageKey, JSON.stringify(labels));
+        restored.addEventListener('dblclick', startRename);
+      }
+      input.addEventListener('blur',   commit);
+      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } if (e.key === 'Escape') { input.value = current; input.blur(); } });
+    }
+
+    pencil.addEventListener('click', startRename);
+    var labelEl = headerLeft.querySelector('.col-label');
+    if (labelEl) labelEl.addEventListener('dblclick', startRename);
+  });
 }
 
 // Wire the project switcher button
@@ -6558,10 +6800,21 @@ function renderProjectDropdown() {
   var nameEl = document.getElementById('projectSwitcherName');
   if (nameEl) nameEl.textContent = currentProjectName;
 
-  // Also update the home tab project name and page title
+  // Update home project name and page title
   var homeName = document.querySelector('.home-project-name');
   if (homeName) homeName.textContent = currentProjectName;
   document.title = 'StoryForge — ' + currentProjectName;
+
+  // Set Sage intro message driven by project name + brief
+  var sageIntro = document.getElementById('sageIntroMsg');
+  if (sageIntro) {
+    var briefSnippet = '';
+    if (currentProjectBrief) {
+      var m = currentProjectBrief.match(/^[^.!?]+[.!?]/);
+      briefSnippet = ' ' + (m ? m[0] : currentProjectBrief.slice(0, 120));
+    }
+    sageIntro.querySelector('p').textContent = 'Hi! I\'m here to help with "' + currentProjectName + '".' + briefSnippet + ' Ask me anything.';
+  }
 
   var btn = document.getElementById('projectSwitcherBtn');
   if (!btn) return;
@@ -6575,6 +6828,9 @@ function renderProjectDropdown() {
     var dd = document.getElementById('projectDropdown');
     if (dd) dd.hidden = true;
   });
+
+  // Apply format-based column labels for the active project
+  loadAndApplyColumnLabels();
 })();
 
 // ============================================================
