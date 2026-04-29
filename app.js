@@ -1033,9 +1033,9 @@ function renderHomePage() {
   }
   setStatNum('homeStatWords', wordCount);
 
-  // Apply accent colors to nav tiles via JS (CSS attr() not supported for custom props)
+  // Nav tile accent colors applied via CSS border-top instead
   document.querySelectorAll('.home-nav-btn[data-color]').forEach(function(btn) {
-    btn.style.borderLeftColor = btn.getAttribute('data-color');
+    btn.style.borderTopColor = btn.getAttribute('data-color');
   });
 
   // Recent cards grid — last 6 active cards by date
@@ -1059,7 +1059,7 @@ function renderHomePage() {
     '<div class="home-recent-label">Recently Added</div>' +
     '<div class="home-recent-cards">' +
     recent.map(function(card) {
-      return '<div class="home-recent-card" style="border-left: 3px solid ' + (typeColors[card.type] || '#666') + '">' +
+      return '<div class="home-recent-card">' +
         '<div class="home-recent-card-type" style="color:' + (typeColors[card.type] || '#666') + '">' + card.type + '</div>' +
         '<div class="home-recent-card-title">' + escapeHtml(card.title) + '</div>' +
         '</div>';
@@ -2263,7 +2263,6 @@ function renderMap() {
     el.dataset.id = card.id;
     el.style.left        = pos.x + 'px';
     el.style.top         = pos.y + 'px';
-    el.style.borderLeftColor = color;
     // Restore saved card size if the user previously resized it
     if (pos.w) el.style.width  = pos.w + 'px';
     if (pos.h) el.style.height = pos.h + 'px';
@@ -3904,28 +3903,28 @@ var orbMicVolume  = 0;
 var orbRecognition = null;
 var orbRotY       = 0;
 var orbParticles  = [];
+var orbPulseRings = [];
+var orbPulseTimer = null;
 
-// Build band-based particle array (latitude rings → banded wave visual like reference)
+// Build uniform spherical particle cloud (avoids polar band clustering)
 (function initOrbParticles() {
-  var RINGS   = 24;
-  var BASE_PER_RING = 48;
-  for (var ring = 0; ring < RINGS; ring++) {
-    var phi       = Math.PI * (ring + 0.5) / RINGS;
-    var ringR     = Math.sin(phi);
-    var count     = Math.max(6, Math.round(BASE_PER_RING * ringR));
-    var thetaOff  = ring * 0.37; // stagger each ring slightly
-    for (var j = 0; j < count; j++) {
-      var theta = thetaOff + 2 * Math.PI * j / count;
-      orbParticles.push({
-        bx:       ringR * Math.cos(theta),
-        by:       Math.cos(phi),
-        bz:       ringR * Math.sin(theta),
-        ring:     ring,
-        ringFrac: ring / RINGS,
-        theta:    theta,
-        phase:    Math.random() * Math.PI * 2
-      });
-    }
+  var N = 340;
+  for (var i = 0; i < N; i++) {
+    var phi   = Math.acos(1 - 2 * Math.random());
+    var theta = Math.random() * Math.PI * 2;
+    var sinP  = Math.sin(phi);
+    orbParticles.push({
+      bx:       sinP * Math.cos(theta),
+      by:       Math.cos(phi),
+      bz:       sinP * Math.sin(theta),
+      ring:     0,
+      ringFrac: Math.random(),
+      theta:    theta,
+      phase:    Math.random() * Math.PI * 2,
+      baseSize:  0.55 + Math.random() * 1.6,
+      baseAlpha: 0.28 + Math.random() * 0.58,
+      hue:       264 + (Math.random() - 0.5) * 22
+    });
   }
 })();
 
@@ -3940,6 +3939,7 @@ function openJarvisOrb() {
 // closeJarvisOrb: stop animation when chat closes
 function closeJarvisOrb() {
   orbIsOpen = false;
+  clearInterval(orbPulseTimer); orbPulseTimer = null; orbPulseRings = [];
   if (orbAnimFrame) { cancelAnimationFrame(orbAnimFrame); orbAnimFrame = null; }
   stopOrbListening();
   stopOrbMic();
@@ -3952,6 +3952,14 @@ function closeJarvisOrb() {
 
 function setOrbState(state) {
   orbState = state;
+  // Pulse ring timer — fire every 700ms in listening state
+  clearInterval(orbPulseTimer);
+  orbPulseRings = [];
+  if (state === 'listening') {
+    orbPulseTimer = setInterval(function() {
+      orbPulseRings.push({ r: 28, opacity: 0.55 });
+    }, 700);
+  }
   var labels = { idle: '', listening: '🎤  Listening...', thinking: 'Thinking...', speaking: 'Speaking...' };
   var el = document.getElementById('jarvisOrbStatus');
   if (el) el.textContent = labels[state] || '';
@@ -4054,58 +4062,43 @@ function renderOrb() {
     var alpha  = 0.15 + 0.85 * depth;
     var radius = 0.6 + 2.0 * depth;
 
-    return { sx: sx, sy: sy, alpha: alpha, radius: radius, fz: fz };
+    return { sx: sx, sy: sy, fz: fz, p: p };
   });
 
-  // Sort back-to-front for correct depth ordering
+  // Sort back-to-front (painter's algorithm)
   projected.sort(function(a, b) { return a.fz - b.fz; });
 
-  // Background glow halo — color shifts by state
-  var haloColors = {
-    idle:      '0, 100, 220',
-    listening: '0, 180, 255',
-    thinking:  '80, 0, 220',
-    speaking:  '0, 160, 200'
-  };
-  var haloColor = haloColors[orbState] || haloColors.idle;
-  var grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.5);
-  grd.addColorStop(0,   'rgba(' + haloColor + ', 0.10)');
-  grd.addColorStop(0.5, 'rgba(' + haloColor + ', 0.04)');
-  grd.addColorStop(1,   'rgba(0, 0, 0, 0)');
-  ctx.beginPath();
-  ctx.arc(cx, cy, R * 1.5, 0, Math.PI * 2);
-  ctx.fillStyle = grd;
-  ctx.fill();
+  // Ambient background glow — indigo, alpha varies by state
+  var glowAlpha = orbState === 'speaking' ? 0.22 : orbState === 'listening' ? 0.14 : 0.07;
+  var bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.6);
+  bgGlow.addColorStop(0, 'hsla(268, 65%, 45%, ' + glowAlpha + ')');
+  bgGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = bgGlow;
+  ctx.fillRect(0, 0, W, H);
 
-  // Particle colors by state
-  var coreColors = {
-    idle:      '60, 160, 255',
-    listening: '0, 220, 255',
-    thinking:  '140, 80, 255',
-    speaking:  '80, 200, 255'
-  };
-  var color = coreColors[orbState] || coreColors.idle;
-
-  // Draw each particle with a 3-layer glow (outer halo → mid glow → bright core)
-  projected.forEach(function(p) {
-    var a = p.alpha, r = p.radius;
-
-    // Outer halo
+  // Pulse rings (listening state only)
+  orbPulseRings = orbPulseRings.filter(function(ring) { return ring.opacity > 0.02; });
+  orbPulseRings.forEach(function(ring) {
+    ring.r      += 1.8;
+    ring.opacity *= 0.963;
     ctx.beginPath();
-    ctx.arc(p.sx, p.sy, r * 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(' + color + ', ' + (a * 0.04).toFixed(3) + ')';
-    ctx.fill();
+    ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'hsla(268, 72%, 72%, ' + ring.opacity.toFixed(3) + ')';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  });
 
-    // Mid glow
-    ctx.beginPath();
-    ctx.arc(p.sx, p.sy, r * 2.0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(' + color + ', ' + (a * 0.18).toFixed(3) + ')';
-    ctx.fill();
+  // Draw particles — depth-cued lightness and alpha (HSLA)
+  projected.forEach(function(pt) {
+    var depth = (pt.fz + 1.5) / 3;                         // 0=back, 1=front
+    var lit   = 48 + depth * 28;                            // 48% (dim) → 76% (bright)
+    var alpha = pt.p.baseAlpha * (0.1 + depth * 0.9);
+    var sz    = pt.p.baseSize  * Math.max(0.18, depth);
+    var hue   = pt.p.hue;
 
-    // Core dot
     ctx.beginPath();
-    ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(' + color + ', ' + Math.min(1, a).toFixed(3) + ')';
+    ctx.arc(pt.sx, pt.sy, sz, 0, Math.PI * 2);
+    ctx.fillStyle = 'hsla(' + hue + ', 58%, ' + lit.toFixed(0) + '%, ' + Math.min(1, alpha).toFixed(3) + ')';
     ctx.fill();
   });
 }

@@ -29,7 +29,18 @@
       "Bash(rm -rf \"NEW NOTES\")",
       "WebFetch(domain:x.com)",
       "Bash(git commit *)",
-      "Bash(git tag *)"
+      "Bash(git tag *)",
+      "Bash(npx skills *)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/obra/superpowers/main/skills/brainstorming/SKILL.md\")",
+      "Bash(mkdir -p \"c:/Users/esteb/Documents/Story website/.claude/skills/systematic-debugging\")",
+      "Bash(mkdir -p \"c:/Users/esteb/Documents/Story website/.claude/skills/verification-before-completion\")",
+      "Bash(mkdir -p \"c:/Users/esteb/Documents/Story website/.claude/skills/brainstorming/scripts\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/root-cause-tracing.md\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/obra/superpowers/main/skills/brainstorming/visual-companion.md\")",
+      "Bash(grep -E \"\\\\.\\(html|js|css|json|env|txt\\)$\")",
+      "Skill(impeccable)",
+      "Skill(impeccable:*)"
     ]
   },
   "hooks": {

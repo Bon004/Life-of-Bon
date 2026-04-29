@@ -2,41 +2,57 @@
    DESIGN TOKENS
    ============================================================ */
 :root {
-  --accent:            #7c3aed;
-  --accent-hover:      #6d28d9;
-  --accent-light:      rgba(124,58,237,0.12);
-  --accent-rgb:        124, 58, 237;
+  /* Brand palette — OKLCH */
+  --accent:            oklch(58% 0.16 272);
+  --accent-hover:      oklch(52% 0.17 272);
+  --accent-dim:        oklch(58% 0.16 272 / 0.13);
+  --accent-glow:       oklch(58% 0.16 272 / 0.25);
+  --accent-light:      oklch(58% 0.16 272 / 0.12);
+  --accent-rgb:        99, 102, 241; /* legacy alias for existing rgba() calls */
 
-  --bg:                #07080f;
-  --surface:           #0e1020;
-  --surface-2:         #141829;
-  --surface-selected:  #110e2a;
-  --border:            rgba(255,255,255,0.08);
+  --bg:                oklch(7.5% 0.009 264);
+  --surface:           oklch(11.5% 0.011 264);
+  --surface-2:         oklch(14.5% 0.013 264);
+  --surface-3:         oklch(18% 0.015 264);
+  --surface-selected:  oklch(10% 0.015 272);
+  --border:            oklch(100% 0 0 / 0.07);
+  --border-2:          oklch(100% 0 0 / 0.13);
 
-  --text:              #e6edf3;
-  --text-muted:        #8a9098;
-  --text-light:        #52575f;
+  --text:              oklch(90% 0.005 264);
+  --text-muted:        oklch(60% 0.008 264);
+  --text-light:        oklch(38% 0.006 264);
 
-  --header-bg:         #05060e;
-  --header-border:     rgba(255,255,255,0.06);
+  --header-bg:         oklch(6% 0.008 264);
+  --header-border:     oklch(100% 0 0 / 0.06);
 
+  /* Category colors — RGB triplets for color-mix() */
+  --cat-char:          59 130 246;
+  --cat-world:         16 185 129;
+  --cat-arc:           139 92 246;
+  --cat-quote:         245 158 11;
+  --cat-idea:          239 68 68;
+
+  /* Legacy hex aliases — kept for existing rgba() calls throughout file */
   --color-character:   #3b82f6;
   --color-world:       #10b981;
   --color-arc:         #8b5cf6;
   --color-quote:       #f59e0b;
   --color-idea:        #ef4444;
 
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.20);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.40), 0 2px 4px rgba(0,0,0,0.25);
-  --shadow-lg:  0 24px 64px rgba(0,0,0,0.60), 0 8px 24px rgba(0,0,0,0.40);
+  --shadow-sm:  0 1px 3px oklch(0% 0 0 / 0.30);
+  --shadow-md:  0 4px 16px oklch(0% 0 0 / 0.40);
+  --shadow-lg:  0 8px 32px oklch(0% 0 0 / 0.55);
+
+  --font-ui:    'Inter', system-ui, sans-serif;
+  --font-lit:   'Lora', Georgia, serif;
 
   --radius:     8px;
   --radius-lg:  12px;
   --transition: 0.16s ease;
   --chat-panel-width: 340px;
 
-  --scrollbar-thumb:       rgba(255,255,255,0.10);
-  --scrollbar-thumb-hover: rgba(255,255,255,0.18);
+  --scrollbar-thumb:       oklch(100% 0 0 / 0.10);
+  --scrollbar-thumb-hover: oklch(100% 0 0 / 0.18);
 }
 
 /* ============================================================
@@ -46,7 +62,8 @@
 html, body { height: 100%; }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-ui);
+  font-size: 14px;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -523,7 +540,7 @@ body {
 .canvas-columns::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
 .canvas-col {
-  min-width: 240px;
+  min-width: 280px;
   flex: 1;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -653,18 +670,19 @@ body {
 }
 .story-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.035); }
 
-/* On hover, brighten the type-color left border and add a matching outer glow */
-.canvas-col[data-type="character"] .story-card:hover { border-left-color: rgba(59,130,246,0.80);  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(59,130,246,0.18); }
-.canvas-col[data-type="world"]     .story-card:hover { border-left-color: rgba(16,185,129,0.80);  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(16,185,129,0.18); }
-.canvas-col[data-type="arc"]       .story-card:hover { border-left-color: rgba(139,92,246,0.80);  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(139,92,246,0.18); }
-.canvas-col[data-type="quote"]     .story-card:hover { border-left-color: rgba(245,158,11,0.80);  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(245,158,11,0.18); }
-.canvas-col[data-type="idea"]      .story-card:hover { border-left-color: rgba(239,68,68,0.80);   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(239,68,68,0.18); }
+/* Category card background tints — no border stripes */
+.canvas-col[data-type="character"] .story-card { background: color-mix(in srgb, rgb(var(--cat-char))  7%, var(--surface)); }
+.canvas-col[data-type="world"]     .story-card { background: color-mix(in srgb, rgb(var(--cat-world)) 7%, var(--surface)); }
+.canvas-col[data-type="arc"]       .story-card { background: color-mix(in srgb, rgb(var(--cat-arc))   7%, var(--surface)); }
+.canvas-col[data-type="quote"]     .story-card { background: color-mix(in srgb, rgb(var(--cat-quote)) 7%, var(--surface)); }
+.canvas-col[data-type="idea"]      .story-card { background: color-mix(in srgb, rgb(var(--cat-idea))  7%, var(--surface)); }
 
-.canvas-col[data-type="character"] .story-card { border-left: 3px solid var(--color-character); background-image: linear-gradient(135deg, rgba(59,130,246,0.04) 0%, transparent 60%); }
-.canvas-col[data-type="world"]     .story-card { border-left: 3px solid var(--color-world);     background-image: linear-gradient(135deg, rgba(16,185,129,0.04) 0%, transparent 60%); }
-.canvas-col[data-type="arc"]       .story-card { border-left: 3px solid var(--color-arc);       background-image: linear-gradient(135deg, rgba(139,92,246,0.04) 0%, transparent 60%); }
-.canvas-col[data-type="quote"]     .story-card { border-left: 3px solid var(--color-quote);     background-image: linear-gradient(135deg, rgba(245,158,11,0.04) 0%, transparent 60%); }
-.canvas-col[data-type="idea"]      .story-card { border-left: 3px solid var(--color-idea);      background-image: linear-gradient(135deg, rgba(239,68,68,0.04) 0%, transparent 60%); }
+/* Category hover glow — ring only, no border-left */
+.canvas-col[data-type="character"] .story-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(59,130,246,0.22); }
+.canvas-col[data-type="world"]     .story-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(16,185,129,0.22); }
+.canvas-col[data-type="arc"]       .story-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(139,92,246,0.22); }
+.canvas-col[data-type="quote"]     .story-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(245,158,11,0.22); }
+.canvas-col[data-type="idea"]      .story-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(239,68,68,0.22);  }
 
 /* Card header row: type pill + timestamp */
 .card-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -2923,7 +2941,6 @@ body.chat-open .app-main {
   width: 220px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--color-arc);
   border-radius: var(--radius);
   padding: 12px 14px;
   cursor: pointer;
@@ -3136,8 +3153,7 @@ body.chat-open .app-main {
 .situation-detail {
   margin-top: 10px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border: 1px solid var(--border-2);
   border-radius: var(--radius);
   padding: 10px 14px;
   font-size: 13px;
@@ -3321,8 +3337,7 @@ body.chat-open .app-main {
 .btn-map-arcs:hover { color: var(--accent); border-color: var(--accent); }
 .ideas-result {
   background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border: 1px solid var(--border-2);
   border-radius: var(--radius);
   padding: 12px 14px;
   font-size: 13px;
@@ -3552,13 +3567,11 @@ body.chat-open .app-main {
 }
 
 .home-title {
-  font-size: 5rem;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, #fff 0%, var(--accent) 65%, #f97316 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-lit);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
   line-height: 1.1;
   margin-bottom: 8px;
 }
@@ -3580,42 +3593,41 @@ body.chat-open .app-main {
   max-width: 480px;
 }
 
-/* Stats — 4 in a row below hero */
+/* Stats — inline muted line */
 .home-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: 28px;
   max-width: 560px;
-  width: 100%;
 }
 
 .home-stat-item {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  transition: border-color var(--transition);
+  align-items: baseline;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
 }
-.home-stat-item:hover { border-color: rgba(var(--accent-rgb), 0.4); }
+.home-stat-item + .home-stat-item::before {
+  content: '·';
+  margin: 0 8px;
+  color: var(--text-light);
+  font-size: 13px;
+}
 
 .home-stat-num {
-  font-size: 1.7rem;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text);
-  line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .home-stat-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .btn-get-started {
@@ -3655,23 +3667,22 @@ body.chat-open .app-main {
   gap: 14px;
 }
 
-/* Nav tiles with left accent border matching each section */
+/* Nav tiles — category color on top edge */
 .home-nav-btn {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--border);
+  border-top: 3px solid transparent;
   border-radius: var(--radius);
-  padding: 22px 20px 20px;
+  padding: 20px 20px 18px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-  transition: all var(--transition);
+  transition: border-color var(--transition), background var(--transition);
   font-family: inherit;
   text-align: left;
 }
-.home-nav-btn[data-color] { border-left-color: attr(data-color); }
 .home-nav-btn:hover {
   background: var(--surface-2);
   transform: translateY(-2px);
@@ -3869,60 +3880,34 @@ body.chat-open .app-main {
    All overrides live here; original sections untouched above.
    ============================================================ */
 
-/* -- Tokens -------------------------------------------------- */
+/* -- Additional tokens --------------------------------------- */
 :root {
-  --gradient-accent:   linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
-  --gradient-accent-h: linear-gradient(135deg, var(--accent-hover) 0%, #4f46e5 100%);
   --ease-out:          cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring:       cubic-bezier(0.34, 1.56, 0.64, 1);
-  --surface-raised:    #171b2e;
-  --shadow-card:       0 2px 8px rgba(0,0,0,0.38), 0 1px 2px rgba(0,0,0,0.22);
-  --glow-accent:       0 0 0 2px rgba(124,58,237,0.40), 0 4px 16px rgba(124,58,237,0.18);
+  --surface-raised:    oklch(16% 0.013 264);
+  --shadow-card:       0 2px 8px oklch(0% 0 0 / 0.38), 0 1px 2px oklch(0% 0 0 / 0.22);
+  --glow-accent:       0 0 0 2px oklch(58% 0.16 272 / 0.30), 0 4px 16px oklch(58% 0.16 272 / 0.15);
 }
 
 /* -- Header -------------------------------------------------- */
 .app-header {
-  border-bottom: none;
-  background: linear-gradient(180deg, #060812 0%, var(--header-bg) 100%);
-}
-.app-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(139,92,246,0.45) 20%,
-    rgba(99,102,241,0.65) 55%,
-    rgba(139,92,246,0.40) 80%,
-    transparent 100%
-  );
-  pointer-events: none;
+  border-bottom: 1px solid var(--header-border);
+  background: var(--header-bg);
 }
 
-/* Subtle gradient text on the brand name */
+/* App title — solid color, Lora serif */
 .app-title {
-  background: linear-gradient(120deg, #e8e8ff 10%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-lit);
+  color: var(--text);
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
 }
 
 /* -- Tab bar ------------------------------------------------- */
-
-/* Replace flat active indicator with a gradient underline */
-.tab-btn.active { border-bottom-color: transparent; }
-
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 68%;
-  height: 2px;
-  background: var(--gradient-accent);
-  border-radius: 1px 1px 0 0;
+.tab-btn.active {
+  border-bottom-color: var(--accent);
 }
 
 /* -- Tab panel entrance animation ---------------------------- */
@@ -3951,7 +3936,7 @@ body.chat-open .app-main {
 .canvas-col[data-type="quote"]     { background: linear-gradient(180deg, rgba(245,158,11,0.08) 0%, var(--surface) 80px); }
 .canvas-col[data-type="idea"]      { background: linear-gradient(180deg, rgba(239,68,68,0.08)  0%, var(--surface) 80px); }
 
-/* -- Accent buttons → gradient fill ------------------------- */
+/* -- Accent buttons → solid fill, one deliberate color ----- */
 .btn-add-notes,
 .btn-organize,
 .btn-get-started,
@@ -3960,8 +3945,8 @@ body.chat-open .app-main {
 .btn-backup-export,
 .btn-writing-ai,
 .chat-send {
-  background: var(--gradient-accent);
-  box-shadow: 0 2px 10px rgba(var(--accent-rgb), 0.30);
+  background: var(--accent);
+  box-shadow: none;
 }
 .btn-add-notes:hover,
 .btn-organize:hover,
@@ -3971,11 +3956,9 @@ body.chat-open .app-main {
 .btn-backup-export:hover,
 .btn-writing-ai:hover,
 .chat-send:not(:disabled):hover {
-  background: var(--gradient-accent-h);
-  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.42);
+  opacity: 0.88;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
-/* Kill individual opacity/bg hover overrides set higher up */
-.btn-add-notes:hover  { opacity: 1; }
 .btn-backup-export:hover { transform: translateY(-1px); }
 
 /* -- Ghost / bordered buttons: inset highlight for depth ---- */
@@ -3989,33 +3972,22 @@ body.chat-open .app-main {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
 }
 
-/* -- Modal: gradient top accent bar ------------------------- */
+/* -- Modal: clean surface, no gradient bar ------------------ */
 .modal-box {
   position: relative;
   overflow: hidden;
-}
-.modal-box::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--gradient-accent);
-  border-radius: 18px 18px 0 0;
-  z-index: 1;
-  pointer-events: none;
+  border: 1px solid var(--border-2);
 }
 
-/* -- Ask Claude button: gradient, more vivid ---------------- */
+/* -- Ask Claude button: solid accent ----------------------- */
 .fab-chat {
-  background: var(--gradient-accent);
-  color: #fff;
+  background: var(--accent);
+  color: oklch(97% 0.004 264);
   border: none;
 }
 .fab-chat:hover {
-  background: var(--gradient-accent-h);
-  color: #fff;
-  border-color: transparent;
-  opacity: 0.92;
+  opacity: 0.88;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 /* -- Chat send button: shape refinement --------------------- */
@@ -4255,24 +4227,8 @@ body.distraction-free #df-exit-btn { display: block; }
 /* ── Layering: push main content above particle canvas ─────── */
 .app-main { position: relative; z-index: 1; }
 
-/* ── App shell aurora (subtle drifting radial gradient) ──────── */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse 55% 35% at 20% 65%, rgba(124,58,237,0.05) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 28% at 75% 25%, rgba(99,102,241,0.04) 0%, transparent 60%);
-  animation: auroraShift 32s ease-in-out infinite alternate;
-}
-@keyframes auroraShift {
-  0%   { transform: translate(0,    0)    scale(1); }
-  50%  { transform: translate(4%,   2%)   scale(1.04); }
-  100% { transform: translate(-3%,  4%)   scale(1.02); }
-}
-body.distraction-free::before { animation: none; }
+/* ── App shell: no aurora animation ──────────────────────── */
+body::before { display: none; }
 
 /* ── Ambient particle canvas ──────────────────────────────── */
 #particleCanvas {
@@ -4285,58 +4241,26 @@ body.distraction-free::before { animation: none; }
 }
 body.distraction-free #particleCanvas { display: none; }
 
-/* ── Jarvis orb: breathing pulse ──────────────────────────── */
-@keyframes orbBreath {
-  0%, 100% { filter: drop-shadow(0 0 6px  rgba(99,102,241,0.22)); transform: scale(1); }
-  50%       { filter: drop-shadow(0 0 14px rgba(99,102,241,0.42)); transform: scale(1.025); }
-}
-.jarvis-orb-canvas { animation: orbBreath 4s ease-in-out infinite; }
+/* ── Jarvis orb: breathing animation removed (canvas orb handles its own state) */
 
-/* ── Jarvis panel: glass surface + animated accent left edge ── */
+/* ── Jarvis panel: purposeful glass surface ─────────────────── */
 .chat-panel {
-  background: rgba(11, 13, 26, 0.82);
+  background: oklch(9% 0.01 264 / 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: -8px 0 32px rgba(0,0,0,0.65), -1px 0 0 rgba(124,58,237,0.12);
-}
-.chat-panel::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 2px; height: 100%;
-  background: linear-gradient(180deg,
-    transparent 5%,
-    rgba(124,58,237,0.55) 25%,
-    rgba(99,102,241,0.80) 55%,
-    rgba(124,58,237,0.40) 82%,
-    transparent 96%
-  );
-  animation: accentPulse 4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
-}
-@keyframes accentPulse {
-  0%, 100% { opacity: 0.45; }
-  50%       { opacity: 1; }
+  border-left: 1px solid var(--border-2);
+  box-shadow: -8px 0 32px oklch(0% 0 0 / 0.50);
 }
 
-/* ── Cards: semi-transparent + richer hover depth ──────────── */
+/* ── Cards: solid surface, category tint applied via column selectors above */
 .story-card {
-  background: rgba(14, 16, 32, 0.85);
   transition:
     box-shadow    0.18s cubic-bezier(0.22, 1, 0.36, 1),
     transform     0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color  0.18s ease,
-    background    0.18s ease;
+    border-color  0.18s ease;
 }
 .story-card:hover {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transform: translateY(-3px);
-  box-shadow:
-    var(--shadow-lg),
-    0 0 0 1px rgba(124,58,237,0.14),
-    inset 0 1px 0 rgba(255,255,255,0.05);
+  transform: translateY(-2px);
 }
 
 /* ── Modals: heavier glass + scale-in ──────────────────────── */
@@ -4355,25 +4279,18 @@ body.distraction-free #particleCanvas { display: none; }
   to   { transform: scale(1)    translateY(0);    opacity: 1; }
 }
 
-/* ── Tab buttons: richer active glow ──────────────────────── */
+/* ── Tab buttons: clean transitions, no glow ──────────────── */
 .tab-btn {
-  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
-.tab-btn.active {
-  text-shadow: 0 0 22px rgba(124,58,237,0.55), 0 0 8px rgba(99,102,241,0.30);
-  transform: scale(1.02);
-}
-.tab-btn:hover:not(.active) { transform: scale(1.01); }
 
-/* ── prefers-reduced-motion: kill ALL ambient motion ──────── */
+/* ── prefers-reduced-motion ───────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  body::before                        { animation: none !important; }
-  #particleCanvas                     { display: none !important; }
-  .jarvis-orb-canvas                  { animation: none !important; }
-  .chat-panel::before                 { animation: none !important; }
-  .story-card                         { transition-duration: 0s !important; }
-  .tab-btn                            { transition: none !important; transform: none !important; }
-  .tab-btn.active                     { transform: none !important; }
+  #particleCanvas   { display: none !important; }
+  .story-card       { transition-duration: 0s !important; }
+  .tab-btn          { transition: none !important; }
+  .modal-box        { animation: none !important; }
+  .tab-panel.active { animation: none !important; }
 }
 
 /* ============================================================

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-04-28</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Multi-Agent Team Infrastructure — Orchestrator &amp; Three Specialists</h1>
+    <p class="subtitle">A planning and tooling session. Designed and implemented the StoryForge multi-agent team: a Jarvis-style orchestrator routing work to three specialists — the Art Director (ui-agent), the Quest Giver (feature-agent), and the Lore Keeper (story-agent). No app code changes; all work is in <code>.claude/</code> configuration and <code>CLAUDE.md</code>.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-28</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>b62ac27</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session. For last story-data snapshot, see <a href="session-report-2026-04-27.html">session-report-2026-04-27.html</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p class="na">No writing this session — planning and infrastructure only.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel)</li>
+        <li>[x] Home page / landing screen</li>
+        <li>[x] Writing tab rich text toolbar</li>
+        <li>[x] Character grouping by name</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons</li>
+        <li>[x] 36 Dramatic Situations: reorderable list</li>
+        <li>[x] UX Sprint A (A1–A4): card refresh, collapsible content, quick-add, staged import</li>
+        <li>[x] UX Sprint B (B1–B4): smarter AI prompt, batch strip, role chips, archive summaries</li>
+        <li>[x] Extended card taxonomy: 12 types + <code>TYPE_TO_COLUMN</code> routing</li>
+        <li>[x] Tag chip + source_section rendering</li>
+        <li>[x] UX Sprint D (D1–D3): design system refresh + branding polish</li>
+        <li>[x] UX Sprint E (E1–E4): word goal, .txt/.md export, find &amp; replace, distraction-free mode</li>
+        <li>[x] UX Sprint F1: column spotlight mode</li>
+        <li>[x] Project reorganization: <code>docs/</code>, <code>design/</code>, <code>story/</code></li>
+        <li>[x] Sprint C1: batch undo — <code>undoLastBatch()</code> + amber "↩ Undo import" button</li>
+        <li>[x] Sprint C3: stale detection — <code>lastModified</code> field, <code>isCardStale()</code>, amber "⚠ stale" badge</li>
+        <li>[x] Sprint C2: card sections — <code>renderCardContent()</code>, structured sub-fields, backward-compatible</li>
+        <li>[x] Import pipeline bug fixed: CHUNK_SIZE 30k→10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Import verified live: 200+ cards from Life-of-Bon-FINAL-MASTER-NEW.txt</li>
+        <li>[x] Rules system: CLAUDE.md slimmed; <code>.claude/rules/</code> created with 5 topic files</li>
+        <li>[x] Ask Claude button moved from floating FAB to header bar</li>
+        <li>[x] Arcs tab: resizable timeline section — drag handle, persists height to <code>sf_arcs_timeline_h</code></li>
+        <li>[x] Find &amp; Replace "Replace Next": fixed to replace current match index</li>
+        <li>[x] Jarvis agentic loop: navigate tabs, create/edit/search cards via chat</li>
+        <li>[x] Jarvis streaming: SSE-based streaming responses, word-by-word</li>
+        <li>[x] Jarvis voice: Microsoft Aria Online (Natural) selected automatically</li>
+        <li>[x] Jarvis orb: embedded permanently in chat panel, no overlay/mode-switching</li>
+        <li>[x] Story Wiki (Sprint L): 5 wiki pages at <code>story/wiki/</code></li>
+        <li>[x] <code>/refresh-wiki</code> skill at <code>.claude/skills/refresh-wiki/SKILL.md</code></li>
+        <li>[x] <strong>Multi-agent team: <code>.claude/agents/</code> created with ui-agent, feature-agent, story-agent — this session</strong></li>
+        <li>[x] <strong>Orchestration section added to <code>CLAUDE.md</code>: Jarvis tone, delegation rules, post-task review checklist — this session</strong></li>
+        <li>[x] <strong><code>.claude/agents/</code> added to CLAUDE.md "Where Things Live" table — this session</strong></li>
+        <li>[ ] CLAUDE.md changes from this session — <strong>uncommitted</strong> (git commit needed)</li>
+        <li>[ ] Browser re-test Sprint E + F1 (onclick fixes — never user-confirmed)</li>
+        <li>[ ] Browser test Sprint C (C1/C3/C2) in live browser</li>
+        <li>[ ] Browser test Jarvis: streaming, voice, embedded orb layout</li>
+        <li>[ ] Browser test previous session: header FAB, timeline resize, F&amp;R replace-next</li>
+        <li>[ ] Add <code>sf_arcs_timeline_h</code> to CODEBASE.md (overdue)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>The multi-agent routing has not been tested in a real session yet — the first live test will reveal whether the orchestrator actually delegates or defaults to handling tasks directly. Adjust <code>description</code> fields if routing feels wrong.</li>
+        <li>The Jarvis "light underhanded snark" tone is intentionally ambiguous — interpreted as dry situational wit, not pointed remarks. The first few sessions will calibrate this; if it feels off, dial it back in <code>CLAUDE.md</code>.</li>
+        <li>Browser test debt is now critical — 4+ sprints of untested code including Jarvis APIs (streaming, voice, orb) that cannot be verified by reading code alone.</li>
+        <li><code>sf_arcs_timeline_h</code> still not added to CODEBASE.md — hard project rule violation, deferred across multiple sessions.</li>
+        <li>The wiki pages in <code>story/wiki/</code> will drift as the story evolves — run <code>/refresh-wiki</code> whenever major canon changes are made to the master document.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Try a real writing session using the wiki pages as context — this is the first session where the Lore Keeper can be invoked to check canon before making story decisions.</li>
+        <li>Review <code>story/wiki/open-questions.md</code> — 12 creative forks are documented; a few (world name, mentor figure) could be locked without waiting for the full manuscript.</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li><strong>Priority 0 (immediate):</strong> Commit the CLAUDE.md changes from this session — they're sitting unstaged.</li>
+        <li><strong>Priority 1 (overdue):</strong> Clear the browser test backlog — open the app in Edge and verify Jarvis streaming, Aria voice, and embedded orb. Then Sprint E, F1, C in sequence.</li>
+        <li><strong>Priority 2 (overdue):</strong> Add <code>sf_arcs_timeline_h</code> to CODEBASE.md localStorage key table.</li>
+        <li><strong>Priority 3:</strong> Run 3–4 test prompts to verify agent routing is working ("The cards feel cramped," "Add a word count," "Update the wiki") — adjust <code>description</code> fields if routing misfires.</li>
+        <li><strong>Priority 4:</strong> Next feature sprint candidates: Sprint H2 (Story Bible export) or Sprint G1 (structured map zones).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>b62ac27 — Fix roadmap: rename wiki sprint from J to L throughout</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session:</strong></p>
+      <ul>
+        <li><code>.claude/agents/ui-agent.md</code> — new: Art Director persona, CSS/layout scope, delegates to css.md rules</li>
+        <li><code>.claude/agents/feature-agent.md</code> — new: Quest Giver persona, app.js/logic scope, delegates to editing/api/browser-testing rules</li>
+        <li><code>.claude/agents/story-agent.md</code> — new: Lore Keeper persona, story/wiki scope, on-demand specialist only</li>
+        <li><code>CLAUDE.md</code> — added Orchestration section (Jarvis tone, delegate-first routing rules, post-task review checklist); added <code>.claude/agents/</code> row to Where Things Live table — <strong>uncommitted</strong></li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Story-aware agents over generic frontend/backend/QA.</strong> A "backend-agent" makes no sense for a browser-only localStorage app — there is no backend. The split is by actual work lane: visual, logic, story content. Perplexity initially suggested generic roles; Claude pushed back and designed project-native agents instead.</li>
+        <li><strong>No dedicated QA agent — QA built into orchestrator as a post-task review pass.</strong> The project has no formal QA infrastructure beyond story-utils.js tests. Rather than invent a fake QA agent, a verification checklist was added to the orchestrator's post-task behavior: event handler audit, localStorage key audit, browser-test flag.</li>
+        <li><strong>story-agent is on-demand only, not a standing team member.</strong> Most sessions are code sessions; the Lore Keeper wakes up for wiki/canon tasks and goes quiet otherwise. This keeps the orchestrator from over-invoking it on every feature request.</li>
+        <li><strong>Agent prompts reference existing rule files rather than duplicating content.</strong> Each agent says "read .claude/rules/css.md" rather than inlining the rules. This keeps agent prompts lean and ensures they stay current as rules evolve.</li>
+        <li><strong>Persona blocks sit above a --- divider in each agent file.</strong> This makes it visually clear where flavor ends and technical instructions begin — both for Claude reading the file and for future human editing.</li>
+        <li><strong>description frontmatter contains only task-routing language — no persona text.</strong> The description field drives auto-routing logic; mixing persona flavor into it would pollute the signal used for delegation decisions.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit CLAUDE.md — it has uncommitted changes from this session.</li>
+        <li>Test routing with 3–4 prompts and observe whether the orchestrator delegates correctly. If routing misfires, the fix is usually in the <code>description</code> frontmatter field of the relevant agent file.</li>
+        <li>Clear the browser test backlog (Jarvis streaming/voice/orb, then Sprint E, F1, C) — this has been deferred across multiple sessions and is now blocking any new feature work.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>CLAUDE.md changes are uncommitted — run <code>git add CLAUDE.md .claude/agents/ &amp;&amp; git commit</code> before the next session.</li>
+        <li>Browser test debt is now critical — Jarvis SSE streaming, Aria Natural voice, embedded orb, Sprint E onclick fixes, Sprint F1, Sprint C are all unverified in a live browser.</li>
+        <li><code>sf_arcs_timeline_h</code> missing from CODEBASE.md is a hard project rule violation.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Review a Perplexity conversation about multi-agent Claude Code setups and evaluate whether the advice applied to StoryForge.</li>
+        <li>Design a team structure suited to this specific project (not a generic org chart).</li>
+        <li>Iterate on agent personas across three rounds: generic → story-aware → polished personas with thematic coherence.</li>
+        <li>Show snippets before writing anything to disk.</li>
+        <li>Implement the final plan: create 3 agent files and update CLAUDE.md.</li>
+        <li>Update CLAUDE.md's Where Things Live table to include <code>.claude/agents/</code>.</li>
+        <li>Generate this session report.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Claude's pushback on the generic team structure was correct and saved time.</strong> The Perplexity recommendation (frontend/backend/QA) was reasonable generic advice but wrong for this project. Claude identified that there's no backend, designed project-native agents, and Perplexity agreed on second review. The plan improved meaningfully because Claude didn't just accept the first framing.</li>
+        <li><strong>Showing snippets before writing to disk worked well.</strong> Three rounds of refinement happened in text before anything touched a file. The final output was cleaner because the user could react to concrete wording rather than abstract descriptions.</li>
+        <li><strong>The planning mode workflow (Phase 1–5) was a good structure for this kind of design session.</strong> It prevented jumping to implementation before the design was actually settled — something that has caused rework in past sessions.</li>
+        <li><strong>Perplexity + Claude tag-team worked again.</strong> Perplexity handled clarification (explaining what Claude's question meant, providing external framing); Claude handled design, pushback, and execution. The division of labor was clean.</li>
+        <li><strong>Lean agent prompts referencing existing rule files.</strong> Rather than duplicating brittle line-specific details inside each agent, the prompts point to the existing <code>.claude/rules/</code> files. This is more maintainable and less likely to drift.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>The browser test backlog remains unaddressed — now flagged across three consecutive session reports.</strong> This needs to be the first task of the next session, not a "Priority 1" that gets deferred again. Consider opening Edge before starting Claude Code.</li>
+        <li><strong>The agent routing system hasn't been validated yet.</strong> The design is sound on paper, but the real test is whether the orchestrator actually delegates in practice. Plan a quick 4-prompt smoke test at the start of the next session before doing real work with the agents.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>The multi-agent team is now live.</strong> Main Claude acts as Jarvis — calm orchestrator, delegates first. ui-agent (Art Director) handles CSS/visual work. feature-agent (Quest Giver) handles app logic and features. story-agent (Lore Keeper) handles wiki/canon work on demand. The system is active from the next conversation forward — no manual agent launching needed.
+      </div>
+
+      <div class="callout warn">
+        <strong>Browser test debt is now flagged for the third consecutive session.</strong> Jarvis streaming (SSE), Aria Natural voice, embedded orb, Sprint E onclick fixes, Sprint F1, and Sprint C are all unverified in a live browser. The next session must start with Edge open, not a planning discussion.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-28 · Run 1: Multi-agent team — Jarvis orchestrator, Art Director, Quest Giver, Lore Keeper</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ RUN 2 ═══ -->
+<div class="container" style="margin-top: 80px; padding-top: 48px; border-top: 2px solid var(--border);">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report · Run 2</div>
+    <h1>Agent Optimization — Skills, Permissions &amp; External Skill Library</h1>
+    <p class="subtitle">Continued directly from Run 1. Upgraded all three agent files with frontmatter fields (color, skills, disallowedTools), installed Impeccable design skill for ui-agent, and added three obra/superpowers skills as standalone user-invocable tools. No app code changes.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-04-28</strong></span>
+      <span class="chip">Run <strong>2</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>b62ac27</strong></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card"><p class="na">Not reviewed this session.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card"><p class="na">No writing this session — infrastructure only.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Archive sidebar (left panel)</li>
+        <li>[x] Home page / landing screen</li>
+        <li>[x] Writing tab rich text toolbar</li>
+        <li>[x] Character grouping by name</li>
+        <li>[x] Arcs tab: drag-to-reorder + edit buttons</li>
+        <li>[x] 36 Dramatic Situations: reorderable list</li>
+        <li>[x] UX Sprint A–B, D–F1 (all prior sprints)</li>
+        <li>[x] Extended card taxonomy, tag chips, batch undo, stale detection, card sections</li>
+        <li>[x] Import pipeline: CHUNK_SIZE 10k, truncation warning, partial JSON recovery</li>
+        <li>[x] Rules system: <code>.claude/rules/</code> with 5 topic files</li>
+        <li>[x] Jarvis: agentic loop, SSE streaming, Aria Natural voice, embedded orb</li>
+        <li>[x] Story Wiki (Sprint L): 5 wiki pages at <code>story/wiki/</code></li>
+        <li>[x] <code>/refresh-wiki</code> skill</li>
+        <li>[x] Multi-agent team created: ui-agent, feature-agent, story-agent (Run 1)</li>
+        <li>[x] CLAUDE.md Orchestration section + routing rules (Run 1)</li>
+        <li>[x] <strong>Agent frontmatter: <code>color</code> added to all three agents — Run 2</strong></li>
+        <li>[x] <strong><code>ui-agent</code>: <code>skills: [impeccable]</code> added — Run 2</strong></li>
+        <li>[x] <strong><code>story-agent</code>: <code>skills: [refresh-wiki]</code> + <code>disallowedTools: [Bash]</code> added — Run 2</strong></li>
+        <li>[x] <strong>Impeccable installed: <code>.claude/skills/impeccable/</code> (SKILL.md + 35 reference files + scripts) — Run 2</strong></li>
+        <li>[x] <strong>systematic-debugging skill installed from obra/superpowers — Run 2</strong></li>
+        <li>[x] <strong>verification-before-completion skill installed from obra/superpowers — Run 2</strong></li>
+        <li>[x] <strong>brainstorming skill installed from obra/superpowers — Run 2</strong></li>
+        <li>[ ] CLAUDE.md changes from Run 1 — <strong>still uncommitted</strong></li>
+        <li>[ ] Agent files from Run 2 — <strong>uncommitted</strong></li>
+        <li>[ ] Browser re-test Sprint E + F1 (onclick fixes — overdue)</li>
+        <li>[ ] Browser test Sprint C (C1/C2/C3)</li>
+        <li>[ ] Browser test Jarvis: streaming, voice, embedded orb</li>
+        <li>[ ] Add <code>sf_arcs_timeline_h</code> to CODEBASE.md (overdue)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li>Agent routing still untested in a real session — first live use will reveal if the orchestrator actually delegates vs. handling tasks directly.</li>
+        <li>Impeccable requires a <code>PRODUCT.md</code> file at the project root before it can do most of its work. The Art Director will prompt for <code>/impeccable teach</code> on first UI design task — this is expected behavior, not a bug.</li>
+        <li>The <code>npx skills add</code> installer is interactive and doesn't work in a non-interactive shell — manual git clone + copy was used instead. If updating Impeccable later, run <code>npx impeccable skills update</code> from a real terminal (VS Code integrated terminal, not Claude's Bash tool).</li>
+        <li>obra/superpowers brainstorming skill references a visual companion browser server that requires Node.js scripts. The text-only brainstorming path works without it; the visual mockup path would require the scripts subfolder and a running server.</li>
+        <li>Browser test debt now covers 4+ sprints — still critical and still deferred.</li>
+        <li><code>sf_arcs_timeline_h</code> still missing from CODEBASE.md — flagged across 4 sessions now.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>First real test of the Lore Keeper: invoke it for a wiki question or canon check, see how it responds with <code>refresh-wiki</code> preloaded.</li>
+      </ul>
+      <p><strong>Build-side:</strong></p>
+      <ul>
+        <li><strong>Priority 0 (immediate):</strong> Commit everything — <code>CLAUDE.md</code>, <code>.claude/agents/</code>, <code>.claude/skills/</code>. All of it is sitting unstaged.</li>
+        <li><strong>Priority 1 (overdue):</strong> Clear the browser test backlog. Open Edge first, then start Claude Code.</li>
+        <li><strong>Priority 2:</strong> Run <code>/impeccable teach</code> to create <code>PRODUCT.md</code> before any UI design work — the Art Director needs it to avoid generic output.</li>
+        <li><strong>Priority 3:</strong> Run 4 routing test prompts to confirm delegation works in practice.</li>
+        <li><strong>Priority 4:</strong> Add <code>sf_arcs_timeline_h</code> to CODEBASE.md.</li>
+        <li><strong>Priority 5:</strong> Next feature sprint — Sprint H2 (Story Bible export) or Sprint G1 (structured map zones).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>b62ac27 — Fix roadmap: rename wiki sprint from J to L throughout</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session (Run 2):</strong></p>
+      <ul>
+        <li><code>.claude/agents/ui-agent.md</code> — added <code>color: green</code>, <code>skills: [impeccable]</code></li>
+        <li><code>.claude/agents/feature-agent.md</code> — added <code>color: blue</code></li>
+        <li><code>.claude/agents/story-agent.md</code> — added <code>color: purple</code>, <code>skills: [refresh-wiki]</code>, <code>disallowedTools: [Bash]</code></li>
+        <li><code>.claude/skills/impeccable/</code> — full install: SKILL.md + 35 reference files + scripts (git clone + manual copy; <code>npx skills add</code> was interactive-only)</li>
+        <li><code>.claude/skills/systematic-debugging/</code> — SKILL.md + root-cause-tracing.md (obra/superpowers)</li>
+        <li><code>.claude/skills/verification-before-completion/</code> — SKILL.md (obra/superpowers)</li>
+        <li><code>.claude/skills/brainstorming/</code> — SKILL.md + visual-companion.md (obra/superpowers)</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Impeccable approved despite "no npm" project rule.</strong> The rule blocks npm as an app dependency; installing a dev tool via <code>npx</code> (or manual git clone) doesn't touch the app. Impeccable drops markdown files into <code>.claude/skills/</code> — nothing in <code>index.html</code>, <code>style.css</code>, or <code>app.js</code> changes.</li>
+        <li><strong>Impeccable wired to ui-agent via frontmatter <code>skills</code> field, not as on-demand invocation.</strong> Art Director always has the Impeccable design vocabulary preloaded — no need to remember <code>/impeccable</code> manually. Targeted capability loading: only the agent that needs it gets it.</li>
+        <li><strong>obra/superpowers skills installed as standalone user-invokable tools, not in agent frontmatter.</strong> systematic-debugging, verification-before-completion, and brainstorming are situational — useful when debugging or planning, not always-on. Users invoke them with <code>/skill-name</code> when needed.</li>
+        <li><strong><code>disallowedTools: [Bash]</code> on story-agent enforces scope at the permission layer.</strong> Story/wiki work never needs shell commands. Denying Bash is a free safety measure beyond just instruction text.</li>
+        <li><strong>Manual git clone used over <code>npx skills add</code>.</strong> The installer is interactive (asks which harnesses to install to) and blocks in a non-interactive shell. Git clone + copy is equivalent and avoids the prompt entirely. For updates: use <code>npx impeccable skills update</code> in a real terminal.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit everything: <code>git add CLAUDE.md .claude/agents/ .claude/skills/ &amp;&amp; git commit</code></li>
+        <li>Run <code>/impeccable teach</code> to create <code>PRODUCT.md</code> — required before any Art Director design work.</li>
+        <li>Clear the browser test backlog (open Edge before starting Claude Code).</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>All Run 1 + Run 2 changes are uncommitted — <code>CLAUDE.md</code>, <code>.claude/agents/</code>, <code>.claude/skills/</code>.</li>
+        <li>Impeccable needs <code>PRODUCT.md</code> before it can generate non-generic output — <code>/impeccable teach</code> creates it.</li>
+        <li>Browser test backlog is now flagged across 4 consecutive sessions.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Evaluate Perplexity's recommendation to add skills and permissions to the agents.</li>
+        <li>Research what frontmatter fields Claude Code actually supports (vs. what Perplexity claimed).</li>
+        <li>Reconsider Impeccable — originally marked "skip" due to the no-npm rule; user clarified they're on their home PC and willing to install dev tools.</li>
+        <li>Install Impeccable and wire it to ui-agent via frontmatter.</li>
+        <li>Find and install 3 high-value skills from the obra/superpowers repo.</li>
+        <li>Update this session report rather than creating a new file.</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Verifying frontmatter fields via Explore agent before planning saved a potentially wrong plan.</strong> Claude Code's documented field list (from the official docs) is longer than what Perplexity cited — and "Impeccable" being third-party (not built-in) was correctly identified.</li>
+        <li><strong>Perplexity caught a plan inconsistency Claude missed.</strong> The "What Was Verified" section still said "skip Impeccable" after the decision reversed — Perplexity flagged it, Claude fixed it. Useful external review.</li>
+        <li><strong>Git clone fallback for the interactive installer was the right call.</strong> The <code>npx skills add</code> interactive prompt would have required user input in the terminal; the git clone approach completed silently and correctly.</li>
+        <li><strong>Targeting skills to the right agents.</strong> Impeccable goes to ui-agent (always-on Art Director design vocabulary). obra skills go to user-invocable standalone (situational). refresh-wiki stays in story-agent frontmatter (always-needed for wiki work). Each skill got the right placement for its use pattern.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>The "no npm" rule needs a clarification clause.</strong> It blocked the right decision initially — Impeccable via <code>npx</code> is clearly fine on a home machine. The rule should distinguish "no npm/build dependencies in the app" from "no dev tool installations." Worth adding a note to <code>CLAUDE.md</code> or <code>editing.md</code>.</li>
+        <li><strong>Browser test debt is now at 4 sessions. This is the last time it gets flagged before it becomes a hard stop.</strong> Next session: Edge open first, tests before any planning discussion.</li>
+      </ul>
+
+      <div class="callout key">
+        <strong>Skill library now live.</strong> 7 skills total: insights, status, refresh-wiki (existing) + impeccable, systematic-debugging, verification-before-completion, brainstorming (new). Impeccable auto-loads in ui-agent. refresh-wiki auto-loads in story-agent. The other three are on-demand with <code>/skill-name</code>.
+      </div>
+
+      <div class="callout warn">
+        <strong>Commit before next session.</strong> <code>git add CLAUDE.md .claude/agents/ .claude/skills/ &amp;&amp; git commit</code> — all Run 1 and Run 2 changes are sitting unstaged.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">StoryForge · Life of Bon · Session Report 2026-04-28 · Run 2: Agent optimization — skills, permissions, Impeccable, obra/superpowers</div>
+
+</div>
+</body>
+</html>
