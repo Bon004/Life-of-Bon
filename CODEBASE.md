@@ -125,6 +125,7 @@ The `projectKey(suffix)` helper in app.js returns the correct namespaced key for
 | `situation_order` | JSON array of dramatic situation IDs in display order |
 | `suggestions` | JSON array of Claude suggestion objects saved by user |
 | `column_labels` | `{ character, world, arc, quote, idea }` — per-project column label overrides `{ label, strip }` |
+| `orb_style` | per-project | `'constellation'` | Which Sage orb animation plays (`'constellation'` or `'aurora'`) |
 
 ---
 

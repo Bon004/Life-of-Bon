@@ -2895,6 +2895,10 @@ var chatIsOpen  = false;
 document.getElementById('openChat').addEventListener('click', openChat);
 document.getElementById('chatClose').addEventListener('click', closeChat);
 document.getElementById('chatSend').addEventListener('click', sendChatMessage);
+document.querySelectorAll('.orb-style-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() { setOrbStyle(btn.dataset.style); });
+  btn.classList.toggle('active', btn.dataset.style === orbStyle);
+});
 initVoiceAndOrb();
 
 document.getElementById('chatInput').addEventListener('keydown', function(e) {
@@ -3467,6 +3471,10 @@ async function sendChatMessage() {
   var msg   = input.value.trim();
   if (!msg) return;
 
+  // Hide prompt chips on first send
+  var sageChips = document.getElementById('sageChips');
+  if (sageChips && !sageChips.hidden) sageChips.hidden = true;
+
   var key = getApiKey();
   if (!key) {
     appendChatMsg('assistant', 'Please set your API key first — click "+ Add Notes" and expand the API Key section.');
@@ -4008,6 +4016,13 @@ var orbParticles  = [];
 var orbPulseRings = [];
 var orbPulseTimer = null;
 
+var orbStyleRaw; try { orbStyleRaw = localStorage.getItem(projectKey('orb_style')); } catch(e) {}
+var orbStyle = (orbStyleRaw === 'constellation' || orbStyleRaw === 'aurora') ? orbStyleRaw : 'constellation';
+var orbConstellationPts = [];
+var orbConstellationT = 0;
+var orbAuroraPts = [];
+var orbAuroraT = 0;
+
 // Build uniform spherical particle cloud (avoids polar band clustering)
 (function initOrbParticles() {
   var N = 340;
@@ -4029,6 +4044,130 @@ var orbPulseTimer = null;
     });
   }
 })();
+
+// ── Constellation orb (V2) ────────────────────────────────────
+function initConstellationOrb(canvas) {
+  var cx = canvas.width / 2, cy = canvas.height / 2;
+  var r = Math.min(canvas.width, canvas.height) * 0.42;
+  orbConstellationPts = Array.from({ length: 42 }, function() {
+    var a = Math.random() * Math.PI * 2;
+    var rr = Math.sqrt(Math.random()) * r;
+    return {
+      bx: cx + rr * Math.cos(a), by: cy + rr * Math.sin(a),
+      ox: 0, oy: 0,
+      speed: 0.002 + Math.random() * 0.003,
+      phase: Math.random() * Math.PI * 2,
+      range: 2 + Math.random() * 5,
+    };
+  });
+  orbConstellationT = 0;
+}
+
+// ── Aurora Mist orb (V4) ──────────────────────────────────────
+function initAuroraOrb(canvas) {
+  var cx = canvas.width / 2, cy = canvas.height / 2;
+  var r = Math.min(canvas.width, canvas.height) * 0.38;
+  orbAuroraPts = Array.from({ length: 280 }, function() {
+    var a = Math.random() * Math.PI * 2;
+    var rr = Math.pow(Math.random(), 0.5) * r;
+    return {
+      x: cx + rr * Math.cos(a), y: cy + rr * Math.sin(a),
+      vx: (Math.random() - 0.5) * 0.18, vy: (Math.random() - 0.5) * 0.18,
+      life: Math.random(), decay: 0.003 + Math.random() * 0.004,
+      size: 0.5 + Math.random() * 1.2,
+      hue: 262 + Math.random() * 20,
+    };
+  });
+  orbAuroraT = 0;
+}
+
+function renderOrbConstellation() {
+  var canvas = document.getElementById('jarvisOrbCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  var cx = w / 2, cy = h / 2;
+  var CONNECT_DIST = Math.min(w, h) * 0.32;
+  orbConstellationT += 0.012;
+  ctx.clearRect(0, 0, w, h);
+  orbConstellationPts.forEach(function(p) {
+    p.ox = Math.sin(orbConstellationT * p.speed * 40 + p.phase) * p.range;
+    p.oy = Math.cos(orbConstellationT * p.speed * 30 + p.phase * 1.3) * p.range;
+  });
+  for (var i = 0; i < orbConstellationPts.length; i++) {
+    for (var j = i + 1; j < orbConstellationPts.length; j++) {
+      var ax = orbConstellationPts[i].bx + orbConstellationPts[i].ox;
+      var ay = orbConstellationPts[i].by + orbConstellationPts[i].oy;
+      var bx = orbConstellationPts[j].bx + orbConstellationPts[j].ox;
+      var by = orbConstellationPts[j].by + orbConstellationPts[j].oy;
+      var d = Math.hypot(ax - bx, ay - by);
+      if (d < CONNECT_DIST) {
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+        ctx.strokeStyle = 'oklch(58% 0.16 272 / ' + (0.25 * (1 - d / CONNECT_DIST)) + ')';
+        ctx.lineWidth = 0.7; ctx.stroke();
+      }
+    }
+  }
+  orbConstellationPts.forEach(function(p) {
+    ctx.beginPath();
+    ctx.arc(p.bx + p.ox, p.by + p.oy, 1.8, 0, Math.PI * 2);
+    ctx.fillStyle = 'oklch(75% 0.12 272 / 0.85)';
+    ctx.fill();
+  });
+  var r = Math.min(w, h) * 0.42;
+  ctx.beginPath(); ctx.arc(cx, cy, r + 1, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1; ctx.stroke();
+}
+
+function renderOrbAurora() {
+  var canvas = document.getElementById('jarvisOrbCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  var cx = w / 2, cy = h / 2;
+  var r = Math.min(w, h) * 0.38;
+  orbAuroraT += 0.014;
+  ctx.clearRect(0, 0, w, h);
+  var glowLayers = [[r * 0.3, 0.22], [r * 0.55, 0.12], [r * 0.9, 0.05]];
+  glowLayers.forEach(function(layer) {
+    var rr = layer[0], a = layer[1];
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+    g.addColorStop(0, 'oklch(58% 0.18 ' + (272 + Math.sin(orbAuroraT) * 8) + ' / ' + a + ')');
+    g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.fill();
+  });
+  orbAuroraPts.forEach(function(p) {
+    p.x += p.vx; p.y += p.vy;
+    p.life -= p.decay;
+    if (p.life <= 0) {
+      var a = Math.random() * Math.PI * 2;
+      var rr = Math.pow(Math.random(), 0.5) * r;
+      p.x = cx + rr * Math.cos(a); p.y = cy + rr * Math.sin(a);
+      p.life = 0.6 + Math.random() * 0.4;
+      p.vx = (Math.random() - 0.5) * 0.18; p.vy = (Math.random() - 0.5) * 0.18;
+    }
+    var alpha = Math.sin(p.life * Math.PI) * 0.7;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'oklch(75% 0.14 ' + p.hue + ' / ' + alpha + ')';
+    ctx.fill();
+  });
+}
+
+// ── Orb style switcher ────────────────────────────────────────
+function setOrbStyle(style) {
+  if (style !== 'constellation' && style !== 'aurora') return;
+  orbStyle = style;
+  try { localStorage.setItem(projectKey('orb_style'), style); } catch(e) {}
+  orbConstellationPts = [];
+  orbAuroraPts = [];
+  if (orbIsOpen) {
+    cancelAnimationFrame(orbAnimFrame);
+    startOrbAnimation();
+  }
+  document.querySelectorAll('.orb-style-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.style === style);
+  });
+}
 
 // openJarvisOrb: start the embedded orb animation when chat opens
 function openJarvisOrb() {
@@ -4078,6 +4217,8 @@ function resizeOrbCanvas() {
   if (!canvas) return;
   canvas.width  = canvas.offsetWidth  || window.innerWidth;
   canvas.height = canvas.offsetHeight || window.innerHeight;
+  orbConstellationPts = [];  // reinit on next frame for new dimensions
+  orbAuroraPts = [];
 }
 
 function startOrbAnimation() {
@@ -4085,7 +4226,16 @@ function startOrbAnimation() {
   function loop() {
     if (!orbIsOpen) return;
     orbAnimFrame = requestAnimationFrame(loop);
-    renderOrb();
+    var canvas = document.getElementById('jarvisOrbCanvas');
+    if (orbStyle === 'constellation') {
+      if (orbConstellationPts.length === 0) initConstellationOrb(canvas);
+      renderOrbConstellation();
+    } else if (orbStyle === 'aurora') {
+      if (orbAuroraPts.length === 0) initAuroraOrb(canvas);
+      renderOrbAurora();
+    } else {
+      renderOrb();
+    }
   }
   loop();
 }
@@ -7515,6 +7665,44 @@ document.addEventListener('keydown', function(e) {
     toggleDistractFree();
   }
 });
+
+// ============================================================
+// Stream 2 — Keyboard Shortcuts Modal
+// ============================================================
+function openShortcutsModal() {
+  document.getElementById('shortcutsOverlay').hidden = false;
+  document.getElementById('shortcutsCloseBtn').focus();
+}
+function closeShortcutsModal() {
+  document.getElementById('shortcutsOverlay').hidden = true;
+  document.getElementById('shortcutsBtn').focus();
+}
+document.getElementById('shortcutsBtn').addEventListener('click', openShortcutsModal);
+document.getElementById('shortcutsCloseBtn').addEventListener('click', closeShortcutsModal);
+document.getElementById('shortcutsOverlay').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('shortcutsOverlay')) closeShortcutsModal();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && !document.getElementById('shortcutsOverlay').hidden) closeShortcutsModal();
+});
+
+// ============================================================
+// Stream 3b — Sage Empty State Chips
+// ============================================================
+(function() {
+  var sageChips = document.getElementById('sageChips');
+  if (!sageChips) return;
+  sageChips.querySelectorAll('.sage-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      var chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.value = chip.textContent.trim();
+        chatInput.focus();
+        sageChips.hidden = true;
+      }
+    });
+  });
+})();
 
 // Writing tab button wiring (inline onclick removed — app.js is a module)
 document.getElementById('exportTxtBtn').addEventListener('click', function() { exportWritingAs('txt'); });
