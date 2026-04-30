@@ -1581,6 +1581,71 @@ body.chat-open .app-main {
   50%       { box-shadow: 0 0 0 6px rgba(255, 80, 80, 0); }
 }
 
+/* Auto-send toggle — footer control, lives between mic and send */
+.chat-autosend-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.38;
+  color: var(--text-muted);
+  transition: opacity var(--transition), border-color var(--transition), color var(--transition);
+}
+.chat-autosend-toggle.active {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.chat-autosend-toggle:hover {
+  opacity: 0.65;
+}
+.chat-autosend-toggle.active:hover {
+  opacity: 0.82;
+  border-color: var(--accent-hover);
+}
+
+/* Pause/Resume button — header control, sibling of voice-toggle and tts-mode */
+.chat-pause-sage {
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 5px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color var(--transition), opacity var(--transition), background var(--transition);
+  opacity: 1;
+  color: var(--text-muted);
+}
+.chat-pause-sage:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+.chat-pause-sage:not(:disabled):hover {
+  opacity: 1;
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+/* Paused state (▶ resume) — soft accent tint + quiet pulse so it's impossible to miss */
+.chat-pause-sage.paused {
+  color: var(--accent);
+  opacity: 1;
+  animation: pausedPulse 2s ease-in-out infinite;
+}
+@keyframes pausedPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
 /* ── Jarvis Orb — embedded inside the chat panel ───────────── */
 .chat-orb-embedded {
   position: relative;

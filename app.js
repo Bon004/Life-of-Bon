@@ -3479,6 +3479,7 @@ async function sendChatMessage() {
   ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
   if (currentPuterAudio) { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); currentPuterAudio = null; }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
+  syncPauseButton(false); // dim pause button immediately before reply arrives
 
   appendChatMsg('user', msg);
   input.value = '';
@@ -3492,7 +3493,7 @@ async function sendChatMessage() {
 
   try {
     // If history is getting long, summarize oldest turns before trimming
-    if (chatHistory.length > 20) {
+    if (chatHistory.length > 10) {
       var oldest = chatHistory.slice(0, 10);
       chatHistory = chatHistory.slice(10);
       try {
@@ -3553,7 +3554,7 @@ async function sendChatMessage() {
     if (tieredCtx) systemPrompt += '\n\nRelevant story notes (auto-selected for this message):\n' + tieredCtx;
 
     // Cap history sent to API at last 20 turns
-    var trimmedHistory = chatHistory.length > 20 ? chatHistory.slice(-20) : chatHistory;
+    var trimmedHistory = chatHistory.length > 10 ? chatHistory.slice(-10) : chatHistory;
     var messages = trimmedHistory.slice();
 
     // Remove typing indicator and start Jarvis status
@@ -3600,7 +3601,9 @@ async function sendChatMessage() {
 
       if (!res.ok) {
         var errJson = await res.json();
-        throw new Error((errJson && errJson.error && errJson.error.message) || 'API error');
+        var e = new Error((errJson && errJson.error && errJson.error.message) || 'API error');
+        e.status = res.status;
+        throw e;
       }
 
       // Process SSE stream
@@ -3741,7 +3744,16 @@ async function sendChatMessage() {
   } catch (err) {
     removeJarvisStatus();
     if (orbIsOpen) setOrbState('idle');
-    appendChatMsg('assistant', '❌ ' + err.message);
+    ttsQueue = []; ttsBusy = false; ttsSentBuf = '';
+    if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
+    ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
+    if (currentPuterAudio) { currentPuterAudio.pause(); if (currentPuterAudio._objectUrl) URL.revokeObjectURL(currentPuterAudio._objectUrl); currentPuterAudio = null; }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    syncPauseButton(false);
+    var isRateLimit = err.status === 429 || /rate.?limit|429/i.test(err.message);
+    appendChatMsg('assistant', isRateLimit
+      ? '❌ Rate limit hit — too many tokens sent this minute. Wait a moment and try again.'
+      : '❌ ' + err.message);
   } finally {
     document.getElementById('chatSend').disabled  = false;
     document.getElementById('chatInput').disabled = false;
@@ -3803,6 +3815,8 @@ function removeJarvisStatus() {
 var voiceEnabled     = true;
 var currentPuterAudio = null; // tracks active Puter.js audio for cancellation
 var sageVoice        = null;  // selected Web Speech API fallback voice
+var autoSendEnabled  = JSON.parse(localStorage.getItem('sf_voice_autosend') ?? 'true');
+var ttsPaused        = false;
 
 // ── Sentence-level TTS streaming queue ───────────────────────
 var ttsQueue   = [];    // sentences waiting to be spoken
@@ -3907,8 +3921,15 @@ function enqueueTTS(text) {
 async function processTTSQueue() {
   if (ttsQueue.length === 0) {
     ttsBusy = false;
+    ttsPaused = false;
+    syncPauseButton(false);
     if (orbIsOpen) setOrbState('idle');
     return;
+  }
+  // Guard 0: auto-clear stale pause state when starting a fresh queue with nothing playing
+  if (!currentPuterAudio && ttsQueue.length > 0 && ttsPaused) {
+    ttsPaused = false;
+    syncPauseButton(false);
   }
   if (!voiceEnabled && !orbIsOpen) { ttsQueue = []; ttsBusy = false; return; }
   ttsBusy = true;
@@ -3931,14 +3952,24 @@ async function processTTSQueue() {
       if (!audio) throw new Error('no audio');
       currentPuterAudio = audio;
       startNextPrefetch(); // begin fetching the sentence after this one while it plays
+      // Guard 1: if paused while audio was fetching, store it and wait for resume
+      if (ttsPaused) {
+        currentPuterAudio = audio; // resume will call .play()
+        return;
+      }
       audio.onended = function() {
         if (audio._objectUrl) URL.revokeObjectURL(audio._objectUrl);
         currentPuterAudio = null;
         startNextPrefetch(); // belt-and-suspenders: cover sentences enqueued after initial pre-fetch
         ttsBusy = false;
-        processTTSQueue();
+        // Guard 2: don't advance queue if paused between sentences
+        if (!ttsPaused) {
+          processTTSQueue();
+        }
       };
       audio.play();
+      setOrbState('speaking');
+      syncPauseButton(true);
       return;
     } catch (e) {
       console.warn('[Sage TTS] ElevenLabs failed, falling back to Web Speech:', e);
@@ -4031,7 +4062,7 @@ function setOrbState(state) {
       orbPulseRings.push({ r: 28, opacity: 0.55 });
     }, 700);
   }
-  var labels = { idle: '', listening: '🎤  Listening...', thinking: 'Thinking...', speaking: 'Speaking...' };
+  var labels = { idle: '', listening: '🎤  Listening...', thinking: 'Thinking...', speaking: 'Speaking...', paused: '⏸  Paused' };
   var el = document.getElementById('jarvisOrbStatus');
   if (el) el.textContent = labels[state] || '';
   // Mic button appearance in orb
@@ -4073,7 +4104,7 @@ function renderOrb() {
   ctx.clearRect(0, 0, W, H);
 
   // Rotation speed by state
-  var speeds = { idle: 0.003, listening: 0.009, thinking: 0.055, speaking: 0.012 };
+  var speeds = { idle: 0.003, listening: 0.009, thinking: 0.055, speaking: 0.012, paused: 0 };
   orbRotY += speeds[orbState] || 0.003;
 
   // Sample mic volume in listening state
@@ -4199,41 +4230,104 @@ function stopOrbMic() {
 }
 
 // ── Speech recognition (voice → text → Claude) ───────────────
+const VOICE_SEND_DELAY_MS = 2500;
+
 function startOrbListening() {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     updateOrbTranscript('Speech recognition requires Chrome or Edge.');
     return;
   }
+
+  var micBtn = document.getElementById('jarvisOrbMicBtn');
+  if (micBtn && micBtn.classList.contains('listening')) {
+    // User deliberately tapped stop — set flag BEFORE stopping recognition
+    if (orbRecognition) {
+      orbRecognition._userStopped = true; // propagate to onend via shared ref
+      try { orbRecognition.stop(); } catch(_) {}
+    }
+    setOrbState('idle');
+    return;
+  }
+
   startOrbMic(function() {
     if (orbRecognition) { try { orbRecognition.abort(); } catch(_) {} }
+
+    var accumulatedTranscript = '';
+    var lastResultIndex = 0;
+    var sendTimer = null;
+    var hasAlreadySent = false;
+    var userStoppedMic = false;
+
     orbRecognition = new SR();
-    orbRecognition.continuous    = false;
+    orbRecognition.continuous     = true;
     orbRecognition.interimResults = true;
     orbRecognition.lang           = 'en-US';
 
+    orbRecognition.onstart = function() {
+      accumulatedTranscript = '';
+      lastResultIndex = 0;
+      sendTimer = null;
+      hasAlreadySent = false;
+      userStoppedMic = false;
+    };
+
     orbRecognition.onresult = function(e) {
-      var transcript = '';
-      for (var i = e.resultIndex; i < e.results.length; i++) {
-        transcript += e.results[i][0].transcript;
+      var interim = '';
+      for (var i = lastResultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          accumulatedTranscript += e.results[i][0].transcript + ' ';
+          lastResultIndex = i + 1;
+        } else {
+          interim = e.results[i][0].transcript;
+        }
       }
-      updateOrbTranscript(transcript);
-      if (e.results[e.results.length - 1].isFinal) {
+      updateOrbTranscript(accumulatedTranscript + interim);
+
+      clearTimeout(sendTimer);
+      sendTimer = setTimeout(function() {
+        var shouldAutoSend = autoSendEnabled; // snapshot at fire time
+        hasAlreadySent = true;
         orbRecognition.stop();
         var input = document.getElementById('chatInput');
-        if (input) input.value = transcript;
-        setOrbState('thinking');
-        updateOrbTranscript('');
-        sendChatMessage();
-      }
+        if (input) {
+          input.value = accumulatedTranscript.trim();
+          if (!shouldAutoSend) input.focus();
+        }
+        if (typeof updateOrbTranscript === 'function') updateOrbTranscript('');
+        if (shouldAutoSend) {
+          setOrbState('thinking');
+          sendChatMessage();
+        } else {
+          setOrbState('idle');
+        }
+        accumulatedTranscript = '';
+      }, VOICE_SEND_DELAY_MS);
     };
 
     orbRecognition.onerror = function(e) {
-      console.warn('[Sage] Recognition error:', e.error);
+      if (e.error !== 'no-speech') console.warn('[Sage] Recognition error:', e.error);
+      clearTimeout(sendTimer);
       setOrbState('idle');
     };
 
     orbRecognition.onend = function() {
+      // Sync userStoppedMic from shared flag set in the stop branch above
+      if (orbRecognition && orbRecognition._userStopped) userStoppedMic = true;
+      clearTimeout(sendTimer);
+      if (!hasAlreadySent && !userStoppedMic && accumulatedTranscript.trim()) {
+        var input = document.getElementById('chatInput');
+        if (input) input.value = accumulatedTranscript.trim();
+        if (autoSendEnabled) {
+          sendChatMessage();
+        } else {
+          if (input) input.focus();
+          setOrbState('idle');
+        }
+      }
+      accumulatedTranscript = '';
+      hasAlreadySent = false;
+      userStoppedMic = false;
       if (orbState === 'listening') setOrbState('idle');
     };
 
@@ -4255,6 +4349,8 @@ function updateOrbTranscript(text) {
 // ── Text-to-speech output ────────────────────────────────────
 // Direct-call shortcut: cancels current audio, then routes through the TTS queue.
 function speakSageReply(text) {
+  ttsPaused = false;
+  syncPauseButton(false);
   ttsQueue = []; ttsBusy = false;
   if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
   ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
@@ -4267,6 +4363,8 @@ function speakSageReply(text) {
 function toggleVoice() {
   voiceEnabled = !voiceEnabled;
   if (!voiceEnabled) {
+    ttsPaused = false;
+    syncPauseButton(false);
     ttsQueue = []; ttsBusy = false;
     if (ttsNextAudio && ttsNextAudio._objectUrl) URL.revokeObjectURL(ttsNextAudio._objectUrl);
     ttsNextText = null; ttsNextAudio = null; ttsNextFetch = null;
@@ -4278,49 +4376,106 @@ function toggleVoice() {
   if (btn) btn.textContent = voiceEnabled ? '🔊' : '🔇';
 }
 
-// ── Chat panel mic (Phase 6): one-shot speech → fill input → send ──
+// ── Chat panel mic (Phase 6): debounced speech → fill input → send ──
 function startChatMicInput() {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { showToast('Speech recognition requires Chrome or Edge.'); return; }
 
   var micBtn = document.getElementById('chatMic');
   if (micBtn && micBtn.classList.contains('listening')) {
-    // Already listening — cancel
-    if (orbRecognition) { try { orbRecognition.abort(); } catch(_) {} orbRecognition = null; }
+    // User deliberately tapped stop — set flag BEFORE stopping recognition
+    var userStoppedMic = true; // captured by onend via shared rec ref
+    if (orbRecognition) {
+      orbRecognition._userStopped = true;
+      try { orbRecognition.stop(); } catch(_) {}
+      orbRecognition = null;
+    }
     if (micBtn) micBtn.classList.remove('listening');
     setOrbState('idle');
     return;
   }
 
+  var accumulatedTranscript = '';
+  var lastResultIndex = 0;
+  var sendTimer = null;
+  var hasAlreadySent = false;
+  var userStoppedMic = false;
+
   var rec = new SR();
   orbRecognition = rec; // reuse slot for abort access
-  rec.continuous     = false;
+  rec.continuous     = true;
   rec.interimResults = true;
   rec.lang           = 'en-US';
   if (micBtn) micBtn.classList.add('listening');
   setOrbState('listening');
 
-  rec.onresult = function(e) {
-    var transcript = '';
-    for (var i = e.resultIndex; i < e.results.length; i++) {
-      transcript += e.results[i][0].transcript;
-    }
-    var input = document.getElementById('chatInput');
-    if (input) input.value = transcript;
-    if (e.results[e.results.length - 1].isFinal) {
-      rec.stop();
-      if (micBtn) micBtn.classList.remove('listening');
-      setOrbState('thinking');
-      sendChatMessage();
-    }
+  rec.onstart = function() {
+    accumulatedTranscript = '';
+    lastResultIndex = 0;
+    sendTimer = null;
+    hasAlreadySent = false;
+    userStoppedMic = false;
   };
 
-  rec.onerror = function() {
+  rec.onresult = function(e) {
+    var interim = '';
+    for (var i = lastResultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        accumulatedTranscript += e.results[i][0].transcript + ' ';
+        lastResultIndex = i + 1;
+      } else {
+        interim = e.results[i][0].transcript;
+      }
+    }
+    var input = document.getElementById('chatInput');
+    if (input) input.value = accumulatedTranscript + interim;
+
+    clearTimeout(sendTimer);
+    sendTimer = setTimeout(function() {
+      var shouldAutoSend = autoSendEnabled; // snapshot at fire time
+      hasAlreadySent = true;
+      rec.stop();
+      var input = document.getElementById('chatInput');
+      if (input) {
+        input.value = accumulatedTranscript.trim();
+        if (!shouldAutoSend) input.focus();
+      }
+      if (micBtn) micBtn.classList.remove('listening');
+      if (typeof updateOrbTranscript === 'function') updateOrbTranscript('');
+      if (shouldAutoSend) {
+        setOrbState('thinking');
+        sendChatMessage();
+      } else {
+        setOrbState('idle');
+      }
+      accumulatedTranscript = '';
+    }, VOICE_SEND_DELAY_MS);
+  };
+
+  rec.onerror = function(e) {
+    if (e.error !== 'no-speech') console.warn('[Sage] Chat mic error:', e.error);
+    clearTimeout(sendTimer);
     if (micBtn) micBtn.classList.remove('listening');
     setOrbState('idle');
   };
 
   rec.onend = function() {
+    // Pick up userStoppedMic from shared flag set in stop branch above
+    if (rec._userStopped) userStoppedMic = true;
+    clearTimeout(sendTimer);
+    if (!hasAlreadySent && !userStoppedMic && accumulatedTranscript.trim()) {
+      var input = document.getElementById('chatInput');
+      if (input) input.value = accumulatedTranscript.trim();
+      if (autoSendEnabled) {
+        sendChatMessage();
+      } else {
+        if (input) input.focus();
+        setOrbState('idle');
+      }
+    }
+    accumulatedTranscript = '';
+    hasAlreadySent = false;
+    userStoppedMic = false;
     if (micBtn) micBtn.classList.remove('listening');
     if (orbState === 'listening') setOrbState('idle');
   };
@@ -4360,6 +4515,18 @@ function initVoiceAndOrb() {
     }
   }
 
+  // Auto-send toggle button
+  var autoSendBtn = document.getElementById('autoSendBtn');
+  if (autoSendBtn) {
+    autoSendBtn.addEventListener('click', toggleAutoSend);
+    // Sync initial visual state from persisted preference
+    if (!autoSendEnabled) autoSendBtn.classList.remove('active');
+  }
+
+  // Sage pause button
+  var pauseBtn = document.getElementById('sagePauseBtn');
+  if (pauseBtn) pauseBtn.addEventListener('click', toggleTTSPause);
+
   // Resize canvas when window resizes while orb is open
   window.addEventListener('resize', function() {
     if (orbIsOpen) resizeOrbCanvas();
@@ -4391,6 +4558,52 @@ function loadSageVoice() {
       return v.lang.startsWith('en') && v.name.toLowerCase().includes('female');
     }) || voices.find(function(v) { return v.lang.startsWith('en'); }) || null;
   }
+}
+
+// ── Auto-send toggle ──────────────────────────────────────────
+function toggleAutoSend() {
+  autoSendEnabled = !autoSendEnabled;
+  localStorage.setItem('sf_voice_autosend', autoSendEnabled);
+  var btn = document.getElementById('autoSendBtn');
+  if (btn) {
+    btn.title = autoSendEnabled ? 'Auto-send voice (ON)' : 'Auto-send voice (OFF)';
+    btn.classList.toggle('active', autoSendEnabled);
+  }
+}
+
+// ── Sage pause / resume ───────────────────────────────────────
+function syncPauseButton(speaking) {
+  var btn = document.getElementById('sagePauseBtn');
+  if (!btn) return;
+  btn.disabled = !speaking && !ttsPaused;
+  btn.textContent = ttsPaused ? '▶' : '⏸';
+  btn.title = ttsPaused ? 'Resume Sage' : 'Pause Sage';
+}
+
+function toggleTTSPause() {
+  if (!ttsBusy && !ttsPaused) return;
+  if (!ttsPaused) {
+    ttsPaused = true;
+    if (ttsMode === 'elevenlabs' && currentPuterAudio) {
+      currentPuterAudio.pause(); // HTML Audio pause() preserves currentTime
+    } else if (ttsMode === 'browser') {
+      window.speechSynthesis.pause(); // NOTE: unreliable on Chrome Android — known browser bug
+    }
+    setOrbState('paused');
+  } else {
+    ttsPaused = false;
+    if (ttsMode === 'elevenlabs') {
+      if (currentPuterAudio) {
+        currentPuterAudio.play(); // NOT .resume() — that method doesn't exist on Audio elements
+      } else {
+        processTTSQueue(); // paused between sentences — advance queue
+      }
+    } else if (ttsMode === 'browser') {
+      window.speechSynthesis.resume();
+    }
+    setOrbState('speaking');
+  }
+  syncPauseButton(true);
 }
 
 // ============================================================

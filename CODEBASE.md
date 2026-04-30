@@ -88,6 +88,7 @@ Search with **Ctrl+F** using the section name to jump directly.
 |---|---|
 | `sf_api_key` | Anthropic API key |
 | `sf_elabs_key` | ElevenLabs API key (Sage voice) |
+| `sf_voice_autosend` | Boolean — whether mic auto-sends after silence (default `true`) |
 | `sf_projects` | `[{ id, name, format, brief, createdAt }]` — project registry |
 | `sf_active_project` | String — ID of the currently open project |
 
