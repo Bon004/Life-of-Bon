@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-05-01</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Run 1 — Sage Constellation Animations + Editor Context Bug Fix</h1>
+    <p class="subtitle">Two parallel tracks completed: the Sage constellation orb was upgraded with full state-reactive animations (idle drift, listening mic-reactive expansion, thinking turbulence, speaking ripple wave, paused freeze) plus an always-on global field rotation so it never appears static. Separately, a root-cause fix eliminated Sage's hallucination about editor content — she now reads live DOM text from the Working Copy and Draft editors on every request, with a <code>read_editor</code> tool for deep on-demand reads. Both bugs user-verified as fixed.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-05-01</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>db02d30</strong> (base — this session's changes uncommitted)</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p>The Writing tab was active this session — the user had content in both the Working Copy (5,129 words) and Draft (6,016 words) editors. This triggered the discovery of the Sage editor context bug: Sage was hallucinating document content because the editors were never read and injected into the chat context. The bug is now fixed.</p>
+      <p class="na">No new story writing done this session — the Writing tab was used to surface and fix the Sage context bug.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Sprint A — Story Canvas (Kanban board, cards, columns)</li>
+        <li>[x] Sprint B — Claude AI integration (paste text, file upload, card generation)</li>
+        <li>[x] Sprint C — Writing tab (editor, word count, auto-save) <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint D — Characters tab (profiles, modal)</li>
+        <li>[x] Sprint E — Arcs &amp; Timeline tab <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint F — Jarvis AI chat (sidebar panel, streaming, memory)</li>
+        <li>[x] Sprint F1 — Voice input for Jarvis <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint G — Outline tab</li>
+        <li>[x] Sprint H — Map tab (location cards, map canvas)</li>
+        <li>[x] Sprint I — Home tab (stats, recent cards, quick nav)</li>
+        <li>[x] Sprint J — Jarvis TTS (ElevenLabs/Puter.js), tiered context injection, follow-up question control, mic guard</li>
+        <li>[x] Sprint K — Living Workshop aesthetic: particles, glass, orb breathing, aurora (later redesigned out in M)</li>
+        <li>[x] Sprint L — Story Wiki (/refresh-wiki skill, wiki pages, character/world/arc reference)</li>
+        <li>[x] Sprint M — Full redesign Phase B: OKLCH token system, AI slop purge, spherical orb v2</li>
+        <li>[x] Sprint N — SaaS generalization: project schema, setup modal, format-based column labels, Sage prompt driven by project data</li>
+        <li>[x] Sprint N Bug Fix — SyntaxError from Unicode smart quotes; modal hidden/visible CSS specificity trap fixed</li>
+        <li>[x] Sprint O — Voice UX: debounce fix, auto-send toggle ⚡, Sage pause/resume ⏸▶ — <strong>committed 4a834d2</strong> <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint P — Bug fixes: 429 friendly error message, TTS full teardown on error, chat history cap 20→10 — <strong>committed 4a834d2</strong></li>
+        <li>[x] Design Polish Sprint — Hammer B SVG logo, keyboard shortcuts modal (?), organize hint, Sage empty-state chips, CSS quick wins <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Orb Style Selector — Constellation + Aurora Mist toggle, localStorage <code>orb_style</code> persistence, resize invalidation <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Constellation State-Reactive Animations — state-driven time step (idle 0.010→thinking 0.042→paused 0); per-state displacement (listening: radial mic-reactive; thinking: bounded chaos; speaking: outward ripple wave); state-matched line alpha/width/connect-dist; star size/alpha; ambient glow; pulse rings; mic volume sampling — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted</em></li>
+        <li>[x] Constellation Always-In-Motion — global 2D field rotation via <code>orbConstellationT × 0.04</code>; speed naturally tracks state; paused freezes at fixed angle; base positions (<code>p.bx</code>/<code>p.by</code>) preserved, rotated coords stored as <code>p.rx</code>/<code>p.ry</code> — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted</em></li>
+        <li>[x] Sage Editor Context Bug Fix — <code>buildEditorContext()</code> reads live DOM from <code>#writingCopyEditor</code> + <code>#writingDraftEditor</code>; paragraph-aware last-2-para excerpt for long docs; injected into system prompt before <code>chat_memory</code>; <code>read_editor</code> tool added to <code>JARVIS_TOOLS</code> for on-demand full/partial reads — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted</em></li>
+        <li>[ ] Browser test Design Polish Sprint — hammer SVG, shortcuts modal, organize hint, chips hide-after-send, mobile/ultra-wide CSS</li>
+        <li>[ ] Browser test Orb Style Selector — default constellation, ⬡→aurora, ◈→back, close/reopen, page refresh persistence</li>
+        <li>[ ] Browser test Sprint O — debounce, ⚡ auto-send toggle, ⏸▶ pause/resume, mic-stop no-orphan-send</li>
+        <li>[ ] Browser test Sprint N — create Biography project, column labels, Sage intro, pencil rename persistence</li>
+        <li>[ ] /impeccable critique — formal scoring pass on live app post-redesign</li>
+        <li>[ ] Browser test backlog: Sprint C (C1/C2/C3), Sprint E onclick audit, Sprint F1 onclick audit</li>
+        <li>[ ] Ambient chat UI — ephemeral full-screen conversational layout replacing 310px sidebar panel</li>
+        <li>[ ] Cap <code>buildTieredContext()</code> card injection — if rate limits persist, cap card injection next</li>
+        <li>[ ] Add <code>[hidden] { display: none !important; }</code> to style.css — recommended 4 sessions in a row, still not done</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Browser test debt is now five sprints deep.</strong> Design Polish Sprint, Orb Style Selector, Constellation Animations, Sprint O, and Sprint N are all unverified in Live Server. The user confirmed the constellation animation and editor context fix work (from the screenshot), but a full Live Server pass has not been run.</li>
+        <li><strong>Sage editor context: contenteditable paragraph parsing.</strong> <code>buildEditorContext()</code> splits on <code>\n+</code> to find paragraphs. Rich contenteditable divs may render paragraphs as <code>&lt;div&gt;</code> or <code>&lt;p&gt;</code> with no newlines between them — <code>innerText</code> typically normalizes this to newlines on most browsers, but it's worth verifying the last-paragraph excerpt is semantically correct in Live Server.</li>
+        <li><strong>Canvas OKLCH color support.</strong> <code>renderOrbConstellation()</code> uses <code>oklch()</code> strings directly in canvas fillStyle. Browser support: Chrome 111+, Safari 15.4+, Firefox 113+. Older browsers show black/blank orb. No fallback added yet.</li>
+        <li><strong>CSS <code>[hidden] { display: none !important; }</code> still not added to style.css.</strong> Recommended every session for four sessions straight. This is now a tracked outstanding item, not a suggestion.</li>
+        <li><strong>Sprint O still not browser-tested.</strong> Committed but unverified for the second session in a row.</li>
+        <li><strong>ElevenLabs TTS end-to-end still not re-verified</strong> after the key change documented on 04-30 Run 2.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>No story work this session. Now that Sage can read the Working Copy and Draft, next story session is a good time to test: paste a scene, ask Sage to continue it, ask for the last paragraph — verify she reads the live text correctly end-to-end.</li>
+      </ul>
+      <p><strong>Build-side (in priority order):</strong></p>
+      <ul>
+        <li><strong>Commit this session's changes</strong> — <code>app.js</code> has three sets of changes: Constellation State-Reactive Animations, Always-In-Motion rotation, and Sage Editor Context Fix. Commit all three together or as separate messages.</li>
+        <li><strong>Browser test constellation animations</strong> — open Sage chat, switch to constellation style, observe idle drift. Send a message (thinking → speaking → idle). Click 🎤 (listening: stars push outward). Pause TTS (freeze). Confirm each state is visually distinct.</li>
+        <li><strong>Browser test Sage editor context</strong> — put content in Working Copy, ask Sage "what's the last paragraph in my working copy?" Confirm she quotes actual editor text. Ask "how many words in my draft?" Confirm accurate word count.</li>
+        <li><strong>Browser test Design Polish Sprint + Orb Style Selector</strong> — see Run 3 Handoff for exact test scripts.</li>
+        <li><strong>Browser test Sprint O</strong> — mic debounce, ⚡ toggle, ⏸▶ pause/resume, mic-stop guard.</li>
+        <li><strong>Add <code>[hidden] { display: none !important; }</code> to style.css</strong> — do this before starting any new sprint. It is a one-liner. It has been deferred four sessions. It goes in next.</li>
+        <li><strong>Run /impeccable critique</strong> — formal post-redesign score and punch list.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>db02d30 — Design Polish Sprint + Sage Orb Style Selector + session report Run 3</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session (uncommitted — all in <code>app.js</code>):</strong></p>
+      <ul>
+        <li><code>app.js</code> — <code>renderOrbConstellation()</code> fully replaced (~37 lines → ~120 lines): state-driven time step; mic sampling block (mirrors <code>renderOrb()</code>); ambient glow radial gradient; pulse ring rendering; per-state displacement logic (<code>rangeMultiplier</code>, <code>extraX</code>/<code>extraY</code>); global 2D field rotation (<code>globalAngle = orbConstellationT * 0.04</code>; rotated base stored as <code>p.rx</code>/<code>p.ry</code>); connection line style (alpha, width, connect-dist) per state; star size/alpha per state.</li>
+        <li><code>app.js</code> — <code>buildEditorContext()</code> new function (near other <code>build*Context</code> functions, ~line 3491): reads <code>#writingCopyEditor</code> and <code>#writingDraftEditor</code> via <code>innerText</code>; paragraph-aware last-2-para excerpt for docs &gt;500 words; returns labeled string with word count.</li>
+        <li><code>app.js</code> — <code>sendChatMessage()</code>: one line added to inject <code>buildEditorContext()</code> output into system prompt BEFORE <code>chat_memory</code> (~line 3603).</li>
+        <li><code>app.js</code> — <code>JARVIS_TOOLS</code> array: <code>read_editor</code> tool added (~line 333) with <code>editor</code> (working_copy | draft) and <code>section</code> (full | last_500_words | first_500_words) parameters.</li>
+        <li><code>app.js</code> — <code>executeJarvisTool()</code>: <code>read_editor</code> case added (~line 3348); reads DOM element, applies section slice, returns plain text.</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Global rotation derived from <code>orbConstellationT × 0.04</code>, not a separate clock.</strong> Tying the angle to the existing time variable means rotation speed automatically tracks state (idle: ~0.024 rad/sec; thinking: ~0.101 rad/sec) and freezes on paused — zero extra conditionals or globals. Perplexity confirmed this as the clean architectural choice.</li>
+        <li><strong>Store rotated coords as <code>p.rx</code>/<code>p.ry</code>, never modify <code>p.bx</code>/<code>p.by</code>.</strong> Base positions are the permanent anchors for future frame rotations. Mutating them would cause drift accumulation over time. The rotated variants are ephemeral per-frame values.</li>
+        <li><strong>Paragraph-aware excerpt over character slice.</strong> Perplexity explicitly flagged that <code>text.slice(-1600)</code> cuts through sentences and creates misleading context. Last-2-paragraph extraction respects semantic boundaries and is more faithful to what the user is actually reading. The excerpt is shorter on average (a paragraph is rarely 800 chars) so token cost is lower too.</li>
+        <li><strong>Editor context injected before <code>chat_memory</code>.</strong> Live DOM text must outrank auto-summarized old chat messages. If both appear in the system prompt, Claude gives more weight to earlier context. Placing the live editor snippet first ensures it wins when the two conflict.</li>
+        <li><strong>Two-layer editor access: always-on snapshot + on-demand tool.</strong> The always-on snapshot (last 2 paragraphs) handles the most common question ("what's the last paragraph?") with zero round-trips. The <code>read_editor</code> tool handles full reads and section-specific queries without inflating every prompt with thousands of words.</li>
+        <li><strong>Three-party plan review for both tracks before any code.</strong> Perplexity reviewed both Plan A and Plan B, adding the paragraph-aware refinement to B and confirming Plan A's global rotation architecture. Both plans were tightened before delegation.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit <code>app.js</code> — message: "Constellation animations + always-in-motion rotation + Sage editor context fix".</li>
+        <li>Open <code>index.html</code> in Live Server → Sage chat → constellation style → watch idle drift. Send a message → confirm thinking turbulence → speaking ripple → idle drift returns. Pause TTS → confirm freeze.</li>
+        <li>Put a few paragraphs in the Working Copy editor. Ask Sage: "What's the last paragraph in my working copy?" — must quote actual editor text, not session memory.</li>
+        <li>If both pass, run the Design Polish Sprint and Orb Style Selector browser tests (see Run 3 Handoff). Then browser-test Sprint O.</li>
+        <li>Add <code>[hidden] { display: none !important; }</code> to <code>style.css</code> before starting any new sprint.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>All session changes uncommitted — commit before starting next session</li>
+        <li>Design Polish Sprint and Orb Style Selector still uncommitted and browser-untested (carry-over from 04-30 Run 3)</li>
+        <li>Sprint O committed but browser-untested (two sessions of debt)</li>
+        <li><code>[hidden] { display: none !important; }</code> still missing — four sessions deferred</li>
+        <li>ElevenLabs TTS end-to-end not re-verified after key change (04-30 Run 2)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Add animation to the Sage constellation so it feels alive and reactive — similar to how the orb animates during speaking/listening/idle</li>
+        <li>Plan constellation state-reactive animations with Perplexity review before implementing</li>
+        <li>Fix constellation idle state so it always has visible motion (not frozen between state changes)</li>
+        <li>Investigate why Sage hallucinates editor content and fix it</li>
+        <li>Plan both fixes together with Perplexity review before implementing</li>
+        <li>Run both plans in parallel via ui-agent (constellation rotation) and feature-agent (editor context fix)</li>
+        <li>Generate /insights session report</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Parallel exploration + parallel implementation.</strong> The Explore agent found both the constellation render code and the Sage context injection flow in one pass. After planning, the ui-agent and feature-agent ran simultaneously — constellation rotation and editor context fix landed at the same time with no coordination needed.</li>
+        <li><strong>Root-cause diagnosis before planning.</strong> The Explore agent traced the full path from "user sends message" to "API call" to "what context is included" and found that neither editor element is ever read. This confirmed the fix before the plan was written — no guessing.</li>
+        <li><strong>Perplexity's paragraph-aware refinement.</strong> The original plan used <code>text.slice(-1600)</code> for the editor excerpt. Perplexity's review caught that this cuts sentences mid-stream and proposed last-2-paragraphs instead. The refinement is strictly better: more semantically correct, shorter on average, and reads naturally when Sage quotes it back.</li>
+        <li><strong>Rotation derived from existing time variable.</strong> Tying <code>globalAngle</code> to <code>orbConstellationT</code> instead of a new clock meant the rotation automatically inherited state speed and pause behavior — zero new globals, zero new conditionals. Perplexity confirmed this was the right call.</li>
+        <li><strong>User verified both fixes immediately.</strong> The user confirmed "both bugs were fixed" after the session. Clear acceptance signal — no ambiguity about whether the changes landed.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Browser test before generating /insights.</strong> This is now a five-session recurring note. The user confirmed the fixes work from the screenshot/behavior, but a full Live Server run was not performed. Make it the rule: no /insights until Live Server has been opened and the feature exercised.</li>
+        <li><strong>Commit after each sprint, not at session end.</strong> This session's changes (constellation rotation, editor context fix) are all uncommitted. The previous session's Design Polish Sprint and Orb Style Selector are also uncommitted. The commit queue is growing. Commit immediately when a feature is confirmed working.</li>
+        <li><strong>Track the <code>[hidden]</code> CSS one-liner as a hard blocker.</strong> It has been "recommended" for four sessions and deferred every time. At this point it should be a mandatory first step next session, not a suggestion item at the bottom of the list.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="footer">Generated by /insights · StoryForge · Life of Bon · 2026-05-01 · Run 1</div>
+</div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-05-01 Run 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Run 2 — Voice Mic: Text Preservation + 10-Second Inactivity Timer</h1>
+    <p class="subtitle">Two voice input bugs fixed: re-opening the mic no longer wipes previously typed or spoken text, and the silence debounce was extended from 2.5 seconds to 10 seconds so the mic waits for a full pause before auto-stopping. A brief detour through a hard-cap design was corrected after user clarification — the final implementation is purely inactivity-based with no wall-clock ceiling.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-05-01</strong></span>
+      <span class="chip">Run <strong>2</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>db02d30</strong> (base — this session's changes uncommitted)</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Sprint A — Story Canvas (Kanban board, cards, columns)</li>
+        <li>[x] Sprint B — Claude AI integration (paste text, file upload, card generation)</li>
+        <li>[x] Sprint C — Writing tab (editor, word count, auto-save) <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint D — Characters tab (profiles, modal)</li>
+        <li>[x] Sprint E — Arcs &amp; Timeline tab <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint F — Jarvis AI chat (sidebar panel, streaming, memory)</li>
+        <li>[x] Sprint F1 — Voice input for Jarvis <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint G — Outline tab</li>
+        <li>[x] Sprint H — Map tab (location cards, map canvas)</li>
+        <li>[x] Sprint I — Home tab (stats, recent cards, quick nav)</li>
+        <li>[x] Sprint J — Jarvis TTS (ElevenLabs/Puter.js), tiered context injection, follow-up question control, mic guard</li>
+        <li>[x] Sprint K — Living Workshop aesthetic: particles, glass, orb breathing, aurora (later redesigned out in M)</li>
+        <li>[x] Sprint L — Story Wiki (/refresh-wiki skill, wiki pages, character/world/arc reference)</li>
+        <li>[x] Sprint M — Full redesign Phase B: OKLCH token system, AI slop purge, spherical orb v2</li>
+        <li>[x] Sprint N — SaaS generalization: project schema, setup modal, format-based column labels, Sage prompt driven by project data</li>
+        <li>[x] Sprint N Bug Fix — SyntaxError from Unicode smart quotes; modal hidden/visible CSS specificity trap fixed</li>
+        <li>[x] Sprint O — Voice UX: debounce fix, auto-send toggle ⚡, Sage pause/resume ⏸▶ — <strong>committed 4a834d2</strong> <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint P — Bug fixes: 429 friendly error message, TTS full teardown on error, chat history cap 20→10 — <strong>committed 4a834d2</strong></li>
+        <li>[x] Design Polish Sprint — Hammer B SVG logo, keyboard shortcuts modal (?), organize hint, Sage empty-state chips, CSS quick wins <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Orb Style Selector — Constellation + Aurora Mist toggle, localStorage <code>orb_style</code> persistence, resize invalidation <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Constellation State-Reactive Animations + Always-In-Motion rotation — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted (Run 1 this session)</em></li>
+        <li>[x] Sage Editor Context Bug Fix — <code>buildEditorContext()</code> live DOM reads, <code>read_editor</code> tool — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted (Run 1 this session)</em></li>
+        <li>[x] Voice Mic Text Preservation — <code>existingText</code> captured at <code>onstart</code>, prepended in <code>onresult</code> / <code>sendTimer</code> / <code>onend</code> write paths in both <code>startOrbListening()</code> and <code>startChatMicInput()</code> — <em style="color:var(--subtle)">uncommitted, browser test pending</em></li>
+        <li>[x] Voice Mic 10-Second Inactivity Timer — <code>VOICE_SEND_DELAY_MS</code> changed 2500 → 10000; hard-cap design explored then discarded in favor of pure inactivity debounce — <em style="color:var(--subtle)">uncommitted, browser test pending</em></li>
+        <li>[ ] Browser test voice mic fixes — type text → mic on → speak → confirm text stacks not wiped; speak for &gt;10s silence → confirm mic auto-stops</li>
+        <li>[ ] Browser test Design Polish Sprint — hammer SVG, shortcuts modal, organize hint, chips hide-after-send, mobile/ultra-wide CSS</li>
+        <li>[ ] Browser test Orb Style Selector — default constellation, ⬡→aurora, ◈→back, close/reopen, page refresh persistence</li>
+        <li>[ ] Browser test Sprint O — debounce, ⚡ auto-send toggle, ⏸▶ pause/resume, mic-stop no-orphan-send</li>
+        <li>[ ] Browser test Sprint N — create Biography project, column labels, Sage intro, pencil rename persistence</li>
+        <li>[ ] /impeccable critique — formal scoring pass on live app post-redesign</li>
+        <li>[ ] Browser test backlog: Sprint C (C1/C2/C3), Sprint E onclick audit, Sprint F1 onclick audit</li>
+        <li>[ ] Ambient chat UI — ephemeral full-screen conversational layout replacing 310px sidebar panel</li>
+        <li>[ ] Cap <code>buildTieredContext()</code> card injection — if rate limits persist, cap card injection next</li>
+        <li>[ ] Add <code>[hidden] { display: none !important; }</code> to style.css — five sessions deferred, must go in next</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li><strong>All session changes remain uncommitted.</strong> Run 1 (constellation animations, editor context fix) and Run 2 (voice mic fixes) are both sitting in a modified <code>app.js</code> with no commit. They should be committed before the next session starts.</li>
+        <li><strong>Browser test debt is now six sprints deep.</strong> Voice mic fixes, Design Polish Sprint, Orb Style Selector, Constellation Animations, Sprint O, and Sprint N are all unverified in Live Server.</li>
+        <li><strong>Mic fix browser test is critical before trusting it at work.</strong> The text-preservation and 10-second inactivity fixes were written correctly but not verified in-browser. If the user tries to use voice input at work and it misbehaves, the fix may have a subtle bug.</li>
+        <li><strong><code>[hidden] { display: none !important; }</code> still missing from style.css.</strong> Five sessions deferred. This is now a hard blocker for the next session — not optional.</li>
+        <li><strong>ElevenLabs TTS end-to-end still not re-verified</strong> after the key change from 04-30 Run 2.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>No story work this session. Sage editor context is fixed — first story session is a good time to test: paste a scene into the Working Copy, ask Sage "what's the last paragraph?" and verify she reads live DOM text.</li>
+      </ul>
+      <p><strong>Build-side (in priority order):</strong></p>
+      <ul>
+        <li><strong>Commit app.js</strong> — all of Run 1 + Run 2 changes are uncommitted. Message: "Voice mic text preservation + 10s inactivity timer + constellation animations + editor context fix".</li>
+        <li><strong>Browser test the mic fixes first</strong> — they're the freshest and the most likely to be used at work. Type text → mic → speak → confirm stacking. Then speak → pause 10s → confirm auto-stop.</li>
+        <li><strong>Add <code>[hidden] { display: none !important; }</code> to style.css</strong> — one line. Must happen before any new sprint. Five sessions deferred.</li>
+        <li><strong>Browser test constellation animations and editor context</strong> — see Run 1 Handoff for exact test scripts.</li>
+        <li><strong>Browser test Design Polish Sprint + Orb Style Selector</strong> — carry-over from 04-30.</li>
+        <li><strong>Browser test Sprint O</strong> — mic debounce, ⚡ auto-send toggle, ⏸▶ pause/resume.</li>
+        <li><strong>Run /impeccable critique</strong> — formal post-redesign score and punch list.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>db02d30 — Design Polish Sprint + Sage Orb Style Selector + session report Run 3</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session (uncommitted):</strong></p>
+      <ul>
+        <li><code>app.js</code> — <code>VOICE_SEND_DELAY_MS</code>: <code>2500</code> → <code>10000</code> (silence debounce window, both functions use this constant)</li>
+        <li><code>app.js</code> — <code>startOrbListening()</code> and <code>startChatMicInput()</code>: added <code>var existingText = ''</code> to closure declarations; <code>onstart</code> now captures <code>chatInput.value</code> into <code>existingText</code> before resetting <code>accumulatedTranscript</code>; every place the input field is written now prepends <code>existingText</code> (onresult, sendTimer callback, onend fallback)</li>
+        <li><code>app.js</code> — Hard cap (<code>hardCapTimer</code>) was added then removed — not present in final code</li>
+        <li><code>docs/session-reports/session-report-2026-05-01.html</code> — Run 2 appended (this file)</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Inactivity timer over hard cap.</strong> Initial plan implemented a 10-second hard cap from mic start. User clarified: the 10 seconds should be a silence/inactivity window, not a wall-clock ceiling. The correct implementation was to extend <code>VOICE_SEND_DELAY_MS</code> from 2500 → 10000 — the existing debounce already resets on every speech result, which is exactly the inactivity behavior. Hard cap code was written and then fully removed.</li>
+        <li><strong>Closure capture for <code>existingText</code>.</strong> Rather than a module-level variable, <code>existingText</code> is declared inside each function's closure scope and captured once in <code>onstart</code>. It is invisible to the rest of the app and has zero side-effect risk. Perplexity flagged that this approach is clean and correct as long as the variable is not declared inside <code>onstart</code> itself — it is declared alongside <code>sendTimer</code> so all callbacks can reference it.</li>
+        <li><strong>Did not set <code>_userStopped</code> in hard cap.</strong> Perplexity flagged (correctly) that setting <code>rec._userStopped = true</code> in the hard cap would suppress transcript insertion in <code>onend</code>. This was caught in the plan review phase and the hard cap callback never included that flag. Moot now that the hard cap was removed entirely.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit <code>app.js</code> (and this session report) — all changes from Run 1 + Run 2 are staged here.</li>
+        <li>Open <code>index.html</code> in Live Server → type "hello" in the Sage chat input → click mic → say "world" → confirm input reads "hello world" (not just "world").</li>
+        <li>Click mic → speak continuously → pause → confirm it waits ~10 seconds of silence before stopping.</li>
+        <li>If both pass, proceed to the Run 1 browser tests (constellation + editor context), then the older sprint backlog.</li>
+        <li>Add <code>[hidden] { display: none !important; }</code> to <code>style.css</code> — do this before starting any new sprint.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>All session changes uncommitted — commit before starting next session or the work is at risk</li>
+        <li>Voice mic fixes browser-untested — use this before trusting it at work</li>
+        <li>Browser test debt: six sprints unverified (voice mic, constellation, editor context, Design Polish, Orb Style Selector, Sprint O)</li>
+        <li><code>[hidden] { display: none !important; }</code> still missing from style.css — five sessions deferred, treat as mandatory next</li>
+        <li>ElevenLabs TTS end-to-end not re-verified after key change (04-30 Run 2)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Fix the mic text-wipe bug (re-opening mic deletes prior input text)</li>
+        <li>Add a 10-second max to the mic</li>
+        <li>Clarified: 10 seconds should be inactivity-based, not a hard wall-clock cap</li>
+        <li>Generate session report and push to GitHub</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Plan mode + Perplexity review before code.</strong> Both bugs were diagnosed with an Explore agent, planned in /plan mode, reviewed by Perplexity, and then corrected before any code was written. Perplexity caught the <code>_userStopped</code> flag issue in the plan — would have been a silent bug if shipped.</li>
+        <li><strong>User clarification caught the design mismatch early.</strong> The first pass implemented a hard cap. The user's one-sentence correction ("it should turn off after ten seconds of no sound") clarified the intent instantly. The fix was a one-line constant change plus removing the hard cap code — much simpler than the original plan.</li>
+        <li><strong>Falling back to direct edits when the agent stalled.</strong> The feature-agent repeatedly returned "ready to execute on your go" instead of making edits. Rather than re-prompting it in circles, the changes were made directly. Correct call.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>When the agent keeps planning instead of executing, do it directly.</strong> The feature-agent was sent the same task three times and returned plans each time. The total time lost was non-trivial. If an agent outputs a plan summary with "ready to execute" twice, skip the agent and edit directly — the task is probably small enough not to need delegation.</li>
+        <li><strong>Browser test before /insights — still.</strong> Six sessions of this note. The mic fixes are especially important to verify since they affect usability at work.</li>
+        <li><strong>Commit after each confirmed fix, not at session end.</strong> Run 1 changes (verified by user) were never committed before Run 2 started. Commit immediately when the user confirms something works.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="footer">Generated by /insights · StoryForge · Life of Bon · 2026-05-01 · Run 2</div>
+</div>
+</body>
+</html>

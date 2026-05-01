@@ -328,6 +328,18 @@ const JARVIS_TOOLS = [
       },
       required: ['node_id', 'card_id']
     }
+  },
+  {
+    name: 'read_editor',
+    description: 'Read the current text content of the Working Copy or Draft editor. Use when the user asks about a specific passage, to compare editors, or when you need the full document text.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        editor: { type: 'string', enum: ['working_copy', 'draft'], description: 'Which editor to read' },
+        section: { type: 'string', enum: ['full', 'last_500_words', 'first_500_words'], description: 'How much to read' }
+      },
+      required: ['editor']
+    }
   }
 ];
 
@@ -3333,6 +3345,19 @@ async function executeJarvisTool(name, input) {
         return JSON.stringify({ success: true, message: 'Card unlinked from "' + nodeToUnlink.title + '".' });
       }
 
+      case 'read_editor': {
+        var edId = input.editor === 'working_copy' ? 'writingCopyEditor' : 'writingDraftEditor';
+        var edEl = document.getElementById(edId);
+        var edText = edEl ? (edEl.innerText || edEl.textContent || '').trim() : '(editor not found)';
+        var section = input.section || 'full';
+        if (section === 'last_500_words') {
+          var wds = edText.split(/\s+/); edText = wds.slice(-500).join(' ');
+        } else if (section === 'first_500_words') {
+          var wds = edText.split(/\s+/); edText = wds.slice(0, 500).join(' ');
+        }
+        return edText || '(empty)';
+      }
+
       default:
         return 'Error: unknown tool "' + name + '".';
     }
@@ -3463,6 +3488,27 @@ function buildTieredContext(message) {
   return ctx.trim();
 }
 
+// buildEditorContext: returns a live snapshot of the Working Copy and Draft editors.
+// Injected into the system prompt every turn so Sage always knows what the user has written.
+function buildEditorContext() {
+  var parts = [];
+  var editors = [
+    { id: 'writingCopyEditor', label: 'Working Copy' },
+    { id: 'writingDraftEditor', label: 'Draft' }
+  ];
+  editors.forEach(function(e) {
+    var el = document.getElementById(e.id);
+    if (!el) return;
+    var text = (el.innerText || el.textContent || '').trim();
+    if (!text) { parts.push(e.label + ': (empty)'); return; }
+    var words = text.split(/\s+/).length;
+    var paras = text.split(/\n+/).map(function(p) { return p.trim(); }).filter(Boolean);
+    var excerpt = words < 500 ? text : '...' + paras.slice(-2).join('\n\n');
+    parts.push(e.label + ' (' + words + ' words):\n' + excerpt);
+  });
+  return parts.length ? parts.join('\n\n') : '';
+}
+
 // sendChatMessage: two-call structure —
 //   Call A (conditional): if chatHistory > 20 turns, summarize oldest 10 into sf_chat_memory
 //   Call B (always): main response, injecting sf_chat_memory as system context + last 20 turns
@@ -3554,6 +3600,8 @@ async function sendChatMessage() {
     var storedMemory = localStorage.getItem(projectKey('chat_memory'));
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
+    var editorCtx = buildEditorContext();
+    if (editorCtx) systemPrompt += '\n\n## Current Writing Editors\n' + editorCtx;
     if (storedMemory) systemPrompt += '\n\nStory planning memory from earlier in this session:\n' + storedMemory;
     if (suggestionsCtx) systemPrompt += '\n\n' + suggestionsCtx;
 
@@ -4088,32 +4136,125 @@ function renderOrbConstellation() {
   var w = canvas.width, h = canvas.height;
   var cx = w / 2, cy = h / 2;
   var CONNECT_DIST = Math.min(w, h) * 0.32;
-  orbConstellationT += 0.012;
+  var time = Date.now() * 0.001;
+
+  // Variable time-step by state
+  var tSteps = { idle: 0.010, listening: 0.018, thinking: 0.042, speaking: 0.022, paused: 0 };
+  orbConstellationT += tSteps[orbState] !== undefined ? tSteps[orbState] : 0.010;
+
+  // Global field rotation — derived from orbConstellationT so it tracks state speed
+  // and freezes automatically when paused (tStep === 0 → T stays fixed → angle stays fixed)
+  var globalAngle = orbConstellationT * 0.04;
+  var cosA = Math.cos(globalAngle), sinA = Math.sin(globalAngle);
+
+  // Mic volume sampling (mirrors renderOrb)
+  if (orbState === 'listening' && orbAnalyser) {
+    var arr = new Uint8Array(orbAnalyser.frequencyBinCount);
+    orbAnalyser.getByteFrequencyData(arr);
+    var sum = 0;
+    for (var di = 0; di < arr.length; di++) sum += arr[di];
+    var raw = (sum / arr.length) / 96;
+    orbMicVolume = orbMicVolume * 0.6 + raw * 0.4;
+  } else {
+    orbMicVolume = Math.max(0, orbMicVolume - 0.04);
+  }
+
   ctx.clearRect(0, 0, w, h);
-  orbConstellationPts.forEach(function(p) {
-    p.ox = Math.sin(orbConstellationT * p.speed * 40 + p.phase) * p.range;
-    p.oy = Math.cos(orbConstellationT * p.speed * 30 + p.phase * 1.3) * p.range;
+
+  // Ambient background glow
+  var glowAlpha = { speaking: 0.18, listening: 0.12, thinking: 0.08, idle: 0.04, paused: 0.02 }[orbState] || 0.04;
+  var bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w, h) * 0.5);
+  bgGlow.addColorStop(0, 'hsla(268, 65%, 45%, ' + glowAlpha + ')');
+  bgGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = bgGlow;
+  ctx.fillRect(0, 0, w, h);
+
+  // Pulse rings (listening state — rings are populated by setOrbState)
+  orbPulseRings = orbPulseRings.filter(function(ring) { return ring.opacity > 0.02; });
+  orbPulseRings.forEach(function(ring) {
+    ring.r += 1.5;
+    ring.opacity *= 0.963;
+    ctx.beginPath();
+    ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'hsla(268, 72%, 72%, ' + ring.opacity.toFixed(3) + ')';
+    ctx.lineWidth = 1.0;
+    ctx.stroke();
   });
+
+  // Update point positions with state-based displacement
+  orbConstellationPts.forEach(function(p) {
+    var rangeMultiplier = 1.0;
+    var extraX = 0, extraY = 0;
+
+    // Rotate base position around center for global field rotation
+    var rdx = p.bx - cx, rdy = p.by - cy;
+    var rx = cx + rdx * cosA - rdy * sinA;
+    var ry = cy + rdx * sinA + rdy * cosA;
+    p.rx = rx; p.ry = ry;
+
+    if (orbState === 'listening') {
+      var vol = orbMicVolume;
+      var dx = rx - cx, dy = ry - cy;
+      var dist = Math.hypot(dx, dy) || 1;
+      var pulse = vol * 8 * (0.5 + 0.5 * Math.sin(time * 4 + p.phase));
+      extraX = (dx / dist) * pulse;
+      extraY = (dy / dist) * pulse;
+      rangeMultiplier = 1 + vol * 1.5;
+    } else if (orbState === 'thinking') {
+      // Internally unstable — vibrate near base positions, silhouette stays readable
+      extraX = Math.sin(time * 3 + p.phase * 2.7) * p.range * 1.6;
+      extraY = Math.cos(time * 2.5 + p.phase * 1.9) * p.range * 1.6;
+      rangeMultiplier = 1.8;
+    } else if (orbState === 'speaking') {
+      var dx2 = rx - cx, dy2 = ry - cy;
+      var dist2 = Math.hypot(dx2, dy2);
+      var wave = Math.sin(time * 5 - dist2 * 0.12);
+      var len = dist2 || 1;
+      extraX = (dx2 / len) * wave * 4;
+      extraY = (dy2 / len) * wave * 4;
+      rangeMultiplier = 1.3;
+    } else if (orbState === 'paused') {
+      rangeMultiplier = 0;
+    }
+
+    p.ox = Math.sin(orbConstellationT * p.speed * 40 + p.phase) * p.range * rangeMultiplier + extraX;
+    p.oy = Math.cos(orbConstellationT * p.speed * 30 + p.phase * 1.3) * p.range * rangeMultiplier + extraY;
+  });
+
+  // Connection lines — style varies by state
+  var lineAlpha  = { idle: 0.25, listening: 0.30, thinking: 0.20, speaking: 0.35, paused: 0.20 }[orbState] || 0.25;
+  var lineWidth  = { idle: 0.7,  listening: 0.8,  thinking: 0.5,  speaking: 0.9,  paused: 0.6  }[orbState] || 0.7;
+  var connectD   = orbState === 'thinking' ? CONNECT_DIST * 0.85 : CONNECT_DIST;
+
   for (var i = 0; i < orbConstellationPts.length; i++) {
     for (var j = i + 1; j < orbConstellationPts.length; j++) {
-      var ax = orbConstellationPts[i].bx + orbConstellationPts[i].ox;
-      var ay = orbConstellationPts[i].by + orbConstellationPts[i].oy;
-      var bx = orbConstellationPts[j].bx + orbConstellationPts[j].ox;
-      var by = orbConstellationPts[j].by + orbConstellationPts[j].oy;
+      var ax = orbConstellationPts[i].rx + orbConstellationPts[i].ox;
+      var ay = orbConstellationPts[i].ry + orbConstellationPts[i].oy;
+      var bx = orbConstellationPts[j].rx + orbConstellationPts[j].ox;
+      var by = orbConstellationPts[j].ry + orbConstellationPts[j].oy;
       var d = Math.hypot(ax - bx, ay - by);
-      if (d < CONNECT_DIST) {
+      if (d < connectD) {
         ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
-        ctx.strokeStyle = 'oklch(58% 0.16 272 / ' + (0.25 * (1 - d / CONNECT_DIST)) + ')';
-        ctx.lineWidth = 0.7; ctx.stroke();
+        ctx.strokeStyle = 'oklch(58% 0.16 272 / ' + (lineAlpha * (1 - d / connectD)) + ')';
+        ctx.lineWidth = lineWidth; ctx.stroke();
       }
     }
   }
+
+  // Stars — size and alpha vary by state
+  var starSize  = { idle: 1.8, listening: 1.8, thinking: 1.4, speaking: 2.1, paused: 1.8 }[orbState] || 1.8;
+  var starAlpha = orbState === 'speaking' ? 1.0
+                : orbState === 'listening' ? (0.85 + orbMicVolume * 0.15)
+                : 0.85;
+
   orbConstellationPts.forEach(function(p) {
     ctx.beginPath();
-    ctx.arc(p.bx + p.ox, p.by + p.oy, 1.8, 0, Math.PI * 2);
-    ctx.fillStyle = 'oklch(75% 0.12 272 / 0.85)';
+    ctx.arc(p.rx + p.ox, p.ry + p.oy, starSize, 0, Math.PI * 2);
+    ctx.fillStyle = 'oklch(75% 0.12 272 / ' + starAlpha + ')';
     ctx.fill();
   });
+
+  // Circular border
   var r = Math.min(w, h) * 0.42;
   ctx.beginPath(); ctx.arc(cx, cy, r + 1, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1; ctx.stroke();
@@ -4380,7 +4521,7 @@ function stopOrbMic() {
 }
 
 // ── Speech recognition (voice → text → Claude) ───────────────
-const VOICE_SEND_DELAY_MS = 2500;
+const VOICE_SEND_DELAY_MS = 10000;
 
 function startOrbListening() {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -4404,6 +4545,7 @@ function startOrbListening() {
     if (orbRecognition) { try { orbRecognition.abort(); } catch(_) {} }
 
     var accumulatedTranscript = '';
+    var existingText = '';
     var lastResultIndex = 0;
     var sendTimer = null;
     var hasAlreadySent = false;
@@ -4415,6 +4557,7 @@ function startOrbListening() {
     orbRecognition.lang           = 'en-US';
 
     orbRecognition.onstart = function() {
+      existingText = (document.getElementById('chatInput') || {}).value || '';
       accumulatedTranscript = '';
       lastResultIndex = 0;
       sendTimer = null;
@@ -4441,7 +4584,7 @@ function startOrbListening() {
         orbRecognition.stop();
         var input = document.getElementById('chatInput');
         if (input) {
-          input.value = accumulatedTranscript.trim();
+          input.value = (existingText + accumulatedTranscript).trim();
           if (!shouldAutoSend) input.focus();
         }
         if (typeof updateOrbTranscript === 'function') updateOrbTranscript('');
@@ -4467,7 +4610,7 @@ function startOrbListening() {
       clearTimeout(sendTimer);
       if (!hasAlreadySent && !userStoppedMic && accumulatedTranscript.trim()) {
         var input = document.getElementById('chatInput');
-        if (input) input.value = accumulatedTranscript.trim();
+        if (input) input.value = (existingText + accumulatedTranscript).trim();
         if (autoSendEnabled) {
           sendChatMessage();
         } else {
@@ -4546,6 +4689,7 @@ function startChatMicInput() {
   }
 
   var accumulatedTranscript = '';
+  var existingText = '';
   var lastResultIndex = 0;
   var sendTimer = null;
   var hasAlreadySent = false;
@@ -4560,6 +4704,7 @@ function startChatMicInput() {
   setOrbState('listening');
 
   rec.onstart = function() {
+    existingText = (document.getElementById('chatInput') || {}).value || '';
     accumulatedTranscript = '';
     lastResultIndex = 0;
     sendTimer = null;
@@ -4578,7 +4723,7 @@ function startChatMicInput() {
       }
     }
     var input = document.getElementById('chatInput');
-    if (input) input.value = accumulatedTranscript + interim;
+    if (input) input.value = existingText + accumulatedTranscript + interim;
 
     clearTimeout(sendTimer);
     sendTimer = setTimeout(function() {
@@ -4587,7 +4732,7 @@ function startChatMicInput() {
       rec.stop();
       var input = document.getElementById('chatInput');
       if (input) {
-        input.value = accumulatedTranscript.trim();
+        input.value = (existingText + accumulatedTranscript).trim();
         if (!shouldAutoSend) input.focus();
       }
       if (micBtn) micBtn.classList.remove('listening');
@@ -4615,7 +4760,7 @@ function startChatMicInput() {
     clearTimeout(sendTimer);
     if (!hasAlreadySent && !userStoppedMic && accumulatedTranscript.trim()) {
       var input = document.getElementById('chatInput');
-      if (input) input.value = accumulatedTranscript.trim();
+      if (input) input.value = (existingText + accumulatedTranscript).trim();
       if (autoSendEnabled) {
         sendChatMessage();
       } else {
