@@ -3832,35 +3832,95 @@ async function executeJarvisTool(name, input) {
         if (!ftEl) return { success: false, error: 'Editor not found.' };
         if (!input.text) return { success: false, error: 'text parameter is required.' };
 
-        var escapedTerm = input.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        var re = new RegExp(escapedTerm, 'gi');
+        // Pre-pass: unwrap any existing data-sage-fmt spans so we never double-nest
+        ftEl.querySelectorAll('[data-sage-fmt]').forEach(function(sp) {
+          var frag = document.createDocumentFragment();
+          while (sp.firstChild) frag.appendChild(sp.firstChild);
+          sp.parentNode.replaceChild(frag, sp);
+        });
 
-        // Build inline style string
-        var styles = [];
-        if (!input.clear) {
-          if (input.highlight_color) styles.push('background-color:' + (input.highlight_color === 'none' ? 'transparent' : input.highlight_color));
-          if (input.font_color)      styles.push('color:' + (input.font_color === 'inherit' ? 'inherit' : input.font_color));
+        if (input.clear) {
+          var lsKeyClear = ftEl.id === 'writingCopyEditor' ? projectKey('writing_copy') : projectKey('writing_draft');
+          localStorage.setItem(lsKeyClear, ftEl.innerHTML);
+          return { success: true, cleared: true, text: input.text };
         }
-        var wrapOpen  = input.clear ? '' : (styles.length ? '<span style="' + styles.join(';') + '">' : '');
-        var wrapBold  = (input.bold   && !input.clear) ? '<strong>' : '';
-        var wrapItal  = (input.italic && !input.clear) ? '<em>'     : '';
-        var wrapClose = input.clear ? '' : ((input.italic && !input.clear ? '</em>' : '') + (input.bold && !input.clear ? '</strong>' : '') + (styles.length ? '</span>' : ''));
 
-        // Strip existing format_text spans around this text first to avoid nesting
-        var plain = ftEl.innerHTML.replace(/<span[^>]*>(<strong>)?(<em>)?([\s\S]*?)(<\/em>)?(<\/strong>)?<\/span>/gi, '$3');
+        // Build style for the wrapper span
+        var ftStyles = [];
+        if (input.highlight_color) ftStyles.push('background-color:' + (input.highlight_color === 'none' ? 'transparent' : input.highlight_color));
+        if (input.font_color)      ftStyles.push('color:' + (input.font_color === 'inherit' ? 'inherit' : input.font_color));
 
-        var count = (plain.match(re) || []).length;
-        if (!count) return { success: false, error: 'Text "' + input.text + '" not found in ' + input.editor + '.' };
+        var escapedTerm = input.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var ftRe = new RegExp(escapedTerm, 'gi');
 
-        ftEl.innerHTML = plain.replace(re, function(m) {
-          if (input.clear) return m;
-          return wrapOpen + wrapBold + wrapItal + m + wrapClose;
+        // Collect all text nodes and build a position map into combined plain text
+        var ftNodes = [];
+        var ftWalker = document.createTreeWalker(ftEl, NodeFilter.SHOW_TEXT, null, false);
+        var ftN;
+        while ((ftN = ftWalker.nextNode())) ftNodes.push(ftN);
+
+        var ftCombined = '';
+        var ftMap = ftNodes.map(function(tn) {
+          var s = ftCombined.length;
+          ftCombined += tn.nodeValue || '';
+          return { node: tn, start: s, end: ftCombined.length };
+        });
+
+        // Find all matches in combined plain text
+        var ftMatches = [];
+        var ftM;
+        while ((ftM = ftRe.exec(ftCombined)) !== null) {
+          ftMatches.push({ start: ftM.index, end: ftM.index + ftM[0].length });
+        }
+        if (!ftMatches.length) return { success: false, error: 'Text "' + input.text + '" not found in ' + input.editor + '.' };
+
+        // Process matches in reverse so earlier DOM mutations don't shift later positions
+        ftMatches.reverse().forEach(function(match) {
+          var affected = ftMap.filter(function(nm) { return nm.end > match.start && nm.start < match.end; });
+          // Process each affected node last-to-first
+          for (var i = affected.length - 1; i >= 0; i--) {
+            var nm = affected[i];
+            var tn = nm.node;
+            if (!tn.parentNode) continue; // node was already replaced
+            var localStart = Math.max(0, match.start - nm.start);
+            var localEnd   = Math.min(tn.nodeValue.length, match.end - nm.start);
+            if (localStart >= localEnd) continue;
+
+            var before = tn.nodeValue.slice(0, localStart);
+            var mid    = tn.nodeValue.slice(localStart, localEnd);
+            var after  = tn.nodeValue.slice(localEnd);
+
+            // Build the wrapper
+            var span = document.createElement('span');
+            span.setAttribute('data-sage-fmt', '1');
+            if (ftStyles.length) span.setAttribute('style', ftStyles.join(';'));
+            var inner = document.createTextNode(mid);
+            if (input.bold && input.italic) {
+              var str = document.createElement('strong');
+              var em  = document.createElement('em');
+              em.appendChild(inner); str.appendChild(em); span.appendChild(str);
+            } else if (input.bold) {
+              var str = document.createElement('strong');
+              str.appendChild(inner); span.appendChild(str);
+            } else if (input.italic) {
+              var em = document.createElement('em');
+              em.appendChild(inner); span.appendChild(em);
+            } else {
+              span.appendChild(inner);
+            }
+
+            var frag = document.createDocumentFragment();
+            if (before) frag.appendChild(document.createTextNode(before));
+            frag.appendChild(span);
+            if (after) frag.appendChild(document.createTextNode(after));
+            tn.parentNode.replaceChild(frag, tn);
+          }
         });
 
         var lsKey = ftEl.id === 'writingCopyEditor' ? projectKey('writing_copy') : projectKey('writing_draft');
         localStorage.setItem(lsKey, ftEl.innerHTML);
 
-        return { success: true, matches_formatted: count, text: input.text };
+        return { success: true, matches_formatted: ftMatches.length, text: input.text };
       }
 
       case 'read_character_profiles': {
