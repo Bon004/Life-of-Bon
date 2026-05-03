@@ -368,7 +368,26 @@
         <button class="fmt-btn" data-cmd="justifyLeft"   title="Align left">⬤◁</button>
         <button class="fmt-btn" data-cmd="justifyCenter" title="Align center">⬤</button>
         <button class="fmt-btn" data-cmd="justifyRight"  title="Align right">▷⬤</button>
+        <button class="fmt-btn" data-cmd="justifyFull"   title="Justify">≡</button>
         <span class="fmt-sep"></span>
+        <select class="fmt-select" id="fontFamilySelect" title="Font family">
+          <option value="">Font</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Times New Roman', Times, serif">Times New Roman</option>
+          <option value="Garamond, serif">Garamond</option>
+          <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+          <option value="Arial, Helvetica, sans-serif">Arial</option>
+          <option value="Calibri, sans-serif">Calibri</option>
+          <option value="'Courier New', Courier, monospace">Courier New</option>
+          <option value="Verdana, Geneva, sans-serif">Verdana</option>
+        </select>
+        <select class="fmt-select" id="lineSpacingSelect" title="Line spacing">
+          <option value="">Spacing</option>
+          <option value="1">Single</option>
+          <option value="1.15">1.15</option>
+          <option value="1.5">1.5</option>
+          <option value="2">Double</option>
+        </select>
         <select class="fmt-select" id="fontSizeSelect" title="Font size">
           <option value="">Size</option>
           <option value="1">Small</option>
@@ -376,13 +395,42 @@
           <option value="5">Large</option>
           <option value="7">Huge</option>
         </select>
-        <button class="fmt-btn fmt-btn-highlight" data-cmd="backColor" data-val="#fff59d" title="Highlight yellow">▐ Hi</button>
-        <button class="fmt-btn" data-cmd="backColor" data-val="transparent" title="Remove highlight">▐ ✕</button>
+        <span class="fmt-sep"></span>
+        <span style="position:relative;display:inline-flex;">
+          <button class="fmt-btn fmt-btn-highlight-picker" id="highlightPickerBtn" title="Highlight">▐ Hi</button>
+          <div class="color-popover" id="highlightPopover">
+            <div class="color-swatch" style="background:#fff59d;" data-highlight-color="#fff59d" title="Yellow"></div>
+            <div class="color-swatch" style="background:#a7f3d0;" data-highlight-color="#a7f3d0" title="Green"></div>
+            <div class="color-swatch" style="background:#bfdbfe;" data-highlight-color="#bfdbfe" title="Blue"></div>
+            <div class="color-swatch" style="background:#fecaca;" data-highlight-color="#fecaca" title="Red/Pink"></div>
+            <div class="color-swatch" style="background:#e9d5ff;" data-highlight-color="#e9d5ff" title="Purple"></div>
+            <div class="color-swatch" style="background:#fed7aa;" data-highlight-color="#fed7aa" title="Orange"></div>
+            <div class="color-swatch color-swatch-none" data-highlight-color="transparent" title="None"></div>
+          </div>
+        </span>
+        <span style="position:relative;display:inline-flex;">
+          <button class="fmt-btn fmt-btn-color" id="fontColorBtn" title="Font color">A</button>
+          <div class="color-popover" id="fontColorPopover">
+            <div class="color-swatch" style="background:#000000;" data-font-color="#000000" title="Black"></div>
+            <div class="color-swatch" style="background:#ffffff;" data-font-color="#ffffff" title="White"></div>
+            <div class="color-swatch" style="background:#ef4444;" data-font-color="#ef4444" title="Red"></div>
+            <div class="color-swatch" style="background:#f97316;" data-font-color="#f97316" title="Orange"></div>
+            <div class="color-swatch" style="background:#eab308;" data-font-color="#eab308" title="Yellow"></div>
+            <div class="color-swatch" style="background:#22c55e;" data-font-color="#22c55e" title="Green"></div>
+            <div class="color-swatch" style="background:#3b82f6;" data-font-color="#3b82f6" title="Blue"></div>
+            <div class="color-swatch" style="background:#a855f7;" data-font-color="#a855f7" title="Purple"></div>
+            <span style="position:relative;display:inline-flex;align-items:center;">
+              <div class="color-swatch color-swatch-custom" id="fontColorCustomSwatch" title="Custom color" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);"></div>
+              <input type="color" id="fontColorCustom" style="position:absolute;opacity:0;width:22px;height:22px;cursor:pointer;left:0;top:0;" title="Custom color" />
+            </span>
+          </div>
+        </span>
         <span class="fmt-sep"></span>
         <button class="fmt-btn" data-cmd="insertHorizontalRule"  title="Divider">─</button>
         <span class="fmt-sep"></span>
         <button class="fmt-btn fmt-btn-clear" data-cmd="removeFormat" title="Clear formatting">✕ Clear</button>
         <span class="fmt-sep"></span>
+        <button class="fmt-btn" id="findReplaceBtn" title="Find &amp; Replace (Ctrl+F)">🔍</button>
         <button class="fmt-btn" id="historyBtn" title="Draft history">⏱ History</button>
       </div>
 

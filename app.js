@@ -461,6 +461,161 @@ const JARVIS_TOOLS = [
       },
       required: []
     }
+  },
+  {
+    name: 'set_document_format',
+    description: 'Apply document-wide formatting to the Working Copy or Draft editor (or both). Use for line spacing, font family, and text alignment. Does not modify the text content — only its presentation. Use when the user asks to change the look/feel of the document.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        editor:         { type: 'string', enum: ['working_copy', 'draft', 'both'], description: 'Which editor(s) to apply formatting to.' },
+        line_spacing:   { type: 'string', enum: ['1', '1.15', '1.5', '2'], description: 'Line height multiplier. "1" = single, "2" = double.' },
+        font_family:    { type: 'string', description: 'CSS font-family value. Use one of the supported fonts: "Georgia, serif" | "\'Times New Roman\', Times, serif" | "Garamond, serif" | "\'Palatino Linotype\', Palatino, serif" | "Arial, Helvetica, sans-serif" | "Calibri, sans-serif" | "\'Courier New\', Courier, monospace" | "Verdana, Geneva, sans-serif"' },
+        text_alignment: { type: 'string', enum: ['left', 'center', 'right', 'justify'], description: 'Text alignment for the whole document.' }
+      },
+      required: ['editor']
+    }
+  },
+  {
+    name: 'format_text',
+    description: 'Find specific text in an editor and apply formatting to it: highlight color, font color, bold, or italic. Useful for color-coding character dialogue, marking important passages, or visually organising sections. Searches case-insensitively. If the text appears multiple times, all occurrences are formatted.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        editor:          { type: 'string', enum: ['working_copy', 'draft'], description: 'Which editor to search.' },
+        text:            { type: 'string', description: 'Exact text to find (case-insensitive).' },
+        highlight_color: { type: 'string', description: 'Background/highlight color as hex (e.g. "#fff59d" yellow, "#a7f3d0" green, "#bfdbfe" blue, "#fecaca" pink, "#e9d5ff" purple, "#fed7aa" orange). Use "none" to remove highlight.' },
+        font_color:      { type: 'string', description: 'Text color as hex (e.g. "#ef4444" red, "#3b82f6" blue, "#22c55e" green, "#a855f7" purple). Use "inherit" to remove color.' },
+        bold:            { type: 'boolean', description: 'Apply bold to matched text.' },
+        italic:          { type: 'boolean', description: 'Apply italic to matched text.' },
+        clear:           { type: 'boolean', description: 'If true, strip all inline formatting from matched text (overrides other properties).' }
+      },
+      required: ['editor', 'text']
+    }
+  },
+  {
+    name: 'read_character_profiles',
+    description: 'Read all character cards and their extended profiles (role, enneagram, goal, fear, arc, notes). Use this before creating or editing character profiles to avoid duplication.',
+    input_schema: { type: 'object', properties: {} }
+  },
+  {
+    name: 'create_character',
+    description: 'Create a new character card on the Story Canvas with an optional extended profile.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title:      { type: 'string', description: 'Character name.' },
+        content:    { type: 'string', description: 'Card body — a brief description or bio.' },
+        role:       { type: 'string', description: 'Character role (e.g. protagonist, antagonist, mentor).' },
+        enneagram:  { type: 'string', description: 'Enneagram type, e.g. "Type 4 — The Individualist".' },
+        goal:       { type: 'string', description: 'What the character wants most.' },
+        fear:       { type: 'string', description: 'What the character fears most.' },
+        arc:        { type: 'string', description: 'Character arc summary.' },
+        notes:      { type: 'string', description: 'Additional profile notes.' }
+      },
+      required: ['title', 'content']
+    }
+  },
+  {
+    name: 'edit_character_profile',
+    description: 'Edit the extended profile fields of an existing character card. Identify the character by card title.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title:      { type: 'string', description: 'Card title (character name) to find.' },
+        role:       { type: 'string', description: 'New role value.' },
+        enneagram:  { type: 'string', description: 'New enneagram value.' },
+        goal:       { type: 'string', description: 'New goal value.' },
+        fear:       { type: 'string', description: 'New fear value.' },
+        arc:        { type: 'string', description: 'New arc value.' },
+        notes:      { type: 'string', description: 'New notes value.' },
+        content:    { type: 'string', description: 'New card body text (optional).' }
+      },
+      required: ['title']
+    }
+  },
+  {
+    name: 'read_arcs_timeline',
+    description: 'Read all arc and event cards, including their order in the Arcs & Timeline tab.',
+    input_schema: { type: 'object', properties: {} }
+  },
+  {
+    name: 'create_arc_entry',
+    description: 'Create a new arc or event card and add it to the Arcs & Timeline tab.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title:   { type: 'string', description: 'Arc or event title.' },
+        content: { type: 'string', description: 'Description of the arc or event.' },
+        type:    { type: 'string', enum: ['arc', 'event'], description: '"arc" for a story arc, "event" for a single timeline event.' }
+      },
+      required: ['title', 'content', 'type']
+    }
+  },
+  {
+    name: 'move_card',
+    description: 'Move a card to a different column on the Story Canvas by changing its type.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title:    { type: 'string', description: 'Title of the card to move (case-insensitive partial match).' },
+        new_type: { type: 'string', enum: ['character', 'location', 'faction', 'arc', 'event', 'scene', 'idea', 'quote'], description: 'Target card type (determines which column the card lands in).' }
+      },
+      required: ['title', 'new_type']
+    }
+  },
+  {
+    name: 'archive_card',
+    description: 'Archive a card so it no longer appears on the canvas. Always call request_user_choice FIRST to confirm with the user.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title:             { type: 'string', description: 'Title of the card to archive (case-insensitive partial match).' },
+        confirmed_by_user: { type: 'boolean', description: 'Must be true — only set after the user confirms via request_user_choice.' }
+      },
+      required: ['title', 'confirmed_by_user']
+    }
+  },
+  {
+    name: 'list_projects',
+    description: 'List all StoryForge projects available in this browser.',
+    input_schema: { type: 'object', properties: {} }
+  },
+  {
+    name: 'switch_project',
+    description: 'Switch to a different project. Always call request_user_choice FIRST to confirm — never switch without user confirmation.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        project_id:        { type: 'string', description: 'The ID of the project to switch to.' },
+        confirmed_by_user: { type: 'boolean', description: 'Must be true — only set after the user confirms via request_user_choice.' }
+      },
+      required: ['project_id', 'confirmed_by_user']
+    }
+  },
+  {
+    name: 'create_project',
+    description: 'Create a new StoryForge project. After creating, call request_user_choice to ask the user whether to switch to it now.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name:   { type: 'string', description: 'Name of the new project.' },
+        format: { type: 'string', enum: ['novel', 'screenplay', 'other'], description: 'Writing format for the new project.' }
+      },
+      required: ['name', 'format']
+    }
+  },
+  {
+    name: 'request_user_choice',
+    description: 'Show the user a question with clickable choice buttons in the chat. Use for confirmations (archive, project switch) or any ambiguous request that needs a user decision.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        question: { type: 'string', description: 'The question or prompt to display to the user.' },
+        choices:  { type: 'array', items: { type: 'string' }, description: 'Array of button labels the user can click.' }
+      },
+      required: ['question', 'choices']
+    }
   }
 ];
 
@@ -3645,6 +3800,211 @@ async function executeJarvisTool(name, input) {
         return 'Snapshot saved' + snapLabel + ' at ' + new Date().toLocaleTimeString() + '. You can restore it via the History panel (⏱ History button).';
       }
 
+      case 'set_document_format': {
+        var targets = [];
+        if (input.editor === 'both' || input.editor === 'working_copy') {
+          var el = document.getElementById('writingCopyEditor');
+          if (el) targets.push(el);
+        }
+        if (input.editor === 'both' || input.editor === 'draft') {
+          var el = document.getElementById('writingDraftEditor');
+          if (el) targets.push(el);
+        }
+        if (!targets.length) return { success: false, error: 'Editor not found.' };
+        var applied = [];
+        targets.forEach(function(el) {
+          if (input.line_spacing)   { el.style.lineHeight  = input.line_spacing; applied.push('line spacing → ' + input.line_spacing); }
+          if (input.font_family)    { el.style.fontFamily  = input.font_family;  applied.push('font → ' + input.font_family); }
+          if (input.text_alignment) {
+            var cmdMap = { left: 'justifyLeft', center: 'justifyCenter', right: 'justifyRight', justify: 'justifyFull' };
+            el.focus();
+            document.execCommand('selectAll', false, null);
+            document.execCommand(cmdMap[input.text_alignment], false, null);
+            applied.push('alignment → ' + input.text_alignment);
+          }
+        });
+        return { success: true, applied: applied };
+      }
+
+      case 'format_text': {
+        var ftEdId = input.editor === 'working_copy' ? 'writingCopyEditor' : 'writingDraftEditor';
+        var ftEl = document.getElementById(ftEdId);
+        if (!ftEl) return { success: false, error: 'Editor not found.' };
+        if (!input.text) return { success: false, error: 'text parameter is required.' };
+
+        var escapedTerm = input.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var re = new RegExp(escapedTerm, 'gi');
+
+        // Build inline style string
+        var styles = [];
+        if (!input.clear) {
+          if (input.highlight_color) styles.push('background-color:' + (input.highlight_color === 'none' ? 'transparent' : input.highlight_color));
+          if (input.font_color)      styles.push('color:' + (input.font_color === 'inherit' ? 'inherit' : input.font_color));
+        }
+        var wrapOpen  = input.clear ? '' : (styles.length ? '<span style="' + styles.join(';') + '">' : '');
+        var wrapBold  = (input.bold   && !input.clear) ? '<strong>' : '';
+        var wrapItal  = (input.italic && !input.clear) ? '<em>'     : '';
+        var wrapClose = input.clear ? '' : ((input.italic && !input.clear ? '</em>' : '') + (input.bold && !input.clear ? '</strong>' : '') + (styles.length ? '</span>' : ''));
+
+        // Strip existing format_text spans around this text first to avoid nesting
+        var plain = ftEl.innerHTML.replace(/<span[^>]*>(<strong>)?(<em>)?([\s\S]*?)(<\/em>)?(<\/strong>)?<\/span>/gi, '$3');
+
+        var count = (plain.match(re) || []).length;
+        if (!count) return { success: false, error: 'Text "' + input.text + '" not found in ' + input.editor + '.' };
+
+        ftEl.innerHTML = plain.replace(re, function(m) {
+          if (input.clear) return m;
+          return wrapOpen + wrapBold + wrapItal + m + wrapClose;
+        });
+
+        var lsKey = ftEl.id === 'writingCopyEditor' ? projectKey('writing_copy') : projectKey('writing_draft');
+        localStorage.setItem(lsKey, ftEl.innerHTML);
+
+        return { success: true, matches_formatted: count, text: input.text };
+      }
+
+      case 'read_character_profiles': {
+        var charCards = cards.filter(function(c) { return c.type === 'character' && c.status !== 'archived'; });
+        if (!charCards.length) return 'No character cards found.';
+        var result = charCards.map(function(c) {
+          var p = characterProfiles[c.id] || {};
+          return 'Card ID: ' + c.id + '\nName: ' + c.title + '\nBio: ' + c.content +
+            '\nRole: ' + (p.role || '') + '\nEnneagram: ' + (p.enneagram || '') +
+            '\nGoal: ' + (p.goal || '') + '\nFear: ' + (p.fear || '') +
+            '\nArc: ' + (p.arc || '') + '\nNotes: ' + (p.notes || '');
+        });
+        return result.join('\n\n---\n\n');
+      }
+
+      case 'create_character': {
+        var newId = 'card_' + Date.now();
+        var newChar = { id: newId, title: input.title, content: input.content, type: 'character', status: 'active', batchId: 'sage_' + Date.now() };
+        cards.push(newChar);
+        if (input.role || input.enneagram || input.goal || input.fear || input.arc || input.notes) {
+          characterProfiles[newId] = {
+            role: input.role || '', enneagram: input.enneagram || '',
+            goal: input.goal || '', fear: input.fear || '',
+            arc: input.arc || '', notes: input.notes || ''
+          };
+          saveCharacterProfiles();
+        }
+        saveCards();
+        renderCards();
+        renderCharacterSidebar();
+        return { success: true, card_id: newId, message: 'Character card "' + input.title + '" created.' };
+      }
+
+      case 'edit_character_profile': {
+        var target = cards.find(function(c) { return c.type === 'character' && c.title.toLowerCase().includes(input.title.toLowerCase()); });
+        if (!target) return 'No character card found matching "' + input.title + '".';
+        var prof = characterProfiles[target.id] || {};
+        if (input.role       !== undefined) prof.role       = input.role;
+        if (input.enneagram  !== undefined) prof.enneagram  = input.enneagram;
+        if (input.goal       !== undefined) prof.goal       = input.goal;
+        if (input.fear       !== undefined) prof.fear       = input.fear;
+        if (input.arc        !== undefined) prof.arc        = input.arc;
+        if (input.notes      !== undefined) prof.notes      = input.notes;
+        characterProfiles[target.id] = prof;
+        if (input.content !== undefined) { target.content = input.content; saveCards(); renderCards(); }
+        saveCharacterProfiles();
+        renderCharacterSidebar();
+        return { success: true, message: 'Profile updated for "' + target.title + '".' };
+      }
+
+      case 'read_arcs_timeline': {
+        var arcCards = cards.filter(function(c) { return (c.type === 'arc' || c.type === 'event') && c.status !== 'archived'; });
+        if (!arcCards.length) return 'No arc or event cards found.';
+        var ordered = arcOrder.map(function(id) { return arcCards.find(function(c) { return c.id === id; }); }).filter(Boolean);
+        var unordered = arcCards.filter(function(c) { return arcOrder.indexOf(c.id) === -1; });
+        var all = ordered.concat(unordered);
+        return all.map(function(c, i) { return (i + 1) + '. [' + c.type + '] ' + c.title + '\n   ' + c.content; }).join('\n\n');
+      }
+
+      case 'create_arc_entry': {
+        var arcId = 'card_' + Date.now();
+        var arcCard = { id: arcId, title: input.title, content: input.content, type: input.type, status: 'active', batchId: 'sage_' + Date.now() };
+        cards.push(arcCard);
+        arcOrder.push(arcId);
+        saveCards();
+        saveArcOrder();
+        renderCards();
+        renderArcsTimeline();
+        return { success: true, card_id: arcId, message: input.type + ' entry "' + input.title + '" created.' };
+      }
+
+      case 'move_card': {
+        var moveTarget = cards.find(function(c) { return c.title.toLowerCase().includes(input.title.toLowerCase()) && c.status !== 'archived'; });
+        if (!moveTarget) return 'No active card found matching "' + input.title + '".';
+        var oldType = moveTarget.type;
+        moveTarget.type = input.new_type;
+        saveCards();
+        renderCards();
+        return { success: true, message: 'Moved "' + moveTarget.title + '" from ' + oldType + ' to ' + input.new_type + '.' };
+      }
+
+      case 'archive_card': {
+        if (!input.confirmed_by_user) return 'Archive blocked: confirmed_by_user must be true. Ask the user for confirmation first using request_user_choice.';
+        var archTarget = cards.find(function(c) { return c.title.toLowerCase().includes(input.title.toLowerCase()) && c.status !== 'archived'; });
+        if (!archTarget) return 'No active card found matching "' + input.title + '".';
+        archTarget.status = 'archived';
+        saveCards();
+        renderCards();
+        return { success: true, message: '"' + archTarget.title + '" has been archived.' };
+      }
+
+      case 'list_projects': {
+        var projList = window._sf_projects || [];
+        if (!projList.length) return 'No projects found.';
+        return projList.map(function(p) { return 'ID: ' + p.id + ' | Name: ' + p.name + ' | Format: ' + (p.format || 'novel') + (p.id === activeProjectId ? ' [ACTIVE]' : ''); }).join('\n');
+      }
+
+      case 'switch_project': {
+        if (!input.confirmed_by_user) return 'Switch blocked: confirmed_by_user must be true. Ask the user for confirmation first using request_user_choice.';
+        var switchProj = (window._sf_projects || []).find(function(p) { return p.id === input.project_id; });
+        if (!switchProj) return 'No project found with ID "' + input.project_id + '".';
+        localStorage.setItem('sf_active_project', input.project_id);
+        location.reload();
+        return { success: true, message: 'Switching to project "' + switchProj.name + '"...' };
+      }
+
+      case 'create_project': {
+        var newProjId = 'proj_' + Date.now();
+        var projects = window._sf_projects || [];
+        projects.push({ id: newProjId, name: input.name, format: input.format, created: Date.now() });
+        localStorage.setItem('sf_projects', JSON.stringify(projects));
+        window._sf_projects = projects;
+        return { success: true, project_id: newProjId, message: 'Project "' + input.name + '" created with ID ' + newProjId + '.' };
+      }
+
+      case 'request_user_choice': {
+        var choiceDiv = document.createElement('div');
+        choiceDiv.className = 'chat-choice-card';
+        var qEl = document.createElement('div');
+        qEl.className = 'chat-choice-question';
+        qEl.textContent = input.question;
+        choiceDiv.appendChild(qEl);
+        var btnsEl = document.createElement('div');
+        btnsEl.className = 'chat-choice-buttons';
+        (input.choices || []).forEach(function(label) {
+          var btn = document.createElement('button');
+          btn.className = 'chat-choice-btn';
+          btn.textContent = label;
+          btn.addEventListener('click', function() {
+            var chatInput = document.getElementById('chatInput');
+            var chatSend  = document.getElementById('chatSend');
+            if (chatInput && chatSend) {
+              chatInput.value = label;
+              chatSend.click();
+            }
+          });
+          btnsEl.appendChild(btn);
+        });
+        choiceDiv.appendChild(btnsEl);
+        var messagesEl = document.getElementById('chatMessages');
+        if (messagesEl) { messagesEl.appendChild(choiceDiv); messagesEl.scrollTop = messagesEl.scrollHeight; }
+        return { success: true, message: 'Choice dialog shown to user.' };
+      }
+
       default:
         return 'Error: unknown tool "' + name + '".';
     }
@@ -3884,7 +4244,7 @@ async function sendChatMessage() {
       screenplay: 'Help with scene writing, dialogue, structure, and character motivation.',
       other:      'Help with writing, brainstorming, structure, and development.'
     }[currentProjectFormat] || 'Help with writing, brainstorming, structure, and development.');
-    var baseSystem = projectFacts + ' ' + assistantBehavior + '\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, link/unlink cards to outline nodes, read word ranges from Working Copy, get Working Copy metadata (word count, paragraph count, character count), highlight/select word ranges in Working Copy, append text to Working Copy (Sage Undo button can reverse this), delete or replace word ranges in Working Copy (best-effort plain text — may simplify rich formatting; Sage Undo and draft history are both available), save version snapshots to draft history, and delete cards from the canvas (requires explicit user confirmation — use confirmed_by_user: true only after the user says yes). You CANNOT: do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true } or a success string. If a tool fails, tell the user exactly what failed. Any request that asks you to directly modify the draft — regardless of how it is phrased — must trigger write_draft. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves. After any Working Copy write (append, delete, replace), tell the user the Sage Undo button is available (session-only) and that a snapshot was saved to draft history. For delete_card: always confirm with the user explicitly before calling — the tool will block if confirmed_by_user is not true. For delete_from_working_copy and replace_in_working_copy: warn the user that rich formatting in the affected region may be simplified to plain text.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft", "append this to my working copy"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
+    var baseSystem = projectFacts + ' ' + assistantBehavior + '\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, link/unlink cards to outline nodes, read word ranges from Working Copy, get Working Copy metadata (word count, paragraph count, character count), highlight/select word ranges in Working Copy, append text to Working Copy (Sage Undo button can reverse this), delete or replace word ranges in Working Copy (best-effort plain text — may simplify rich formatting; Sage Undo and draft history are both available), save version snapshots to draft history, delete cards from the canvas (requires explicit user confirmation — use confirmed_by_user: true only after the user says yes), set document-wide formatting (line spacing, font family, text alignment) via set_document_format, apply targeted text formatting (highlight color, font color, bold, italic) to specific passages via format_text, read and create character profiles via read_character_profiles / create_character / edit_character_profile, read and create arcs/timeline entries via read_arcs_timeline / create_arc_entry, move cards between canvas columns via move_card, archive cards (with user confirmation) via archive_card, list and switch projects via list_projects / switch_project (always confirm first with request_user_choice before switching), create new projects via create_project, show a choice dialog with clickable buttons via request_user_choice (use for any confirmation or choice — project switches, archive confirmations, ambiguous requests). You CANNOT: do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true } or a success string. If a tool fails, tell the user exactly what failed. Any request that asks you to directly modify the draft — regardless of how it is phrased — must trigger write_draft. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves. After any Working Copy write (append, delete, replace), tell the user the Sage Undo button is available (session-only) and that a snapshot was saved to draft history. For delete_card: always confirm with the user explicitly before calling — the tool will block if confirmed_by_user is not true. For delete_from_working_copy and replace_in_working_copy: warn the user that rich formatting in the affected region may be simplified to plain text. For switch_project and archive_card: always call request_user_choice FIRST to get user confirmation, then call the action with confirmed_by_user: true. Never skip this step. For create_project: after creating, call request_user_choice to ask "Switch to [name] now?" with Yes/No options.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft", "append this to my working copy"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
     var storedMemory = localStorage.getItem(projectKey('chat_memory'));
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
@@ -5743,6 +6103,116 @@ function saveDraftSnapshot() {
       }
       fontSizeSelect.value = '';
     });
+  }
+
+  // Sprint Q — Font family selector
+  var fontFamilySelect = document.getElementById('fontFamilySelect');
+  if (fontFamilySelect) {
+    fontFamilySelect.addEventListener('change', function() {
+      var val = fontFamilySelect.value;
+      if (val) {
+        var lastActive = document.activeElement;
+        var targetEditor = (lastActive === draftEditor) ? draftEditor : copyEditor;
+        targetEditor.focus();
+        document.execCommand('fontName', false, val);
+      }
+      fontFamilySelect.value = '';
+    });
+  }
+
+  // Sprint Q — Line spacing selector
+  var lineSpacingSelect = document.getElementById('lineSpacingSelect');
+  if (lineSpacingSelect) {
+    lineSpacingSelect.addEventListener('change', function() {
+      var val = lineSpacingSelect.value;
+      if (val) {
+        copyEditor.style.lineHeight = val;
+        draftEditor.style.lineHeight = val;
+      }
+      lineSpacingSelect.value = '';
+    });
+  }
+
+  // Sprint Q — Highlight color popover
+  var highlightPickerBtn = document.getElementById('highlightPickerBtn');
+  var highlightPopover   = document.getElementById('highlightPopover');
+  if (highlightPickerBtn && highlightPopover) {
+    highlightPickerBtn.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Close font color popover if open
+      var fcPop = document.getElementById('fontColorPopover');
+      if (fcPop) fcPop.classList.remove('open');
+      highlightPopover.classList.toggle('open');
+    });
+    highlightPopover.querySelectorAll('.color-swatch').forEach(function(swatch) {
+      swatch.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        var color = swatch.getAttribute('data-highlight-color');
+        if (color) {
+          var lastActive = document.activeElement;
+          var targetEditor = (lastActive === draftEditor) ? draftEditor : copyEditor;
+          targetEditor.focus();
+          document.execCommand('backColor', false, color);
+        }
+        highlightPopover.classList.remove('open');
+      });
+    });
+  }
+
+  // Sprint Q — Font color popover
+  var fontColorBtn     = document.getElementById('fontColorBtn');
+  var fontColorPopover = document.getElementById('fontColorPopover');
+  var fontColorCustom  = document.getElementById('fontColorCustom');
+  if (fontColorBtn && fontColorPopover) {
+    fontColorBtn.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Close highlight popover if open
+      if (highlightPopover) highlightPopover.classList.remove('open');
+      fontColorPopover.classList.toggle('open');
+    });
+    fontColorPopover.querySelectorAll('.color-swatch[data-font-color]').forEach(function(swatch) {
+      swatch.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        var color = swatch.getAttribute('data-font-color');
+        if (color) {
+          var lastActive = document.activeElement;
+          var targetEditor = (lastActive === draftEditor) ? draftEditor : copyEditor;
+          targetEditor.focus();
+          document.execCommand('foreColor', false, color);
+          // Update indicator underline
+          fontColorBtn.style.setProperty('--font-color-indicator', color);
+        }
+        fontColorPopover.classList.remove('open');
+      });
+    });
+    // Custom color input
+    if (fontColorCustom) {
+      fontColorCustom.addEventListener('change', function() {
+        var color = fontColorCustom.value;
+        copyEditor.focus();
+        document.execCommand('foreColor', false, color);
+        fontColorBtn.style.setProperty('--font-color-indicator', color);
+        fontColorPopover.classList.remove('open');
+      });
+    }
+  }
+
+  // Sprint Q — Close popovers when clicking outside
+  document.addEventListener('click', function(e) {
+    if (highlightPopover && !highlightPopover.contains(e.target) && e.target !== highlightPickerBtn) {
+      highlightPopover.classList.remove('open');
+    }
+    if (fontColorPopover && !fontColorPopover.contains(e.target) && e.target !== fontColorBtn) {
+      fontColorPopover.classList.remove('open');
+    }
+  });
+
+  // Sprint Q — Find & Replace toolbar button
+  var findReplaceBtn = document.getElementById('findReplaceBtn');
+  if (findReplaceBtn) {
+    findReplaceBtn.addEventListener('click', toggleFindReplace);
   }
 
   // Draft toggle button

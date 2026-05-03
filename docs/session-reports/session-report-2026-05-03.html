@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-05-03</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Run 1 — Sprint Q + R: Writing Toolbar Expansion &amp; Sage Full-App Access</h1>
+    <p class="subtitle">Two major sprints shipped. Sprint Q added six missing Word-style toolbar tools to the Writing tab (font family, line spacing, justify, multi-color highlight palette, font color with indicator, Find &amp; Replace button). Sprint R gave Sage 22 total tools — adding Characters, Arcs &amp; Timeline, canvas move/archive, project management, and a new inline confirmation dialog UI with clickable choice buttons.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-05-03</strong></span>
+      <span class="chip">Run <strong>1</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>5124002</strong> (base — this session's changes uncommitted)</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Sprint A — Story Canvas (Kanban board, cards, columns)</li>
+        <li>[x] Sprint B — Claude AI integration (paste text, file upload, card generation)</li>
+        <li>[x] Sprint C — Writing tab (editor, word count, auto-save) <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint D — Characters tab (profiles, modal)</li>
+        <li>[x] Sprint E — Arcs &amp; Timeline tab <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint F — Jarvis AI chat (sidebar panel, streaming, memory)</li>
+        <li>[x] Sprint F1 — Voice input for Jarvis <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint G — Outline tab</li>
+        <li>[x] Sprint H — Map tab (location cards, map canvas)</li>
+        <li>[x] Sprint I — Home tab (stats, recent cards, quick nav)</li>
+        <li>[x] Sprint J — Jarvis TTS (ElevenLabs/Puter.js), tiered context injection, follow-up question control, mic guard</li>
+        <li>[x] Sprint K — Living Workshop aesthetic: particles, glass, orb breathing, aurora (later redesigned out in M)</li>
+        <li>[x] Sprint L — Story Wiki (/refresh-wiki skill, wiki pages, character/world/arc reference)</li>
+        <li>[x] Sprint M — Full redesign Phase B: OKLCH token system, AI slop purge, spherical orb v2</li>
+        <li>[x] Sprint N — SaaS generalization: project schema, setup modal, format-based column labels, Sage prompt driven by project data</li>
+        <li>[x] Sprint N Bug Fix — SyntaxError from Unicode smart quotes; modal hidden/visible CSS specificity trap fixed</li>
+        <li>[x] Sprint O — Voice UX: debounce fix, auto-send toggle ⚡, Sage pause/resume ⏸▶ — <strong>committed 4a834d2</strong> <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint P — Bug fixes: 429 friendly error message, TTS full teardown on error, chat history cap 20→10 — <strong>committed 4a834d2</strong></li>
+        <li>[x] Design Polish Sprint — Hammer B SVG logo, keyboard shortcuts modal (?), organize hint, Sage empty-state chips, CSS quick wins <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Orb Style Selector — Constellation + Aurora Mist toggle, <code>orb_style</code> persistence <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Constellation State-Reactive Animations + Always-In-Motion rotation — <strong>user-verified working</strong></li>
+        <li>[x] Sage Editor Context Bug Fix — <code>buildEditorContext()</code>, <code>read_editor</code> tool — <strong>user-verified working</strong></li>
+        <li>[x] Voice Mic Text Preservation + 10-Second Inactivity Timer — <strong>committed 5124002</strong> <em style="color:var(--subtle)">— browser test pending</em></li>
+        <li>[x] Bug Fix: Chat textarea stays editable while Sage responds — <strong>committed 5124002</strong> <em style="color:var(--subtle)">— browser test pending</em></li>
+        <li>[x] Bug Fix: Sage write_draft intent rule — <strong>committed 5124002</strong> <em style="color:var(--subtle)">— browser test pending</em></li>
+        <li>[x] Bug Fix: Streaming chat clipping — min-height: 0, user-scroll-aware rAF guard — <strong>committed 5124002</strong> <em style="color:var(--subtle)">— browser test pending</em></li>
+        <li>[x] Sprint Q — Writing toolbar expansion: font family (8 fonts), line spacing, justify full, multi-color highlight palette (6 colors), font color with indicator, Find &amp; Replace toolbar button — <em style="color:var(--subtle)">uncommitted, browser test pending</em></li>
+        <li>[x] Sprint Q — Sage formatting tools: <code>set_document_format</code> (line spacing, font family, alignment) and <code>format_text</code> (highlight/color/bold/italic specific text) — <em style="color:var(--subtle)">uncommitted, browser test pending</em></li>
+        <li>[x] Sprint R — Sage expanded access: <code>read_character_profiles</code>, <code>create_character</code>, <code>edit_character_profile</code>, <code>read_arcs_timeline</code>, <code>create_arc_entry</code>, <code>move_card</code>, <code>archive_card</code>, <code>list_projects</code>, <code>switch_project</code>, <code>create_project</code>, <code>request_user_choice</code> — <em style="color:var(--subtle)">uncommitted, browser test pending</em></li>
+        <li>[x] Sprint R — Inline confirmation dialog UI: <code>.chat-choice-card</code> with clickable pill buttons; clicking auto-sends choice as next chat message — <em style="color:var(--subtle)">uncommitted, browser test pending</em></li>
+        <li>[ ] Browser test Sprint Q toolbar — font family, line spacing, justify, highlight palette, font color, Find &amp; Replace button</li>
+        <li>[ ] Browser test Sprint Q Sage tools — ask Sage to set Georgia + 1.5 spacing; ask Sage to highlight a word in yellow</li>
+        <li>[ ] Browser test Sprint R — ask Sage to "list my projects"; create a character; archive a card (confirm dialog appears); switch project (confirm dialog appears)</li>
+        <li>[ ] Browser test voice mic fixes (Run 2) — type text → mic → speak → confirm stacking; speak → pause 10s → auto-stop</li>
+        <li>[ ] Browser test Design Polish Sprint + Orb Style Selector</li>
+        <li>[ ] Browser test Sprint O — debounce, ⚡ auto-send toggle, ⏸▶ pause/resume</li>
+        <li>[ ] Browser test Sprint N — create Biography project, column labels, Sage intro, pencil rename persistence</li>
+        <li>[ ] Browser test Issues 1–3 fixes (from 05-01 Run 3) — textarea editable while Sage responds; write_draft intent; streaming scroll guard</li>
+        <li>[ ] UI declutter pass — full-site audit of redundant, unexplained, or confusing buttons across all tabs</li>
+        <li>[ ] Issues 4 &amp; 5 — toolbar declutter pass + font color (covered by Sprint Q, but UX cleanup still needed)</li>
+        <li>[ ] /impeccable critique — formal post-redesign scoring pass</li>
+        <li>[ ] Add <code>[hidden] { display: none !important; }</code> to style.css — seven sessions deferred</li>
+        <li>[ ] Browser test backlog: Sprint C (C1/C2/C3), Sprint E onclick audit, Sprint F1 onclick audit</li>
+        <li>[ ] Ambient chat UI — ephemeral full-screen layout replacing 310px sidebar panel</li>
+        <li>[ ] Cap <code>buildTieredContext()</code> card injection — if rate limits persist</li>
+        <li>[ ] ElevenLabs TTS end-to-end re-verify after key change</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Browser test debt is now eight sprints deep.</strong> Sprint Q toolbar, Sprint Q Sage tools, Sprint R tools + dialog, voice mic fixes, Design Polish, Orb Style Selector, Sprint O, Sprint N, and Issues 1–3 fixes are all unverified in Live Server. None of this session's work has been browser-tested.</li>
+        <li><strong>Sage's <code>switch_project</code> calls <code>location.reload()</code> mid-tool-loop.</strong> If Claude is mid-streaming or awaiting tool results when the reload fires, state will be lost cleanly (localStorage is already saved before reload). This is expected behavior — document it so it doesn't cause confusion.</li>
+        <li><strong><code>format_text</code> uses regex on <code>innerHTML</code>.</strong> If the target text spans multiple HTML elements (e.g., bold mid-phrase), the regex won't match. This is a known limitation — Sage should be told to use plain text targets only.</li>
+        <li><strong>Font family via <code>execCommand('fontName')</code> wraps text in <code>&lt;font face="..."&gt;</code> tags</strong> — a deprecated HTML element. Most browsers still support it, but it may cause issues if the editor content is exported or processed. No fallback yet.</li>
+        <li><strong>Sage's <code>request_user_choice</code> dialog is not dismissed on page navigation.</strong> If the user navigates tabs while a choice dialog is visible, the dialog persists. Low-impact but worth noting.</li>
+        <li><strong><code>[hidden] { display: none !important; }</code> still missing from style.css.</strong> Seven sessions deferred. This is now a standing hard blocker — must go in before the next sprint.</li>
+        <li><strong>UI declutter pass not started.</strong> This is a full-site audit — every tab needs review. Cannot be done without opening the live app and walking through each tab manually.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>Now that Sage can create character profiles and arcs, a good first story session is to ask Sage to "read my character profiles" and confirm she returns the right data. Then try "create a character profile for [name]" and verify it appears in the Characters tab.</li>
+      </ul>
+      <p><strong>Build-side (in priority order):</strong></p>
+      <ul>
+        <li><strong>Commit this session's changes</strong> — <code>app.js</code>, <code>index.html</code>, <code>style.css</code> all have Sprint Q + R changes. Commit before starting anything else.</li>
+        <li><strong>Add <code>[hidden] { display: none !important; }</code> to <code>style.css</code></strong> — one line, seven sessions deferred, must happen next.</li>
+        <li><strong>Browser test Sprint R (Sage tools)</strong> — this is the highest-risk new code. Test: "list my projects", "create a character named X", "archive [card]" (confirm dialog), "switch to [project]" (confirm dialog). Verify <code>location.reload()</code> fires correctly on switch.</li>
+        <li><strong>Browser test Sprint Q (toolbar)</strong> — font family dropdown, line spacing, justify button, highlight palette popover, font color popover, 🔍 Find &amp; Replace button.</li>
+        <li><strong>Plan the full-site UI declutter pass</strong> — open Live Server, walk every tab, note confusing or redundant controls. Then implement. This needs a design conversation first.</li>
+        <li><strong>Run /impeccable critique</strong> — formal post-redesign score before adding more UI surface area.</li>
+        <li><strong>Work through the browser test backlog</strong> — voice mic, Design Polish, Orb Style Selector, Sprint O, Issues 1–3 in order of most likely to be used.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>5124002 — Runs 1-3: constellation animations, editor context fix, voice mic fixes, 3 browser-test bug fixes</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session (uncommitted):</strong></p>
+      <ul>
+        <li><code>app.js</code> — Sprint Q: <code>fontFamilySelect</code> + <code>lineSpacingSelect</code> change handlers; highlight popover + font color popover logic with swatch mousedown handlers and outside-click dismissal; <code>findReplaceBtn</code> click handler wired to existing <code>toggleFindReplace()</code>. Sprint Q Sage tools: <code>set_document_format</code> and <code>format_text</code> added to <code>JARVIS_TOOLS</code> + <code>executeJarvisTool</code>. Sprint R: 11 new tool definitions added to <code>JARVIS_TOOLS</code>; 11 new <code>case</code> blocks added to <code>executeJarvisTool</code>; <code>baseSystem</code> updated with new capabilities and confirmation rules.</li>
+        <li><code>index.html</code> — Sprint Q: justify full button; font family select (8 fonts); line spacing select; highlight picker button + popover with 6 swatches; font color button + popover with 8 swatches + custom color input; Find &amp; Replace toolbar button. No Sprint R HTML (all R work is JS + CSS only).</li>
+        <li><code>style.css</code> — Sprint Q: <code>.color-popover</code>, <code>.color-swatch</code>, <code>.color-swatch-none</code>, <code>.color-swatch-custom</code>, <code>.fmt-btn-color</code> (with <code>::after</code> color indicator underline), <code>.fmt-btn-highlight-picker</code>. Sprint R: <code>.chat-choice-card</code>, <code>.chat-choice-question</code>, <code>.chat-choice-buttons</code>, <code>.chat-choice-btn</code>, <code>.chat-choice-btn:hover</code>.</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Font family and line spacing added despite being "nice-to-have."</strong> User's position: differentiators matter. The 7 fonts selected (Georgia, Times New Roman, Garamond, Palatino, Arial, Calibri, Courier New, Verdana) cover the main writer use cases. More fonts deferred to a future session when the user has specific fonts in mind.</li>
+        <li><strong>Highlight replaced single-yellow with 6-color palette.</strong> The old single yellow button and remove-highlight button were replaced entirely by a picker popover. Fewer toolbar items, more capability.</li>
+        <li><strong>Font color "A" button uses a CSS variable for the underline indicator.</strong> <code>--font-color-indicator</code> is set on the button via JS when a color is chosen, so the indicator always shows the last-used color without additional state management.</li>
+        <li><strong><code>request_user_choice</code> renders inline in chat, not as a modal overlay.</strong> An overlay would interrupt the writing flow. Inline choice cards match the chat-native UX and are dismissible by clicking a choice (which sends the message and removes the card).</li>
+        <li><strong><code>switch_project</code> requires <code>confirmed_by_user: true</code> at the tool level AND Sage must call <code>request_user_choice</code> first.</strong> Double guard: the tool blocks without the flag, and the system prompt instructs Sage to always show the dialog first. Belt and suspenders.</li>
+        <li><strong><code>format_text</code> operates on <code>innerHTML</code> with regex.</strong> Known limitation: won't match text that spans HTML element boundaries (e.g., partially bold phrases). Sage should be instructed to target plain text runs. No workaround added yet — the simpler approach covers 95% of use cases.</li>
+        <li><strong>Sage's arc tools map to card types arc/event/scene.</strong> The Arcs &amp; Timeline tab is card-based — there's no separate timeline event data structure. Creating an "arc entry" just creates a card with the right type and appends its ID to <code>arcOrder</code>.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit <code>app.js</code>, <code>index.html</code>, <code>style.css</code> — message: "Sprint Q: Writing toolbar expansion + Sage formatting tools; Sprint R: Sage full-app access + confirmation dialog UI".</li>
+        <li>Add <code>[hidden] { display: none !important; }</code> to <code>style.css</code> — before anything else.</li>
+        <li>Open <code>index.html</code> in Live Server → Writing tab → test font family dropdown, line spacing, highlight palette, font color, justify, 🔍 button.</li>
+        <li>Open Sage chat → ask "list my projects" → confirm JSON list returns. Ask "create a character named Eda" → check Characters tab. Ask "archive [a card name]" → confirm choice dialog appears with Yes/No buttons.</li>
+        <li>Plan the full-site UI declutter pass — walk every tab in Live Server and note what's confusing before implementing anything.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>All Sprint Q + R changes uncommitted — commit before next session</li>
+        <li><code>[hidden] { display: none !important; }</code> still missing — seven sessions deferred</li>
+        <li>Browser test debt now covers 8+ sprints — prioritize Sprints R and Q first (newest, highest risk)</li>
+        <li><code>format_text</code> regex limitation — won't match text crossing HTML element boundaries</li>
+        <li>ElevenLabs TTS end-to-end still not re-verified after key change (04-30 Run 2)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Run /status to orient to the session</li>
+        <li>Commit the previous session's browser-tested changes to GitHub (Runs 1–3 from 05-01)</li>
+        <li>Add Word-style toolbar tools to the Writing tab (font family, line spacing, alignment, color, highlight, Find &amp; Replace)</li>
+        <li>Give Sage access to the new toolbar tools via JARVIS_TOOLS</li>
+        <li>Inventory Sage's full tool coverage and identify gaps</li>
+        <li>Add Characters, Arcs &amp; Timeline, canvas move/archive, and project management tools to Sage</li>
+        <li>Add a confirmation dialog UI so Sage can ask the user yes/no questions with clickable buttons</li>
+        <li>Run /insights and commit everything</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Pre-read before delegating.</strong> For both Sprint Q and Sprint R, reading the relevant code sections (toolbar HTML, JARVIS_TOOLS pattern, localStorage schemas, save functions) before writing the agent prompt meant the agents had exact function names, data shapes, and insertion points. Zero "I couldn't find X" failures.</li>
+        <li><strong>Discovering existing features before building.</strong> The pre-read for Sprint Q revealed that text alignment and Find &amp; Replace already existed — narrowing the actual work from 6 items to 4 new + 2 wires. Saved significant implementation time.</li>
+        <li><strong>Full tool inventory as a standalone step.</strong> Pulling the complete JARVIS_TOOLS list and mapping it against app capabilities in a table gave a clear, shared view of the gap — made the Sprint R scope obvious and easy to approve.</li>
+        <li><strong>Schema research before the Sprint R prompt.</strong> Checking how <code>character_profiles</code>, <code>arc_order</code>, <code>saveCards()</code>, <code>renderCards()</code>, and <code>location.reload()</code> actually work meant the agent prompt contained exact implementation details — the agent executed cleanly on the first pass with 54 tool uses.</li>
+        <li><strong>Inline confirmation dialog as a chat-native affordance.</strong> Rejecting the modal overlay in favor of inline choice cards was the right call — it keeps the interaction in the conversation thread and feels natural for a chat-first tool.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Browser test before /insights — eight sessions.</strong> This note has appeared every session. Sprint Q and R are both unverified. The pattern is clear: features get built faster than they get tested. The next session should start with browser tests before any new code.</li>
+        <li><strong>Commit incrementally.</strong> Sprint Q was done, then Sprint R was done, then /insights, then commit. Three sprints of work accumulated before a commit. If Sprint R had a file-corruption issue, Sprint Q would have been at risk too. Commit after each confirmed sprint.</li>
+        <li><strong>The <code>format_text</code> innerHTML regex limitation should have been called out to the user before shipping.</strong> It was documented in the report but not surfaced during the session. The user should know that asking Sage to color text that's partially bold won't work — they may hit this frustratingly in real use.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="footer">Generated by /insights · StoryForge · Life of Bon · 2026-05-03 · Run 1</div>
+</div>
+</body>
+</html>
