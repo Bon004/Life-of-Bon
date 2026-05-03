@@ -81,6 +81,33 @@ Do not require the user to name which agent to use — infer from the task.
 | `/status` | `.claude/skills/status/SKILL.md` | Start of session — quick orientation |
 | `/refresh-wiki` | `.claude/skills/refresh-wiki/SKILL.md` | Regenerate story wiki pages from source files |
 
+## Perplexity Handoff Files
+
+Two files live in `docs/perplexity/`:
+
+| File | Purpose | Update frequency |
+|------|---------|-----------------|
+| `handoff.md` | Current session only — what we're doing right now, decisions made, open questions | Rewrite when a plan is ready; delete stale info as the session evolves |
+| `context.md` | Stable project reference — stack, design system, anti-references, API config | Rarely; only when something fundamental changes |
+
+**Template:** `docs/perplexity/handoff.template.md` — copy and fill this every session. Do not invent a new structure.
+
+**Trigger:** Update `handoff.md` when a plan is **ready for approval** — before calling ExitPlanMode — so the user can upload it to Perplexity for input before approving. Not after implementation. If the plan changes mid-implementation, patch `handoff.md` again immediately.
+
+**Required sections (follow the template):**
+1. **Snapshot** — date, focus, code changed, files touched, context.md version, top 1–3 questions inline
+2. **Changes Since Last Session** — bullet diff of what's new vs. last time Perplexity saw the project
+3. **Plan / What We're Doing** — cold-readable, no assumed prior knowledge
+4. **Current Project State** — last commit, uncommitted changes, active sprint
+5. **Open Decisions** — options still being weighed; ask Perplexity to weigh in
+6. **Risks / Unknowns** — session-relevant risks only
+7. **What We Want From You (Perplexity)** — numbered, specific questions
+8. **Next Likely Steps**
+
+**After writing:** tell the user: "Handoff updated — upload `docs/perplexity/handoff.md` (and `context.md` if it's a new Perplexity session) to Perplexity."
+
+**context.md:** must have a `_Last reviewed: YYYY-MM-DD_` date stamp. Update it when the stack, design system, roadmap, API config, data model, or working assumptions change.
+
 ## Git Workflow
 - Remote: `https://github.com/Bon004/Life-of-Bon.git`
 - Keep `main` stable; branch for big experiments

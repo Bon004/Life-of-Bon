@@ -1453,6 +1453,7 @@ body.chat-open .app-main {
 
 .chat-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 14px;
   display: flex;
@@ -2263,6 +2264,21 @@ body.chat-open .app-main {
 .fmt-btn-clear { color: var(--text-light); font-weight: 400; }
 .fmt-btn-highlight { color: #856404; background: rgba(255,245,157,0.18); }
 .fmt-btn-highlight:hover { background: rgba(255,245,157,0.35) !important; color: #5a4200 !important; }
+.fmt-btn-sage-undo {
+  color: #92400e;
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+.fmt-btn-sage-undo:hover {
+  background: rgba(251, 191, 36, 0.28) !important;
+  color: #78350f !important;
+  border-color: rgba(251, 191, 36, 0.5) !important;
+}
+.fmt-btn-sage-undo:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .fmt-select {
   background: transparent;

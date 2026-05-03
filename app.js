@@ -153,6 +153,33 @@ try {
 // Outline tab: persists selected node across re-renders
 var selectedOutlineNodeId = null;
 
+// Sage undo stack — in-session undo for Working Copy edits made by Sage tools
+var sageUndoStack = [];
+var SAGE_UNDO_LIMIT = 20;
+
+function pushSageUndo() {
+  var el = document.getElementById('writingCopyEditor');
+  if (!el) return;
+  sageUndoStack.push(el.innerHTML);
+  if (sageUndoStack.length > SAGE_UNDO_LIMIT) sageUndoStack.shift();
+  updateSageUndoBtn();
+}
+
+function undoSageAction() {
+  if (!sageUndoStack.length) return;
+  var el = document.getElementById('writingCopyEditor');
+  if (!el) return;
+  el.innerHTML = sageUndoStack.pop();
+  localStorage.setItem(projectKey('writing_copy'), el.innerHTML);
+  updateWritingWordCounts();
+  updateSageUndoBtn();
+}
+
+function updateSageUndoBtn() {
+  var btn = document.getElementById('sageUndoBtn');
+  if (btn) btn.disabled = sageUndoStack.length === 0;
+}
+
 // Color lookup for each card type
 const TYPE_COLORS = {
   character: '#3b82f6',
@@ -339,6 +366,100 @@ const JARVIS_TOOLS = [
         section: { type: 'string', enum: ['full', 'last_500_words', 'first_500_words'], description: 'How much to read' }
       },
       required: ['editor']
+    }
+  },
+  {
+    name: 'highlight_working_copy',
+    description: 'Visually select (highlight) a word range in the Working Copy editor. Use this to show the user which passage you are referring to. Words are 1-indexed — word 1 is the first word. Read-only: does not modify text.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        word_start: { type: 'integer', description: 'Index of the first word to select (1-indexed, inclusive).' },
+        word_end:   { type: 'integer', description: 'Index of the last word to select (1-indexed, inclusive).' }
+      },
+      required: ['word_start', 'word_end']
+    }
+  },
+  {
+    name: 'delete_from_working_copy',
+    description: 'Delete a range of words from the Working Copy. Provide from_word and to_word (both 1-indexed, inclusive), OR provide last_n_words to delete from the end. IMPORTANT: This operation works on plain text — rich formatting (bold, italic, headings) in the affected region may be simplified. A persistent draft snapshot and a session Sage Undo are both saved before executing. The user can click the Sage Undo button to reverse this instantly.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        from_word:   { type: 'integer', description: 'First word index to delete (1-indexed, inclusive). Use with to_word.' },
+        to_word:     { type: 'integer', description: 'Last word index to delete (1-indexed, inclusive). Use with from_word.' },
+        last_n_words: { type: 'integer', description: 'Delete this many words from the end of the document. Use instead of from_word/to_word.' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'replace_in_working_copy',
+    description: 'Replace a range of words in the Working Copy with new text. Words are 1-indexed. IMPORTANT: This operation works on plain text — rich formatting (bold, italic, headings) in the affected region may be simplified. A persistent draft snapshot and a session Sage Undo are both saved before executing. The user can click the Sage Undo button to reverse this instantly.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        word_start:  { type: 'integer', description: 'Index of the first word to replace (1-indexed, inclusive).' },
+        word_end:    { type: 'integer', description: 'Index of the last word to replace (1-indexed, inclusive).' },
+        replacement: { type: 'string',  description: 'The replacement text. Can be multiple words or paragraphs.' }
+      },
+      required: ['word_start', 'word_end', 'replacement']
+    }
+  },
+  {
+    name: 'read_word_range',
+    description: 'Read a range of words from the Working Copy as plain text. Words are 1-indexed. Use this to inspect a specific passage before editing it.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        word_start: { type: 'integer', description: 'Index of the first word to read (1-indexed, inclusive).' },
+        word_end:   { type: 'integer', description: 'Index of the last word to read (1-indexed, inclusive).' }
+      },
+      required: ['word_start', 'word_end']
+    }
+  },
+  {
+    name: 'get_working_copy_metadata',
+    description: 'Returns word count, paragraph count, and character count (excluding whitespace) of the current Working Copy. Use this before targeted edits to understand document size, or to answer questions like "how many words have I written?".',
+    input_schema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'delete_card',
+    description: 'Permanently delete a story card from the canvas. THIS CANNOT BE UNDONE. You MUST ask the user for explicit confirmation before calling this tool. Only call with confirmed_by_user: true after the user has said yes. Identify the card by card_id (preferred) or card_title.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        card_id:           { type: 'string',  description: 'The unique id of the card to delete (preferred over card_title).' },
+        card_title:        { type: 'string',  description: 'The exact title of the card to delete (fallback if card_id is not known).' },
+        confirmed_by_user: { type: 'boolean', description: 'Must be true. Set to true only after the user has explicitly confirmed deletion.' }
+      },
+      required: ['confirmed_by_user']
+    }
+  },
+  {
+    name: 'append_to_working_copy',
+    description: 'Append new text to the end of the Working Copy. Each double-newline in content becomes a new paragraph. A persistent draft snapshot and a session Sage Undo are both saved before appending. The user can click the Sage Undo button to reverse this instantly.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'Text to append. Use double line breaks to separate paragraphs.' }
+      },
+      required: ['content']
+    }
+  },
+  {
+    name: 'save_version_snapshot',
+    description: 'Save the current Working Copy to draft history as a named snapshot. Use this before making a significant edit so the user can restore to this point via the History panel. Snapshots are persistent (survive page refresh).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        label: { type: 'string', description: 'Optional label for this snapshot (e.g. "before rewrite"). Stored alongside the timestamp.' }
+      },
+      required: []
     }
   }
 ];
@@ -3147,6 +3268,14 @@ function buildStoryContext() {
   return ctx;
 }
 
+// sageWordsToHtml: converts a plain-text word string into paragraph HTML.
+// Used by Sage Working Copy write tools to rebuild innerHTML after word-level edits.
+function sageWordsToHtml(text) {
+  var paras = text.split(/\n{2,}/).filter(function(p) { return p.trim(); });
+  if (paras.length === 0) return '';
+  return paras.map(function(p) { return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
+}
+
 // executeJarvisTool: maps a Claude tool_use call to existing app functions.
 // Returns a result string (never throws — errors come back as strings so the loop can continue).
 async function executeJarvisTool(name, input) {
@@ -3358,6 +3487,164 @@ async function executeJarvisTool(name, input) {
         return edText || '(empty)';
       }
 
+      case 'highlight_working_copy': {
+        var wcEl = document.getElementById('writingCopyEditor');
+        if (!wcEl) return 'Error: Working Copy editor not found.';
+        var wcWords = (wcEl.innerText || '').split(/\s+/).filter(Boolean);
+        var wsIdx = Math.max(0, (input.word_start || 1) - 1);
+        var weIdx = Math.min(wcWords.length - 1, (input.word_end || 1) - 1);
+        if (wsIdx > weIdx || wcWords.length === 0) return 'Error: word range out of bounds (document has ' + wcWords.length + ' words).';
+        try {
+          // Walk text nodes and map word indices to DOM positions
+          var walker = document.createTreeWalker(wcEl, NodeFilter.SHOW_TEXT, null, false);
+          var globalWordIdx = 0;
+          var startNode = null, startOffset = 0;
+          var endNode = null, endOffset = 0;
+          var node;
+          while ((node = walker.nextNode())) {
+            var nodeText = node.nodeValue || '';
+            var nodeWords = nodeText.split(/\s+/);
+            var charIdx = 0;
+            for (var wi = 0; wi < nodeWords.length; wi++) {
+              var word = nodeWords[wi];
+              if (!word) { charIdx += nodeWords[wi] !== undefined ? 1 : 0; continue; }
+              // Find this word's actual character position in nodeText
+              var wordPos = nodeText.indexOf(word, charIdx);
+              if (wordPos === -1) { charIdx++; continue; }
+              if (globalWordIdx === wsIdx) {
+                startNode   = node;
+                startOffset = wordPos;
+              }
+              if (globalWordIdx === weIdx) {
+                endNode   = node;
+                endOffset = wordPos + word.length;
+              }
+              charIdx = wordPos + word.length;
+              globalWordIdx++;
+            }
+            if (startNode && endNode) break;
+          }
+          if (!startNode || !endNode) return 'Error: could not locate word range in DOM. The editor may contain complex formatting — try read_word_range first.';
+          var range = document.createRange();
+          range.setStart(startNode, startOffset);
+          range.setEnd(endNode, endOffset);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          // Scroll selection into view
+          var rect = range.getBoundingClientRect();
+          if (rect && rect.top !== 0) {
+            wcEl.scrollIntoView({ block: 'nearest' });
+          }
+          return 'Selected words ' + input.word_start + ' to ' + input.word_end + ' in Working Copy.';
+        } catch (hlErr) {
+          return 'Error highlighting selection: ' + hlErr.message;
+        }
+      }
+
+      case 'delete_from_working_copy': {
+        var wcEl = document.getElementById('writingCopyEditor');
+        if (!wcEl) return 'Error: Working Copy editor not found.';
+        saveDraftSnapshot();
+        pushSageUndo();
+        var wcWords = (wcEl.innerText || '').split(/\s+/).filter(Boolean);
+        var fromIdx, toIdx;
+        if (input.last_n_words) {
+          fromIdx = Math.max(0, wcWords.length - input.last_n_words);
+          toIdx   = wcWords.length;
+        } else {
+          fromIdx = Math.max(0, (input.from_word || 1) - 1);
+          toIdx   = Math.min(wcWords.length, input.to_word || wcWords.length);
+        }
+        var remaining = wcWords.slice(0, fromIdx).concat(wcWords.slice(toIdx));
+        wcEl.innerHTML = sageWordsToHtml(remaining.join(' '));
+        localStorage.setItem(projectKey('writing_copy'), wcEl.innerHTML);
+        updateWritingWordCounts();
+        var deletedCount = toIdx - fromIdx;
+        return 'Deleted ' + deletedCount + ' word' + (deletedCount !== 1 ? 's' : '') + ' from Working Copy. Note: rich formatting in the affected region may have been simplified. The Sage Undo button can reverse this, and a draft snapshot was saved to history.';
+      }
+
+      case 'replace_in_working_copy': {
+        var wcEl = document.getElementById('writingCopyEditor');
+        if (!wcEl) return 'Error: Working Copy editor not found.';
+        saveDraftSnapshot();
+        pushSageUndo();
+        var wcWords = (wcEl.innerText || '').split(/\s+/).filter(Boolean);
+        var wsIdx = Math.max(0, (input.word_start || 1) - 1);
+        var weIdx = Math.min(wcWords.length, input.word_end || wcWords.length);
+        var replacementWords = (input.replacement || '').trim().split(/\s+/).filter(Boolean);
+        var newWords = wcWords.slice(0, wsIdx).concat(replacementWords, wcWords.slice(weIdx));
+        wcEl.innerHTML = sageWordsToHtml(newWords.join(' '));
+        localStorage.setItem(projectKey('writing_copy'), wcEl.innerHTML);
+        updateWritingWordCounts();
+        return 'Replaced words ' + input.word_start + ' to ' + input.word_end + ' with ' + replacementWords.length + ' word' + (replacementWords.length !== 1 ? 's' : '') + '. Note: rich formatting in the affected region may have been simplified. The Sage Undo button can reverse this, and a draft snapshot was saved to history.';
+      }
+
+      case 'read_word_range': {
+        var wcEl = document.getElementById('writingCopyEditor');
+        if (!wcEl) return '(editor not found)';
+        var wcWords = (wcEl.innerText || '').split(/\s+/).filter(Boolean);
+        var wsIdx = Math.max(0, (input.word_start || 1) - 1);
+        var weIdx = Math.min(wcWords.length, input.word_end || wcWords.length);
+        var excerpt = wcWords.slice(wsIdx, weIdx).join(' ');
+        return excerpt || '(no words in that range — document has ' + wcWords.length + ' words total)';
+      }
+
+      case 'get_working_copy_metadata': {
+        var wcEl = document.getElementById('writingCopyEditor');
+        var wcText = wcEl ? (wcEl.innerText || '') : '';
+        var wcHtml = wcEl ? (wcEl.innerHTML || '') : '';
+        var wordCount      = (wcText.match(/\S+/g) || []).length;
+        var paragraphCount = (wcHtml.match(/<p[\s>]/gi) || []).length;
+        var charCount      = wcText.replace(/\s/g, '').length;
+        return JSON.stringify({ word_count: wordCount, paragraph_count: paragraphCount, character_count: charCount });
+      }
+
+      case 'delete_card': {
+        // Code-level safety gate — confirmed_by_user must be explicitly true
+        if (input.confirmed_by_user !== true) {
+          return 'Action blocked: delete_card requires confirmed_by_user: true. Ask the user explicitly to confirm deletion before calling this tool.';
+        }
+        var delTarget = null;
+        if (input.card_id) {
+          delTarget = cards.find(function(c) { return c.id === input.card_id; });
+        }
+        if (!delTarget && input.card_title) {
+          var delQ = input.card_title.trim().toLowerCase();
+          delTarget = cards.find(function(c) { return c.title.toLowerCase() === delQ; });
+        }
+        if (!delTarget) {
+          return 'Error: card not found. Use search_cards to find the correct id or title first.';
+        }
+        var delTitle = delTarget.title;
+        var delId    = delTarget.id;
+        deleteCard(delId);
+        return 'Deleted card "' + delTitle + '" (id: ' + delId + '). This cannot be undone.';
+      }
+
+      case 'append_to_working_copy': {
+        var wcEl = document.getElementById('writingCopyEditor');
+        if (!wcEl) return 'Error: Working Copy editor not found.';
+        saveDraftSnapshot();
+        pushSageUndo();
+        var appendParas = (input.content || '').split(/\n{2,}/).filter(function(p) { return p.trim(); });
+        if (appendParas.length === 0) return 'Error: content is empty — nothing was appended.';
+        appendParas.forEach(function(para) {
+          var p = document.createElement('p');
+          p.textContent = para.trim();
+          wcEl.appendChild(p);
+        });
+        localStorage.setItem(projectKey('writing_copy'), wcEl.innerHTML);
+        updateWritingWordCounts();
+        return 'Appended ' + appendParas.length + ' paragraph' + (appendParas.length !== 1 ? 's' : '') + ' to Working Copy. The Sage Undo button can reverse this, and a draft snapshot was saved to history.';
+      }
+
+      case 'save_version_snapshot': {
+        saveDraftSnapshot();
+        var snapLabel = input.label ? ' ("' + input.label + '")' : '';
+        return 'Snapshot saved' + snapLabel + ' at ' + new Date().toLocaleTimeString() + '. You can restore it via the History panel (⏱ History button).';
+      }
+
       default:
         return 'Error: unknown tool "' + name + '".';
     }
@@ -3544,6 +3831,7 @@ async function sendChatMessage() {
   var typingId = 'typing-' + Date.now();
   appendChatMsg('assistant', '...', typingId);
   document.getElementById('chatSend').disabled = true;
+  // chatInput stays enabled so the user can draft their next message while Sage responds
 
   try {
     // If history is getting long, summarize oldest turns before trimming
@@ -3596,7 +3884,7 @@ async function sendChatMessage() {
       screenplay: 'Help with scene writing, dialogue, structure, and character motivation.',
       other:      'Help with writing, brainstorming, structure, and development.'
     }[currentProjectFormat] || 'Help with writing, brainstorming, structure, and development.');
-    var baseSystem = projectFacts + ' ' + assistantBehavior + '\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, and link/unlink cards to outline nodes. You CANNOT: write to the Working Copy (user controls that), delete cards, or do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true }. If a tool fails, tell the user exactly what failed. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
+    var baseSystem = projectFacts + ' ' + assistantBehavior + '\n\nYou also have Sage tool capabilities — you can take direct actions in the StoryForge app. You CAN: navigate tabs, create cards, edit cards, search cards, read full story context, write to the story Draft, create/edit/read outline nodes, link/unlink cards to outline nodes, read word ranges from Working Copy, get Working Copy metadata (word count, paragraph count, character count), highlight/select word ranges in Working Copy, append text to Working Copy (Sage Undo button can reverse this), delete or replace word ranges in Working Copy (best-effort plain text — may simplify rich formatting; Sage Undo and draft history are both available), save version snapshots to draft history, and delete cards from the canvas (requires explicit user confirmation — use confirmed_by_user: true only after the user says yes). You CANNOT: do anything not listed above. IMPORTANT: Never say an action is done unless the tool returned { "success": true } or a success string. If a tool fails, tell the user exactly what failed. Any request that asks you to directly modify the draft — regardless of how it is phrased — must trigger write_draft. When you write to the Draft, always confirm by saying how many paragraphs were written and remind the user the content is in Draft — they promote it to Working Copy themselves. After any Working Copy write (append, delete, replace), tell the user the Sage Undo button is available (session-only) and that a snapshot was saved to draft history. For delete_card: always confirm with the user explicitly before calling — the tool will block if confirmed_by_user is not true. For delete_from_working_copy and replace_in_working_copy: warn the user that rich formatting in the affected region may be simplified to plain text.\n\nUse tools ONLY when the user clearly requests an action (e.g. "create a card for...", "go to the characters tab", "write that to the draft", "append this to my working copy"). For questions, brainstorming, or analysis, respond with text only — do not use tools unless asked to do something.\n\nWhen a request is ambiguous (multiple characters/arcs could match, or a required parameter like POV or setting is missing), ask ONE focused follow-up question instead of guessing. Prefer stating an assumption ("Assuming you mean X...") and answering over asking, whenever that produces a useful response. Never ask follow-ups when the user says "just answer", "your best guess", "continue", "more", or "go". In voice mode be stricter: only ask if the answer would be long (>3 sentences) AND the task is generative (writing/drafting, not recalling) AND the two most likely interpretations share less than 30% of their content.';
     var storedMemory = localStorage.getItem(projectKey('chat_memory'));
     var suggestionsCtx = buildSuggestionsContext();
     var systemPrompt = baseSystem;
@@ -3701,7 +3989,9 @@ async function sendChatMessage() {
                 else chatMsgsEl.appendChild(streamingDiv);
               }
               streamingP.textContent = streamedText;
-              chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
+              if (chatMsgsEl.scrollHeight - chatMsgsEl.scrollTop - chatMsgsEl.clientHeight < 80) {
+                requestAnimationFrame(function() { chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight; });
+              }
             } else if (ev.delta.type === 'input_json_delta') {
               curBlock._json += ev.delta.partial_json;
             }
@@ -3825,7 +4115,7 @@ function appendChatMsg(role, text, id) {
   p.textContent = text;
   div.appendChild(p);
   msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+  requestAnimationFrame(function() { msgs.scrollTop = msgs.scrollHeight; });
 }
 
 // Jarvis status indicator — shows an inline pulsing bar while tools are running.
@@ -3844,8 +4134,8 @@ function showJarvisStatus(msg) {
   el.appendChild(dot);
   el.appendChild(txt);
   msgs.appendChild(el);
-  msgs.scrollTop = msgs.scrollHeight;
-  document.getElementById('chatInput').disabled = true;
+  requestAnimationFrame(function() { msgs.scrollTop = msgs.scrollHeight; });
+  // chatInput stays enabled; only the send button is locked during streaming
   document.getElementById('chatSend').disabled  = true;
 }
 
@@ -3853,7 +4143,7 @@ function updateJarvisStatus(msg) {
   var textEl = document.getElementById('jarvisStatusText');
   if (textEl) textEl.textContent = msg;
   var msgs = document.getElementById('chatMessages');
-  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  if (msgs) requestAnimationFrame(function() { msgs.scrollTop = msgs.scrollHeight; });
 }
 
 function removeJarvisStatus() {
@@ -4060,16 +4350,18 @@ var orbAnalyser   = null;
 var orbMicVolume  = 0;
 var orbRecognition = null;
 var orbRotY       = 0;
+var orbRotX       = 0;
 var orbParticles  = [];
 var orbPulseRings = [];
 var orbPulseTimer = null;
 
 var orbStyleRaw; try { orbStyleRaw = localStorage.getItem(projectKey('orb_style')); } catch(e) {}
-var orbStyle = (orbStyleRaw === 'constellation' || orbStyleRaw === 'aurora') ? orbStyleRaw : 'constellation';
+var orbStyle = (orbStyleRaw === 'constellation' || orbStyleRaw === 'aurora' || orbStyleRaw === 'particle') ? orbStyleRaw : 'constellation';
 var orbConstellationPts = [];
 var orbConstellationT = 0;
 var orbAuroraPts = [];
 var orbAuroraT = 0;
+var orbDiscPts  = [];
 
 // Build uniform spherical particle cloud (avoids polar band clustering)
 (function initOrbParticles() {
@@ -4103,9 +4395,9 @@ function initConstellationOrb(canvas) {
     return {
       bx: cx + rr * Math.cos(a), by: cy + rr * Math.sin(a),
       ox: 0, oy: 0,
-      speed: 0.002 + Math.random() * 0.003,
+      speed: 0.003 + Math.random() * 0.005,
       phase: Math.random() * Math.PI * 2,
-      range: 2 + Math.random() * 5,
+      range: 5 + Math.random() * 10,
     };
   });
   orbConstellationT = 0;
@@ -4129,6 +4421,25 @@ function initAuroraOrb(canvas) {
   orbAuroraT = 0;
 }
 
+function initDiscOrb(canvas) {
+  var cx = canvas.width / 2, cy = canvas.height / 2;
+  var r  = Math.min(canvas.width, canvas.height) * 0.35;
+  var NUM = 400;
+  orbDiscPts = Array.from({ length: NUM }, function() {
+    var theta = Math.random() * Math.PI * 2;
+    var phi   = Math.acos(2 * Math.random() - 1);
+    var rr    = r * (0.55 + Math.random() * 0.45);
+    return {
+      x:     cx + rr * Math.sin(phi) * Math.cos(theta),
+      y:     cy + rr * Math.sin(phi) * Math.sin(theta) * 0.55,
+      z:     rr * Math.cos(phi),
+      angle: Math.random() * Math.PI * 2,
+      speed: 0.003 + Math.random() * 0.004,
+      size:  0.7 + Math.random() * 1.1,
+    };
+  });
+}
+
 function renderOrbConstellation() {
   var canvas = document.getElementById('jarvisOrbCanvas');
   if (!canvas) return;
@@ -4139,12 +4450,12 @@ function renderOrbConstellation() {
   var time = Date.now() * 0.001;
 
   // Variable time-step by state
-  var tSteps = { idle: 0.010, listening: 0.018, thinking: 0.042, speaking: 0.022, paused: 0 };
+  var tSteps = { idle: 0.012, listening: 0.020, thinking: 0.044, speaking: 0.024, paused: 0.005 };
   orbConstellationT += tSteps[orbState] !== undefined ? tSteps[orbState] : 0.010;
 
   // Global field rotation — derived from orbConstellationT so it tracks state speed
   // and freezes automatically when paused (tStep === 0 → T stays fixed → angle stays fixed)
-  var globalAngle = orbConstellationT * 0.04;
+  var globalAngle = orbConstellationT * 0.07;
   var cosA = Math.cos(globalAngle), sinA = Math.sin(globalAngle);
 
   // Mic volume sampling (mirrors renderOrb)
@@ -4183,7 +4494,7 @@ function renderOrbConstellation() {
 
   // Update point positions with state-based displacement
   orbConstellationPts.forEach(function(p) {
-    var rangeMultiplier = 1.0;
+    var rangeMultiplier = 1.6;
     var extraX = 0, extraY = 0;
 
     // Rotate base position around center for global field rotation
@@ -4214,7 +4525,7 @@ function renderOrbConstellation() {
       extraY = (dy2 / len) * wave * 4;
       rangeMultiplier = 1.3;
     } else if (orbState === 'paused') {
-      rangeMultiplier = 0;
+      rangeMultiplier = 0.5;
     }
 
     p.ox = Math.sin(orbConstellationT * p.speed * 40 + p.phase) * p.range * rangeMultiplier + extraX;
@@ -4296,11 +4607,12 @@ function renderOrbAurora() {
 
 // ── Orb style switcher ────────────────────────────────────────
 function setOrbStyle(style) {
-  if (style !== 'constellation' && style !== 'aurora') return;
+  if (style !== 'constellation' && style !== 'aurora' && style !== 'particle') return;
   orbStyle = style;
   try { localStorage.setItem(projectKey('orb_style'), style); } catch(e) {}
   orbConstellationPts = [];
   orbAuroraPts = [];
+  orbDiscPts = [];
   if (orbIsOpen) {
     cancelAnimationFrame(orbAnimFrame);
     startOrbAnimation();
@@ -4360,6 +4672,7 @@ function resizeOrbCanvas() {
   canvas.height = canvas.offsetHeight || window.innerHeight;
   orbConstellationPts = [];  // reinit on next frame for new dimensions
   orbAuroraPts = [];
+  orbDiscPts = [];
 }
 
 function startOrbAnimation() {
@@ -4374,14 +4687,17 @@ function startOrbAnimation() {
     } else if (orbStyle === 'aurora') {
       if (orbAuroraPts.length === 0) initAuroraOrb(canvas);
       renderOrbAurora();
-    } else {
+    } else if (orbStyle === 'particle') {
+      if (orbDiscPts.length === 0) initDiscOrb(canvas);
       renderOrb();
+    } else {
+      renderOrb(); // safety fallback — should not be reached
     }
   }
   loop();
 }
 
-// renderOrb: draw one frame of the particle sphere
+// renderOrb: draw one frame of the particle disc/ring
 function renderOrb() {
   var canvas = document.getElementById('jarvisOrbCanvas');
   if (!canvas) return;
@@ -4389,109 +4705,39 @@ function renderOrb() {
   var W = canvas.width, H = canvas.height;
   if (!W || !H) return;
   var cx = W / 2, cy = H / 2;
-  var R  = Math.min(W, H) * 0.27;
-  var time = Date.now() * 0.001;
+  var r  = Math.min(W, H) * 0.35;
 
   ctx.clearRect(0, 0, W, H);
 
-  // Rotation speed by state
-  var speeds = { idle: 0.003, listening: 0.009, thinking: 0.055, speaking: 0.012, paused: 0 };
-  orbRotY += speeds[orbState] || 0.003;
-
-  // Sample mic volume in listening state
-  if (orbState === 'listening' && orbAnalyser) {
-    var arr = new Uint8Array(orbAnalyser.frequencyBinCount);
-    orbAnalyser.getByteFrequencyData(arr);
-    var sum = 0;
-    for (var di = 0; di < arr.length; di++) sum += arr[di];
-    var raw = (sum / arr.length) / 96;
-    orbMicVolume = orbMicVolume * 0.6 + raw * 0.4; // smooth
-  } else {
-    orbMicVolume = Math.max(0, orbMicVolume - 0.04);
-  }
-
-  var cosY = Math.cos(orbRotY), sinY = Math.sin(orbRotY);
-
-  // Project particles
-  var projected = orbParticles.map(function(p) {
-    // Y-axis rotation
-    var x1 = p.bx * cosY + p.bz * sinY;
-    var z1 = -p.bx * sinY + p.bz * cosY;
-    var y1 = p.by;
-
-    // State-based band wave displacement
-    var disp = 1.0;
-    if (orbState === 'idle') {
-      disp = 1 + 0.025 * Math.sin(time * 0.6 + p.ringFrac * Math.PI * 3 + p.phase * 0.3);
-    } else if (orbState === 'listening') {
-      var vol = orbMicVolume;
-      disp = 1 + vol * 0.5 * (0.5 + 0.5 * Math.sin(time * 5 + p.ringFrac * Math.PI * 6));
-      // Extra band spike near equator when loud
-      if (vol > 0.5) {
-        var eq = 1 - Math.abs(p.ringFrac - 0.5) * 2; // 1 at equator, 0 at poles
-        disp += vol * 0.3 * eq;
-      }
-    } else if (orbState === 'thinking') {
-      // Chaotic: each ring gets a different swirl offset
-      var chaos = Math.sin(time * 3.5 + p.ringFrac * Math.PI * 8 + p.phase * 3);
-      disp = 1 + 0.32 * chaos;
-      x1 += 0.18 * Math.cos(time * 2 + p.phase) * Math.abs(chaos);
-      y1 += 0.15 * Math.sin(time * 1.7 + p.phase) * Math.abs(chaos);
-    } else if (orbState === 'speaking') {
-      var wave = Math.sin(time * 6 - p.ringFrac * Math.PI * 7);
-      disp = 1 + 0.22 * wave;
-    }
-
-    var fx = x1 * disp, fy = y1 * disp, fz = z1 * disp;
-
-    // Perspective projection
-    var fov = 480;
-    var pz  = fz + 3;
-    var sx  = cx + fx * R * fov / (fov + pz * R);
-    var sy  = cy + fy * R * fov / (fov + pz * R);
-
-    // Depth: back particles are dimmer and smaller
-    var depth  = (fz + 1.5) / 3;         // 0..1
-    var alpha  = 0.15 + 0.85 * depth;
-    var radius = 0.6 + 2.0 * depth;
-
-    return { sx: sx, sy: sy, fz: fz, p: p };
-  });
-
-  // Sort back-to-front (painter's algorithm)
-  projected.sort(function(a, b) { return a.fz - b.fz; });
-
-  // Ambient background glow — indigo, alpha varies by state
-  var glowAlpha = orbState === 'speaking' ? 0.22 : orbState === 'listening' ? 0.14 : 0.07;
-  var bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.6);
-  bgGlow.addColorStop(0, 'hsla(268, 65%, 45%, ' + glowAlpha + ')');
-  bgGlow.addColorStop(1, 'transparent');
-  ctx.fillStyle = bgGlow;
+  // Ambient glow
+  var glowAlpha = orbState === 'speaking' ? 0.18 : orbState === 'listening' ? 0.12 : 0.10;
+  var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  grad.addColorStop(0, 'hsla(268, 65%, 55%, ' + glowAlpha + ')');
+  grad.addColorStop(0.6, 'hsla(268, 65%, 55%, ' + (glowAlpha * 0.3) + ')');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Pulse rings (listening state only)
-  orbPulseRings = orbPulseRings.filter(function(ring) { return ring.opacity > 0.02; });
-  orbPulseRings.forEach(function(ring) {
-    ring.r      += 1.8;
-    ring.opacity *= 0.963;
+  orbDiscPts.forEach(function(p) {
+    p.angle += p.speed;
+    var dx = Math.cos(p.angle) * 0.3;
+    var dy = Math.sin(p.angle) * 0.18;
+    p.x += dx;
+    p.y += dy;
+    // Clamp to disc bounds
+    var dist = Math.hypot(p.x - cx, (p.y - cy) / 0.55);
+    if (dist > r * 1.05) {
+      p.x = cx + (p.x - cx) * 0.98;
+      p.y = cy + (p.y - cy) * 0.98;
+    }
+    var brightness = 0.35 + (p.z / r + 1) * 0.3;
     ctx.beginPath();
-    ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'hsla(268, 72%, 72%, ' + ring.opacity.toFixed(3) + ')';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-  });
-
-  // Draw particles — depth-cued lightness and alpha (HSLA)
-  projected.forEach(function(pt) {
-    var depth = (pt.fz + 1.5) / 3;                         // 0=back, 1=front
-    var lit   = 48 + depth * 28;                            // 48% (dim) → 76% (bright)
-    var alpha = pt.p.baseAlpha * (0.1 + depth * 0.9);
-    var sz    = pt.p.baseSize  * Math.max(0.18, depth);
-    var hue   = pt.p.hue;
-
-    ctx.beginPath();
-    ctx.arc(pt.sx, pt.sy, sz, 0, Math.PI * 2);
-    ctx.fillStyle = 'hsla(' + hue + ', 58%, ' + lit.toFixed(0) + '%, ' + Math.min(1, alpha).toFixed(3) + ')';
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' +
+      Math.round(180 + brightness * 60) + ',' +
+      Math.round(185 + brightness * 55) + ',' +
+      Math.round(230 + brightness * 25) + ',' +
+      (brightness * 0.85).toFixed(3) + ')';
     ctx.fill();
   });
 }
@@ -5404,6 +5650,22 @@ function applyWritingSplitRatio() {
   if (draftPane) draftPane.style.flexBasis = ((1 - ratio) * 100) + '%';
 }
 
+// saveDraftSnapshot — global so executeJarvisTool can call it.
+// Pushes the current Working Copy HTML to draft history (up to 10 entries).
+function saveDraftSnapshot() {
+  var el = document.getElementById('writingCopyEditor');
+  if (!el) return;
+  var content = el.innerHTML;
+  if (!content || !el.textContent.trim()) return;
+  var history = [];
+  try { history = JSON.parse(localStorage.getItem(projectKey('draft_history')) || '[]'); } catch(e) {}
+  // Skip if identical to the last snapshot
+  if (history.length > 0 && history[history.length - 1].content === content) return;
+  history.push({ savedAt: new Date().toISOString(), content: content });
+  if (history.length > 10) history = history.slice(history.length - 10);
+  localStorage.setItem(projectKey('draft_history'), JSON.stringify(history));
+}
+
 // Auto-save writing content on every input
 (function() {
   var copyEditor  = document.getElementById('writingCopyEditor'); // contenteditable div
@@ -5434,17 +5696,6 @@ function applyWritingSplitRatio() {
 
   // Draft history: push a snapshot after 3 minutes of inactivity in the copy editor
   var historySnapshotTimer = null;
-  function pushDraftSnapshot() {
-    var content = copyEditor.innerHTML;
-    if (!content || !copyEditor.textContent.trim()) return;
-    var history = [];
-    try { history = JSON.parse(localStorage.getItem(projectKey('draft_history')) || '[]'); } catch(e) {}
-    // Skip if identical to the last snapshot
-    if (history.length > 0 && history[history.length - 1].content === content) return;
-    history.push({ savedAt: new Date().toISOString(), content: content });
-    if (history.length > 10) history = history.slice(history.length - 10);
-    localStorage.setItem(projectKey('draft_history'), JSON.stringify(history));
-  }
 
   // Auto-save on input — store innerHTML (preserves formatting)
   copyEditor.addEventListener('input', function() {
@@ -5453,7 +5704,7 @@ function applyWritingSplitRatio() {
     renderHomePage(); // keep word count on home page in sync
     // Schedule a history snapshot after 3 min of inactivity
     clearTimeout(historySnapshotTimer);
-    historySnapshotTimer = setTimeout(pushDraftSnapshot, 3 * 60 * 1000);
+    historySnapshotTimer = setTimeout(saveDraftSnapshot, 3 * 60 * 1000);
   });
   draftEditor.addEventListener('input', function() {
     localStorage.setItem(projectKey('writing_draft'), draftEditor.innerHTML);
@@ -5466,6 +5717,7 @@ function applyWritingSplitRatio() {
     btn.addEventListener('mousedown', function(e) {
       e.preventDefault(); // keep focus in editor
       var cmd = btn.getAttribute('data-cmd');
+      if (!cmd) return; // skip buttons that handle their own events (e.g. sageUndoBtn)
       var val = btn.getAttribute('data-val') || null;
       document.execCommand(cmd, false, val);
       // Re-focus whichever editor was last active
@@ -5473,6 +5725,12 @@ function applyWritingSplitRatio() {
       if (active !== copyEditor && active !== draftEditor) copyEditor.focus();
     });
   });
+
+  // Sage undo button — session-only undo for Working Copy edits made by Sage
+  var sageUndoBtnEl = document.getElementById('sageUndoBtn');
+  if (sageUndoBtnEl) {
+    sageUndoBtnEl.addEventListener('click', undoSageAction);
+  }
 
   // Font size selector
   var fontSizeSelect = document.getElementById('fontSizeSelect');

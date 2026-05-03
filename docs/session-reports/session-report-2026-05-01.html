@@ -696,3 +696,365 @@
 </div>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>StoryForge — Session Report 2026-05-01 Run 3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #131a2b;
+      --surface-2: #0f172a;
+      --border: #1f2a44;
+      --text: #e2e8f0;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.12);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.10);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.10);
+      --shadow: 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 64px 24px 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+    .cover { margin-bottom: 56px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 22px; max-width: 68ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .chip strong { color: var(--text-strong); font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    section { margin-bottom: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 12px; }
+    p { font-size: 14.5px; color: var(--text); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text-strong); font-weight: 600; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul:last-child { margin-bottom: 0; }
+    li { font-size: 14.5px; color: var(--text); margin-bottom: 6px; }
+    li::marker { color: var(--subtle); }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(96,165,250,0.4); }
+    a:hover { border-bottom-style: solid; }
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-left-width: 3px;
+    }
+    .callout.key { background: var(--success-soft); border-color: rgba(74,222,128,0.25); border-left-color: var(--success); color: #bbf7d0; }
+    .callout.warn { background: var(--warn-soft); border-color: rgba(251,191,36,0.25); border-left-color: var(--warn); color: #fde68a; }
+    .callout strong { color: inherit; }
+    .handoff-row { display: flex; gap: 14px; margin-bottom: 8px; font-size: 14px; }
+    .handoff-key { font-weight: 600; color: var(--muted); min-width: 130px; letter-spacing: 0.02em; }
+    .handoff-val { color: var(--text); flex: 1; }
+    .na { color: var(--subtle); font-style: italic; font-size: 13.5px; }
+    .footer {
+      margin-top: 72px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="cover">
+    <div class="eyebrow">StoryForge · Session Report</div>
+    <h1>Run 3 — Browser Test Review: 3 Sage/Chat Bug Fixes</h1>
+    <p class="subtitle">A structured browser test review session: 5 issues documented, triaged with Perplexity as a second reviewer (two rounds), and 3 bugs fixed. Chat textarea is no longer locked while Sage responds; Sage's system prompt now enforces an intent rule requiring <code>write_draft</code> for any draft modification request; streaming chat clipping resolved with a flex <code>min-height: 0</code> fix and a user-scroll-aware <code>requestAnimationFrame</code> scroll guard. Issues 4 (UI clutter) and 5 (Word-style tools) deferred pending a design conversation.</p>
+    <div class="chips">
+      <span class="chip"><span class="chip-dot"></span><strong>2026-05-01</strong></span>
+      <span class="chip">Run <strong>3</strong></span>
+      <span class="chip">Branch <strong>main</strong></span>
+      <span class="chip">Commit <strong>a0e4975</strong> (base — this session's changes uncommitted)</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>Story Overview</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Character Analysis</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Plot &amp; Arc Structure</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>World-Building Status</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Writing Progress</h2>
+    <div class="card">
+      <p class="na">Not reviewed this session.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>UI &amp; Feature Progress</h2>
+    <div class="card">
+      <ul>
+        <li>[x] Sprint A — Story Canvas (Kanban board, cards, columns)</li>
+        <li>[x] Sprint B — Claude AI integration (paste text, file upload, card generation)</li>
+        <li>[x] Sprint C — Writing tab (editor, word count, auto-save) <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint D — Characters tab (profiles, modal)</li>
+        <li>[x] Sprint E — Arcs &amp; Timeline tab <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint F — Jarvis AI chat (sidebar panel, streaming, memory)</li>
+        <li>[x] Sprint F1 — Voice input for Jarvis <em style="color:var(--subtle)">— onclick audit pending</em></li>
+        <li>[x] Sprint G — Outline tab</li>
+        <li>[x] Sprint H — Map tab (location cards, map canvas)</li>
+        <li>[x] Sprint I — Home tab (stats, recent cards, quick nav)</li>
+        <li>[x] Sprint J — Jarvis TTS (ElevenLabs/Puter.js), tiered context injection, follow-up question control, mic guard</li>
+        <li>[x] Sprint K — Living Workshop aesthetic: particles, glass, orb breathing, aurora (later redesigned out in M)</li>
+        <li>[x] Sprint L — Story Wiki (/refresh-wiki skill, wiki pages, character/world/arc reference)</li>
+        <li>[x] Sprint M — Full redesign Phase B: OKLCH token system, AI slop purge, spherical orb v2</li>
+        <li>[x] Sprint N — SaaS generalization: project schema, setup modal, format-based column labels, Sage prompt driven by project data</li>
+        <li>[x] Sprint N Bug Fix — SyntaxError from Unicode smart quotes; modal hidden/visible CSS specificity trap fixed</li>
+        <li>[x] Sprint O — Voice UX: debounce fix, auto-send toggle ⚡, Sage pause/resume ⏸▶ — <strong>committed 4a834d2</strong> <em style="color:var(--subtle)">— browser test still pending</em></li>
+        <li>[x] Sprint P — Bug fixes: 429 friendly error message, TTS full teardown on error, chat history cap 20→10 — <strong>committed 4a834d2</strong></li>
+        <li>[x] Design Polish Sprint — Hammer B SVG logo, keyboard shortcuts modal (?), organize hint, Sage empty-state chips, CSS quick wins <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Orb Style Selector — Constellation + Aurora Mist toggle, localStorage <code>orb_style</code> persistence, resize invalidation <em style="color:var(--subtle)">— uncommitted, browser test pending</em></li>
+        <li>[x] Constellation State-Reactive Animations + Always-In-Motion rotation — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted (Run 1)</em></li>
+        <li>[x] Sage Editor Context Bug Fix — <code>buildEditorContext()</code> live DOM reads, <code>read_editor</code> tool — <strong>user-verified working</strong> <em style="color:var(--subtle)">— uncommitted (Run 1)</em></li>
+        <li>[x] Voice Mic Text Preservation + 10-Second Inactivity Timer — <em style="color:var(--subtle)">uncommitted (Run 2), browser test pending</em></li>
+        <li>[x] Bug Fix: Chat textarea stays editable while Sage responds — only <code>chatSend</code> is locked, not <code>chatInput</code> — <em style="color:var(--subtle)">uncommitted (Run 3), browser test pending</em></li>
+        <li>[x] Bug Fix: Sage write_draft intent rule — system prompt now requires Sage to call <code>write_draft</code> for any draft modification request, or explicitly state it cannot — <em style="color:var(--subtle)">uncommitted (Run 3)</em></li>
+        <li>[x] Bug Fix: Streaming chat clipping — <code>min-height: 0</code> on <code>.chat-messages</code>; streaming scroll wrapped in user-scroll-aware guard + <code>requestAnimationFrame</code>; one-shot scroll calls also wrapped in <code>rAF</code> — <em style="color:var(--subtle)">uncommitted (Run 3), browser test pending</em></li>
+        <li>[ ] Browser test Issue 1 fix — send a message, confirm textarea stays typeable while Sage responds; confirm Send button stays locked until response completes</li>
+        <li>[ ] Browser test Issue 2 fix (happy path) — ask Sage to implement draft changes, confirm <code>write_draft</code> tool fires and draft editor visibly updates</li>
+        <li>[ ] Browser test Issue 2 fix (failure path) — ask Sage to edit draft when no content exists, confirm Sage says it can't rather than claiming success</li>
+        <li>[ ] Browser test Issue 3 fix — trigger long Sage response; scroll up mid-stream; confirm no yank back to bottom; confirm no text clipping</li>
+        <li>[ ] UI declutter pass (Issue 4) — design conversation needed first: collapse format toolbar, reorganize AI dropdown, word-goal bar visibility</li>
+        <li>[ ] Word-style tools expansion (Issue 5) — font color via <code>execCommand('foreColor')</code> after Issue 4 declutter pass</li>
+        <li>[ ] Browser test voice mic fixes — type text → mic on → speak → confirm text stacks not wiped; speak for &gt;10s silence → confirm mic auto-stops</li>
+        <li>[ ] Browser test Design Polish Sprint — hammer SVG, shortcuts modal, organize hint, chips hide-after-send, mobile/ultra-wide CSS</li>
+        <li>[ ] Browser test Orb Style Selector — default constellation, ⬡→aurora, ◈→back, close/reopen, page refresh persistence</li>
+        <li>[ ] Browser test Sprint O — debounce, ⚡ auto-send toggle, ⏸▶ pause/resume, mic-stop no-orphan-send</li>
+        <li>[ ] Browser test Sprint N — create Biography project, column labels, Sage intro, pencil rename persistence</li>
+        <li>[ ] /impeccable critique — formal scoring pass on live app post-redesign</li>
+        <li>[ ] Browser test backlog: Sprint C (C1/C2/C3), Sprint E onclick audit, Sprint F1 onclick audit</li>
+        <li>[ ] Ambient chat UI — ephemeral full-screen conversational layout replacing 310px sidebar panel</li>
+        <li>[ ] Cap <code>buildTieredContext()</code> card injection — if rate limits persist, cap card injection next</li>
+        <li>[ ] Add <code>[hidden] { display: none !important; }</code> to style.css — six sessions deferred, must go in next</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Open Questions &amp; Gaps</h2>
+    <div class="card">
+      <ul>
+        <li><strong>All session changes remain uncommitted.</strong> Run 1 (constellation, editor context), Run 2 (voice mic), and Run 3 (3 bug fixes) are all sitting in modified <code>app.js</code> and <code>style.css</code> with no commit.</li>
+        <li><strong>Browser test debt is now seven sprints deep.</strong> The three new bug fixes, voice mic, constellation/editor context, Design Polish, Orb Style Selector, and Sprint O are all unverified in Live Server.</li>
+        <li><strong>Issue 2 fix requires a failure-path test.</strong> The system prompt change is not verifiable from code inspection alone — Sage's behavior must be tested live. Specifically, the failure path (Sage asked to edit when the tool can't run) has not been exercised.</li>
+        <li><strong>Issue 3 user-scroll guard needs live verification.</strong> The <code>&lt; 80px</code> threshold and <code>requestAnimationFrame</code> scroll logic look correct in code but must be tested: trigger a long streaming response, scroll up mid-stream, and confirm the view doesn't get yanked back.</li>
+        <li><strong>Issues 4 and 5 are deferred pending a design conversation.</strong> UI declutter (which controls to hide/collapse) and Word-style tool additions both need scope confirmation before any implementation. Note that the toolbar already has 43 controls — the user may not know all of them.</li>
+        <li><strong><code>[hidden] { display: none !important; }</code> still missing from style.css.</strong> Six sessions deferred. Hard blocker next session.</li>
+        <li><strong>ElevenLabs TTS end-to-end still not re-verified</strong> after the key change from 04-30 Run 2.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Recommended Next Actions</h2>
+    <div class="card">
+      <p><strong>Story-side:</strong></p>
+      <ul>
+        <li>No story work this session. Now that the <code>write_draft</code> intent rule is in, first story session is a good time to test: ask Sage to "implement those changes to the draft" — confirm the draft editor actually updates.</li>
+      </ul>
+      <p><strong>Build-side (in priority order):</strong></p>
+      <ul>
+        <li><strong>Commit app.js + style.css</strong> — all Run 1 + Run 2 + Run 3 changes are uncommitted. Three sessions of work is too much to leave unprotected.</li>
+        <li><strong>Add <code>[hidden] { display: none !important; }</code> to style.css</strong> — one line, must happen before any new sprint. Six sessions deferred.</li>
+        <li><strong>Browser test the 3 new bug fixes</strong> — see Issue 1/2/3 verification steps in Section 06. Especially test Issue 2 failure path and Issue 3 user-scroll guard.</li>
+        <li><strong>Browser test voice mic fixes (Run 2)</strong> — type text → mic → speak → confirm stacking. Pause 10 seconds → confirm auto-stop. These are used at work.</li>
+        <li><strong>Design conversation for Issues 4 &amp; 5</strong> — decide which toolbar controls to collapse/remove, then implement the declutter pass before adding font color.</li>
+        <li><strong>Run /impeccable critique</strong> — formal post-redesign score and punch list.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Handoff</h2>
+    <div class="card">
+      <div class="handoff-row"><div class="handoff-key">Branch</div><div class="handoff-val"><code>main</code></div></div>
+      <div class="handoff-row"><div class="handoff-key">Last commit</div><div class="handoff-val"><code>a0e4975 — Voice mic: text preservation + 10s inactivity timer + session report Run 2</code></div></div>
+
+      <p style="margin-top:14px;"><strong>Files changed this session (uncommitted):</strong></p>
+      <ul>
+        <li><code>app.js</code> — <code>sendChatMessage()</code>: removed <code>chatInput.disabled = true</code> at line ~3546 (on send) and inside <code>showJarvisStatus()</code> at line ~3848. Added comment explaining that only <code>chatSend</code> is locked, not the textarea.</li>
+        <li><code>app.js</code> — <code>baseSystem</code> string (~line 3597): inserted intent rule immediately after the existing "Never say an action is done unless tool returned success" sentence: Sage must call <code>write_draft</code> for any draft modification request, or explicitly state it cannot — no narrating edits as done.</li>
+        <li><code>app.js</code> — Streaming scroll (~line 3702): bare <code>chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight</code> replaced with a <code>&lt; 80px</code> distance guard + <code>requestAnimationFrame</code> wrapper so auto-scroll only fires when the user is already near the bottom.</li>
+        <li><code>app.js</code> — <code>appendChatMsg()</code>, <code>showJarvisStatus()</code>, <code>updateJarvisStatus()</code>: one-shot scroll calls each wrapped in <code>requestAnimationFrame</code> for post-reflow timing.</li>
+        <li><code>style.css</code> — <code>.chat-messages</code>: added <code>min-height: 0</code> to allow the flex child to shrink below content height, enabling correct inner scroll behavior.</li>
+      </ul>
+
+      <p><strong>Decisions made:</strong></p>
+      <ul>
+        <li><strong>Intent rule over phrase list for Sage's write_draft contract.</strong> The original plan listed trigger phrases ("implement", "apply those changes", etc.). Perplexity correctly flagged that a phrase list has loopholes. The final instruction is intent-based: any request to modify story text triggers the tool. Phrase lists silently fail for unusual wording; intent rules are more robust and easier to audit.</li>
+        <li><strong>User-scroll guard set at 80px.</strong> The streaming scroll was changed from unconditional to conditional: only auto-scroll if the user is within 80px of the bottom. This preserves the "read history while Sage responds" UX without fighting the user's scroll position. The threshold is a common web chat convention; nothing special about 80px beyond being wide enough to not be accidentally tripped.</li>
+        <li><strong><code>min-height: 0</code> as the primary CSS fix, not <code>overflow: clip</code>.</strong> Perplexity flagged <code>overflow: clip</code> as a distinct, non-obvious change. The flex <code>min-height</code> bug is the documented root cause of this class of scrolling failures. <code>overflow: clip</code> was explicitly labeled "optional/experimental" in the plan and not implemented.</li>
+        <li><strong>Issues 4 and 5 deferred to design conversation.</strong> The toolbar already has 43 controls including many the user didn't realize existed. Adding more tools without first decluttering would make discoverability worse, not better. These must be scoped together.</li>
+        <li><strong>Perplexity used as a second reviewer across two rounds.</strong> Both rounds improved the plan: Round 1 caught the phrase-list weakness and the <code>overflow: clip</code> framing; Round 2 added the failure-path and user-scroll verification requirements. Three-party review (Jarvis plan → Perplexity review → revised plan) is proving consistently effective for this project.</li>
+      </ul>
+
+      <p><strong>Resume here:</strong></p>
+      <ul>
+        <li>Commit <code>app.js</code> + <code>style.css</code> — message: "Browser test fixes: chat input lock, Sage write_draft intent rule, streaming scroll guard".</li>
+        <li>Add <code>[hidden] { display: none !important; }</code> to <code>style.css</code> before starting anything else.</li>
+        <li>Open <code>index.html</code> in Live Server → Sage chat → send a message → confirm you can click and type in the textarea while Sage is responding.</li>
+        <li>Ask Sage: "implement those changes" (with some text in the draft) → confirm the draft editor visibly updates.</li>
+        <li>Ask Sage the same thing with an empty draft → confirm Sage says it can't or explains the failure, NOT that it did it.</li>
+        <li>Trigger a long Sage response → scroll up mid-stream → confirm the chat doesn't auto-scroll you back to the bottom.</li>
+        <li>Schedule the Issues 4 + 5 design conversation: which toolbar controls to collapse, then font color.</li>
+      </ul>
+
+      <p><strong>Known blockers / open questions:</strong></p>
+      <ul>
+        <li>All Run 1 + Run 2 + Run 3 changes uncommitted — commit before starting next session</li>
+        <li>Issue 2 failure-path not yet tested in Live Server</li>
+        <li>Issue 3 user-scroll guard not yet tested in Live Server</li>
+        <li>Issues 4 and 5 blocked on design conversation</li>
+        <li><code>[hidden] { display: none !important; }</code> still missing — six sessions deferred</li>
+        <li>ElevenLabs TTS end-to-end not re-verified after key change (04-30 Run 2)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Claude Collaboration Insights</h2>
+    <div class="card">
+      <p><strong>What I asked Claude to do:</strong></p>
+      <ul>
+        <li>Review 5 browser-test issues documented from a live test session</li>
+        <li>Triage and plan fixes for all 5, ordered by severity</li>
+        <li>Run plan through Perplexity review (two rounds) before approving</li>
+        <li>Implement the 3 confirmed bugs (Issues 1–3); defer Issues 4–5 pending design conversation</li>
+        <li>Generate /insights for 2026-05-01 session and append as Run 3</li>
+      </ul>
+
+      <p><strong>What worked well:</strong></p>
+      <ul>
+        <li><strong>Perplexity as a two-round plan reviewer.</strong> Both rounds produced material improvements — Round 1 upgraded the Issue 2 prompt fix from phrase-matching to an intent rule; Round 2 added two verification requirements (failure-path for Issue 2, user-scroll guard for Issue 3) that would have been missed. This is now a proven workflow: plan → Perplexity → tighten → implement.</li>
+        <li><strong>Correct triage of Issue 2 as the most damaging bug.</strong> Identifying hallucinated editing as a trust-breaking failure (not just a UX inconvenience) led to the right fix: a system prompt contract rather than a UI indicator. The <code>write_draft</code> tool was already there — the gap was Sage not knowing when to use it.</li>
+        <li><strong>Carrying issue triage directly into the plan file.</strong> Writing the 5-issue triage into the plan file (with root cause, file/line references, fix description, and verification steps) meant the feature-agent had everything it needed with zero ambiguity. The delegation was clean and fast.</li>
+        <li><strong>Not implementing Issues 4 and 5 immediately.</strong> Both require a design conversation. Implementing them without scope confirmation would have added controls to an already-cluttered toolbar. Correct call to defer.</li>
+      </ul>
+
+      <p><strong>What to do differently:</strong></p>
+      <ul>
+        <li><strong>Browser test before /insights — seven sessions of this note.</strong> The 3 bug fixes from this session have not been verified in Live Server. This is the same recurring failure. The fixes look correct in code, but Issue 2 especially must be exercised live before it can be trusted.</li>
+        <li><strong>Commit after each confirmed sprint, not at session end.</strong> Three sessions of uncommitted work is dangerous. The commit message from Run 2 is already in git — but the actual code changes from Runs 1, 2, and 3 are all still unstaged. Commit immediately when a feature is confirmed working, not at /insights time.</li>
+        <li><strong>Surface the existing toolbar inventory earlier in Issue 5 discussion.</strong> The user was under the impression that many Word-style tools were missing. In practice the toolbar has 43 controls including most of what was listed as "missing." Showing this inventory at the start of the Issue 5 conversation would have reframed the problem immediately.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="footer">Generated by /insights · StoryForge · Life of Bon · 2026-05-01 · Run 3</div>
+</div>
+</body>
+</html>
